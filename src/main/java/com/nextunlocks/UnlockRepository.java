@@ -56,8 +56,6 @@ public class UnlockRepository
 		return id > 0 && id < GUIDE_SKILLS.length ? GUIDE_SKILLS[id] : null;
 	}
 
-	/** A feature can list a few skills; more than this is a sign the tuples aren't ending. */
-	private static final int MAX_GUIDE_SKILLS = 8;
 
 	private Map<Skill, List<Unlock>> wiki = Collections.emptyMap();
 	/** Replaced whole, so the panel can read it while the client thread loads the skill guide. */
@@ -168,20 +166,24 @@ public class UnlockRepository
 			}
 			boolean members = bool(field(client, row, DBTableID.SkillFeatures.COL_MEMBERSONLY, 0));
 
-			for (int tuple = 0; tuple < MAX_GUIDE_SKILLS; tuple++)
+			// the skill column lists (skill, level, subsection) tuples; each read returns one position across all of them
+			Object[] skillIds = field(client, row, DBTableID.SkillFeatures.COL_SKILL, 0);
+			Object[] levels = field(client, row, DBTableID.SkillFeatures.COL_SKILL, 1);
+			Object[] subsections = field(client, row, DBTableID.SkillFeatures.COL_SKILL, 2);
+			int count = Math.min(skillIds.length, Math.min(levels.length, subsections.length));
+			for (int i = 0; i < count; i++)
 			{
-				Object[] skill = field(client, row, DBTableID.SkillFeatures.COL_SKILL, tuple);
-				if (skill.length < 3 || !(skill[0] instanceof Number) || ((Number) skill[0]).intValue() <= 0)
+				if (!(skillIds[i] instanceof Number) || !(levels[i] instanceof Number) || !(subsections[i] instanceof Number))
 				{
-					break;
+					continue;
 				}
-				int skillId = ((Number) skill[0]).intValue();
-				int subsection = ((Number) skill[2]).intValue();
-				Unlock unlock = guideUnlock(skillId, ((Number) skill[1]).intValue(), subsection, headers.get(sectionKey(skillId, subsection)),
+				int skillId = ((Number) skillIds[i]).intValue();
+				int subsection = ((Number) subsections[i]).intValue();
+				Unlock unlock = guideUnlock(skillId, ((Number) levels[i]).intValue(), subsection, headers.get(sectionKey(skillId, subsection)),
 					text, notes.isEmpty() ? null : String.join("\n", notes), members, item, sprite, quest);
 				if (unlock != null)
 				{
-					guide.computeIfAbsent(GUIDE_SKILLS[((Number) skill[0]).intValue()], k -> new ArrayList<>()).add(unlock);
+					guide.computeIfAbsent(GUIDE_SKILLS[skillId], k -> new ArrayList<>()).add(unlock);
 				}
 			}
 		}
@@ -233,16 +235,7 @@ public class UnlockRepository
 
 	private static Object[] field(Client client, int row, int column, int tuple)
 	{
-		Object[] values;
-		try
-		{
-			values = client.getDBTableField(row, column, tuple);
-		}
-		catch (IllegalArgumentException e)
-		{
-			// the client throws instead of returning nothing past a field's last tuple
-			return new Object[0];
-		}
+		Object[] values = client.getDBTableField(row, column, tuple);
 		return values == null ? new Object[0] : values;
 	}
 
