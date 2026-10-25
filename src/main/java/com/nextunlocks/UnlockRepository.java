@@ -233,7 +233,16 @@ public class UnlockRepository
 
 	private static Object[] field(Client client, int row, int column, int tuple)
 	{
-		Object[] values = client.getDBTableField(row, column, tuple);
+		Object[] values;
+		try
+		{
+			values = client.getDBTableField(row, column, tuple);
+		}
+		catch (IllegalArgumentException e)
+		{
+			// the client throws instead of returning nothing past a field's last tuple
+			return new Object[0];
+		}
 		return values == null ? new Object[0] : values;
 	}
 

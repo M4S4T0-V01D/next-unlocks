@@ -781,6 +781,7 @@ class SkillGuide
 			if (u.getItem() != null)
 			{
 				icon.setItemId(u.getItem());
+				icon.setItemQuantity(-1);
 				icon.setItemQuantityMode(ItemQuantityMode.NEVER);
 				icon.setBorderType(1);
 				place(icon, ROW_PADDING + 25, y + 3, 36, 32, false);
