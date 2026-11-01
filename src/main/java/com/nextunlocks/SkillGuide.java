@@ -22,6 +22,7 @@ import net.runelite.api.StructComposition;
 import net.runelite.api.events.ScriptPostFired;
 import net.runelite.api.events.ScriptPreFired;
 import net.runelite.api.gameval.InterfaceID;
+import net.runelite.api.gameval.SpriteID;
 import net.runelite.api.gameval.VarClientID;
 import net.runelite.api.widgets.ItemQuantityMode;
 import net.runelite.api.widgets.JavaScriptCallback;
@@ -775,7 +776,8 @@ class SkillGuide
 		levelText.setYTextAlignment(WidgetTextAlignment.CENTER);
 		place(levelText, ROW_PADDING, y, 16, ROW_MIN_HEIGHT, false);
 
-		if (u.hasIcon())
+		Integer spriteId = guideSprite(u);
+		if (u.getItem() != null || spriteId != null)
 		{
 			Widget icon = list.createChild(-1, WidgetType.GRAPHIC);
 			if (u.getItem() != null)
@@ -788,10 +790,10 @@ class SkillGuide
 			}
 			else
 			{
-				SpritePixels[] sprite = client.getSprites(client.getIndexSprites(), u.getSprite(), 0);
+				SpritePixels[] sprite = client.getSprites(client.getIndexSprites(), spriteId, 0);
 				int w = sprite != null && sprite.length > 0 ? sprite[0].getMaxWidth() : 25;
 				int h = sprite != null && sprite.length > 0 ? sprite[0].getMaxHeight() : 25;
-				icon.setSpriteId(u.getSprite());
+				icon.setSpriteId(spriteId);
 				place(icon, ROW_PADDING + 25 + Math.max(0, (36 - w) / 2 - 3), y + 3 + Math.max(0, (32 - h) / 2 - 1), w, h, false);
 			}
 			icon.setOpacity(locked ? LOCKED_ICON : faded ? FADED : 0);
@@ -818,6 +820,24 @@ class SkillGuide
 			description.setOpacity(FADED);
 		}
 		return height;
+	}
+
+	/** The sprite picturing a guide row: the unlock's own, else the quest or diary tab icon for those; or null. */
+	static Integer guideSprite(Unlock u)
+	{
+		if (u.getSprite() != null)
+		{
+			return u.getSprite();
+		}
+		switch (u.getType())
+		{
+			case QUEST:
+				return SpriteID.SideIcons.QUEST;
+			case DIARY:
+				return SpriteID.SideIcons.ACHIEVEMENT_DIARIES;
+			default:
+				return null;
+		}
 	}
 
 	/** How many lines the game wraps a text to, at a width; {@code <br>} breaks lines and tags take no room. */

@@ -6,11 +6,23 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.function.ToIntFunction;
+import net.runelite.api.gameval.SpriteID;
 import org.junit.Test;
 
 public class SkillGuideTest
 {
 	private static final ToIntFunction<String> MONOSPACE = s -> s.length() * 6;
+
+	@Test
+	public void questsAndDiariesUseTheirTabIcons()
+	{
+		assertEquals(Integer.valueOf(SpriteID.SideIcons.QUEST),
+			SkillGuide.guideSprite(new Unlock(10, true, Unlock.Type.QUEST, "Dragon Slayer I", null, null, null, null, null, null)));
+		assertEquals(Integer.valueOf(SpriteID.SideIcons.ACHIEVEMENT_DIARIES),
+			SkillGuide.guideSprite(new Unlock(10, true, Unlock.Type.DIARY, "Easy Ardougne", null, null, null, null, null, null)));
+		assertEquals(Integer.valueOf(5), SkillGuide.guideSprite(new Unlock(1, false, Unlock.Type.UNLOCK, "Spell", null, null, 5, null, null, null)));
+		assertNull(SkillGuide.guideSprite(new Unlock(1, false, Unlock.Type.UNLOCK, "Item", null, 1, null, null, null, null)));
+	}
 
 	@Test
 	public void fitMatchesTheGameWhenTabsFit()
