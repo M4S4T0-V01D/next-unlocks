@@ -141,7 +141,7 @@ public class UnlockRepositoryTest
 
 		Map<Skill, Integer> levels = Collections.singletonMap(Skill.MINING, 83);
 		Snapshot boosted = new Snapshot(levels, Collections.emptyMap(), Collections.singletonMap(Skill.MINING, 86), ALL, 5,
-			Collections.emptySet(), Collections.emptySet(), Palette.DEFAULT);
+			Collections.emptySet(), Collections.emptySet(), Palette.DEFAULT, Collections.emptySet(), Collections.emptySet(), Collections.emptyList(), false);
 		assertTrue(boosted.reachedByBoost(Skill.MINING, ore));
 		assertFalse(boosted.upcoming(Skill.MINING).test(ore));
 	}
@@ -151,7 +151,8 @@ public class UnlockRepositoryTest
 	{
 		Unlock chest = UnlockRepository.guideUnlock(10, 43, 3, "Chests", "Chest", null, true, null, null, 7);
 		Snapshot snapshot = new Snapshot(Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), ALL, 5,
-			Collections.singleton(7), Collections.singleton(Snapshot.sectionKey(Skill.THIEVING, "Chests")), Palette.DEFAULT);
+			Collections.singleton(7), Collections.singleton(Snapshot.sectionKey(Skill.THIEVING, "Chests")), Palette.DEFAULT,
+			Collections.emptySet(), Collections.emptySet(), Collections.emptyList(), false);
 		assertTrue(snapshot.locked(chest));
 		assertFalse(snapshot.shown(Skill.THIEVING).test(chest));
 		assertTrue(snapshot.shown(Skill.CRAFTING).test(chest));

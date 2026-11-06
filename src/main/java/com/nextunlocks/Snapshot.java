@@ -1,6 +1,7 @@
 package com.nextunlocks;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -12,7 +13,8 @@ import net.runelite.api.Skill;
 class Snapshot
 {
 	static final Snapshot EMPTY = new Snapshot(Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(),
-		u -> true, 5, Collections.emptySet(), Collections.emptySet(), Palette.DEFAULT);
+		u -> true, 5, Collections.emptySet(), Collections.emptySet(), Palette.DEFAULT,
+		Collections.emptySet(), Collections.emptySet(), Collections.emptyList(), false);
 
 	/** Real levels. */
 	Map<Skill, Integer> levels;
@@ -27,6 +29,13 @@ class Snapshot
 	/** Hidden skill guide sections, as {@link #sectionKey} strings. */
 	Set<String> hiddenSections;
 	Palette palette;
+	/** Required quests the player hasn't finished, whatever the grey-out setting; empty when unknown. */
+	Set<Integer> questsToDo;
+	/** Names of finished quests, as in {@link net.runelite.api.Quest#getName()}. */
+	Set<String> finishedQuests;
+	List<Goal> goals;
+	/** Whether the panel lists what's one requirement away. */
+	boolean almostThere;
 
 	static String sectionKey(Skill skill, String section)
 	{
@@ -41,6 +50,17 @@ class Snapshot
 	int level(Skill skill)
 	{
 		return levels.getOrDefault(skill, 1);
+	}
+
+	/** The level that counts for quests and diaries: the boost when boosts count. */
+	int effectiveLevel(Skill skill)
+	{
+		return Math.max(level(skill), boosted.getOrDefault(skill, 0));
+	}
+
+	boolean isGoal(Skill skill, Unlock u)
+	{
+		return goals.stream().anyMatch(g -> g.is(skill, u));
 	}
 
 	int xp(Skill skill)

@@ -34,6 +34,8 @@ Right-click a skill and choose **Pin** to keep its tooltip on screen above the c
 - Items, spells and prayers show as their in-game icons with the level on them. Hover for the name and XP left, click to open it on the OSRS Wiki.
 - Search any unlock across all skills, and see whether you have it yet.
 - Hide whole skill guide sections per skill.
+- **Goals**: right-click any unlock and pick **Set as goal**. Goals sit at the top of the panel with the XP left, and show as infoboxes; right-click the infobox to remove one. Reaching a goal posts a chat message and a notification, then clears it.
+- **Almost there**: quests and achievement diaries where every skill requirement but one is met, closest first, and quests that are the only thing between you and unlocks you already have the level for. Click one to open it on the wiki. Diary completion isn't checked, so finished diaries can still show up.
 
 <br clear="right">
 
@@ -49,6 +51,7 @@ Right-click a skill and choose **Pin** to keep its tooltip on screen above the c
 
 - **General**: members unlocks, quest and diary requirements, levels to show, level-up message, boosts, greying out quest-locked unlocks.
 - **Skills tab tooltip**: on/off, icons only, including the game's XP tooltip, progress bar, icon and text size, background opacity, outline.
+- **Goals**: goal infoboxes, the goal-reached notification, the Almost there list.
 - **Skill guide**: the Next Unlocks tab, highlighting, fading, markings, progress bar, scrolling, dimming hidden sections.
 - **Colors**: next unlock, outline, progress bar and its background, level numbers, boost-reached and quest-locked, used by the tooltip, the side panel and the skill guide; plus the level-up message's skill/level and unlocks colors and its text shadow.
 

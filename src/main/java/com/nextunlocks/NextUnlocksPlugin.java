@@ -9,6 +9,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -46,6 +47,7 @@ import net.runelite.api.events.ScriptPreFired;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.widgets.Widget;
+import net.runelite.client.Notifier;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
@@ -55,6 +57,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.game.SpriteManager;
@@ -64,12 +67,14 @@ import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.components.ComponentConstants;
 import net.runelite.client.ui.overlay.components.ComponentOrientation;
 import net.runelite.client.ui.overlay.components.LayoutableRenderableEntity;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.components.ProgressBarComponent;
+import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 
@@ -90,7 +95,9 @@ public class NextUnlocksPlugin extends Plugin
 	private static final int PANEL_BORDER = 10;
 	private static final String PIN = "Pin";
 	private static final String UNPIN = "Unpin";
-	private static final int MESSAGE_ENTRIES = 3;	/** Panel refresh interval for xp-only changes, in game ticks. */
+	private static final String REMOVE_GOAL = "Remove goal";
+	private static final int MESSAGE_ENTRIES = 3;
+	/** Panel refresh interval for xp-only changes, in game ticks. */
 	private static final int PANEL_REFRESH_TICKS = 5;
 	/** How often quest states are checked again, in game ticks. */
 	private static final int QUEST_REFRESH_TICKS = 50;
@@ -147,6 +154,12 @@ public class NextUnlocksPlugin extends Plugin
 	@Inject
 	private ConfigManager configManager;
 
+	@Inject
+	private Notifier notifier;
+
+	@Inject
+	private InfoBoxManager infoBoxManager;
+
 	private final UnlockRepository repository = new UnlockRepository();
 	/** Real levels as last seen; client thread only. Empty while logged out. */
 	private final Map<Skill, Integer> levels = new EnumMap<>(Skill.class);
@@ -168,6 +181,14 @@ public class NextUnlocksPlugin extends Plugin
 	private int ticksSinceQuestRefresh;
 	/** Replaced whole; written from the panel's thread too. */
 	private volatile Set<String> hiddenSections = Collections.emptySet();
+	/** Replaced whole; written from the panel's thread too. */
+	private volatile List<Goal> goals = Collections.emptyList();
+	/** Required quests not finished yet, whatever the grey-out setting; client thread. */
+	private Set<Integer> questsToDo = Collections.emptySet();
+	/** Names of finished quests that quest entries name; client thread. */
+	private Set<String> finishedQuests = Collections.emptySet();
+	/** Client thread. */
+	private final List<GoalInfoBox> goalBoxes = new ArrayList<>();
 
 	@Provides
 	NextUnlocksConfig provideConfig(ConfigManager configManager)
@@ -181,7 +202,8 @@ public class NextUnlocksPlugin extends Plugin
 		repository.load(gson);
 
 		loadHiddenSections();
-		panel = new NextUnlocksPanel(repository, skillIconManager, itemManager, spriteManager, this::setSectionHidden);
+		goals = Goal.parse(config.goals());
+		panel = new NextUnlocksPanel(repository, skillIconManager, itemManager, spriteManager, this::setSectionHidden, this::toggleGoal);
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 		navButton = NavigationButton.builder()
 			.tooltip("Next Unlocks")
@@ -207,6 +229,7 @@ public class NextUnlocksPlugin extends Plugin
 				}
 				questsDirty = true;
 			}
+			syncGoalBoxes();
 			pushToPanel();
 		});
 	}
@@ -216,6 +239,8 @@ public class NextUnlocksPlugin extends Plugin
 	{
 		overlayManager.remove(tooltipOverlay);
 		overlayManager.remove(pinnedOverlay);
+		goalBoxes.forEach(infoBoxManager::removeInfoBox);
+		goalBoxes.clear();
 		skillGuide.shutDown();
 		skillGuide = null;
 		pinned.clear();
@@ -223,6 +248,8 @@ public class NextUnlocksPlugin extends Plugin
 		levels.clear();
 		tooltipCache.clear();
 		unfinishedQuests = Collections.emptySet();
+		questsToDo = Collections.emptySet();
+		finishedQuests = Collections.emptySet();
 		panel = null;
 		navButton = null;
 	}
@@ -239,6 +266,8 @@ public class NextUnlocksPlugin extends Plugin
 				levels.clear();
 				tooltipCache.clear();
 				unfinishedQuests = Collections.emptySet();
+				questsToDo = Collections.emptySet();
+				finishedQuests = Collections.emptySet();
 				pushToPanel();
 				break;
 			case LOGGED_IN:
@@ -263,6 +292,11 @@ public class NextUnlocksPlugin extends Plugin
 		int level = event.getLevel();
 		Integer previous = levels.put(skill, level);
 		tooltipCache.remove(skill);
+		if (previous == null || level > previous)
+		{
+			// also on login, for goals reached elsewhere
+			reachGoals(skill, level);
+		}
 		if (previous != null && level > previous)
 		{
 			if (config.levelUpMessage())
@@ -312,13 +346,18 @@ public class NextUnlocksPlugin extends Plugin
 			{
 				loadHiddenSections();
 			}
+			if ("goals".equals(event.getKey()))
+			{
+				goals = Goal.parse(config.goals());
+			}
 			tooltipCache.clear();
 			clientThread.invokeLater(() ->
 			{
-				if ("greyOutLocked".equals(event.getKey()))
+				if ("greyOutLocked".equals(event.getKey()) || "almostThere".equals(event.getKey()))
 				{
 					questsDirty = true;
 				}
+				syncGoalBoxes();
 				pushToPanel();
 				skillGuide.refresh();
 			});
@@ -618,23 +657,39 @@ public class NextUnlocksPlugin extends Plugin
 	{
 		questsDirty = false;
 		ticksSinceQuestRefresh = 0;
-		Set<Integer> unfinished = new HashSet<>();
-		if (config.greyOutLocked())
+		Set<Integer> toDo = new HashSet<>();
+		for (int id : repository.requiredQuests())
 		{
-			for (int id : repository.requiredQuests())
+			Quest quest = QUESTS.get(id);
+			// quests newer than this RuneLite's list can't be checked; they're left as usable
+			if (quest != null && quest.getState(client) != QuestState.FINISHED)
 			{
-				Quest quest = QUESTS.get(id);
-				// quests newer than this RuneLite's list can't be checked; they're left as usable
-				if (quest != null && quest.getState(client) != QuestState.FINISHED)
+				toDo.add(id);
+			}
+		}
+		Set<String> finished = new HashSet<>();
+		if (config.almostThere())
+		{
+			Set<String> titles = repository.questTitles();
+			for (Quest quest : Quest.values())
+			{
+				if (titles.contains(quest.getName()) && quest.getState(client) == QuestState.FINISHED)
 				{
-					unfinished.add(id);
+					finished.add(quest.getName());
 				}
 			}
 		}
+		Set<Integer> unfinished = config.greyOutLocked() ? toDo : Collections.emptySet();
 		if (!unfinished.equals(unfinishedQuests))
 		{
 			unfinishedQuests = unfinished;
 			tooltipCache.clear();
+			panelDirty = true;
+		}
+		if (!toDo.equals(questsToDo) || !finished.equals(finishedQuests))
+		{
+			questsToDo = toDo;
+			finishedQuests = finished;
 			panelDirty = true;
 		}
 	}
@@ -662,6 +717,120 @@ public class NextUnlocksPlugin extends Plugin
 		}
 	}
 
+	/** Sets a goal, or drops it when it is one. Any thread. */
+	private synchronized void toggleGoal(Goal goal)
+	{
+		List<Goal> updated = new ArrayList<>(goals);
+		if (!updated.remove(goal))
+		{
+			updated.add(goal);
+		}
+		saveGoals(updated);
+	}
+
+	/** The config change puts up the infoboxes and refreshes the panel. */
+	private synchronized void saveGoals(List<Goal> updated)
+	{
+		goals = Collections.unmodifiableList(updated);
+		configManager.setConfiguration(NextUnlocksConfig.GROUP, "goals", Goal.format(updated));
+	}
+
+	/** Announces and drops the skill's goals the level reaches. Client thread. */
+	private void reachGoals(Skill skill, int level)
+	{
+		List<Goal> reached = goals.stream()
+			.filter(g -> g.getSkill() == skill && g.getLevel() <= level)
+			.collect(Collectors.toList());
+		if (reached.isEmpty())
+		{
+			return;
+		}
+		boolean shadow = config.chatShadow();
+		for (Goal goal : reached)
+		{
+			String label = goal.getSkill().getName() + " " + goal.getLevel() + ":";
+			String message = new ChatMessageBuilder()
+				.append(ChatColorType.NORMAL)
+				.append("Goal reached! ")
+				.append(shadow ? "<shad=000000>" : "")
+				.append(config.colorChatLevel(), label)
+				.append(" ")
+				.append(config.colorChatUnlocks(), goal.getText())
+				.append(shadow ? "</shad>" : "")
+				.build();
+			chatMessageManager.queue(QueuedMessage.builder()
+				.type(ChatMessageType.GAMEMESSAGE)
+				.runeLiteFormattedMessage(message)
+				.build());
+			notifier.notify(config.goalNotification(), "Goal reached! " + label + " " + goal.getText());
+		}
+		synchronized (this)
+		{
+			List<Goal> remaining = new ArrayList<>(goals);
+			remaining.removeAll(reached);
+			saveGoals(remaining);
+		}
+	}
+
+	/** Puts up an infobox per goal, or none when they're off. Client thread. */
+	private void syncGoalBoxes()
+	{
+		goalBoxes.forEach(infoBoxManager::removeInfoBox);
+		goalBoxes.clear();
+		if (!config.goalInfoboxes())
+		{
+			return;
+		}
+		for (Goal goal : goals)
+		{
+			GoalInfoBox box = new GoalInfoBox(goalImage(goal), this, goal, client::getSkillExperience, config.colorNext());
+			box.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, REMOVE_GOAL, "Goal"));
+			goalBoxes.add(box);
+			infoBoxManager.addInfoBox(box);
+		}
+	}
+
+	/** The goal's item or spell picture, or its skill's icon. Client thread. */
+	private BufferedImage goalImage(Goal goal)
+	{
+		Unlock u = repository.all(goal.getSkill()).stream()
+			.filter(x -> goal.is(goal.getSkill(), x))
+			.findFirst()
+			.orElse(null);
+		BufferedImage image = null;
+		if (u != null && u.getItem() != null)
+		{
+			image = itemManager.getImage(u.getItem());
+		}
+		else if (u != null && u.getSprite() != null)
+		{
+			image = spriteManager.getSprite(u.getSprite(), 0);
+		}
+		return image != null ? image : skillIconManager.getSkillImage(goal.getSkill(), false);
+	}
+
+	@Subscribe
+	public void onOverlayMenuClicked(OverlayMenuClicked event)
+	{
+		if (!REMOVE_GOAL.equals(event.getEntry().getOption()))
+		{
+			return;
+		}
+		for (GoalInfoBox box : goalBoxes)
+		{
+			if (box.getMenuEntries().contains(event.getEntry()))
+			{
+				synchronized (this)
+				{
+					List<Goal> remaining = new ArrayList<>(goals);
+					remaining.remove(box.getGoal());
+					saveGoals(remaining);
+				}
+				return;
+			}
+		}
+	}
+
 	/** Current stats and settings. Client thread. */
 	private Snapshot snapshot()
 	{
@@ -681,7 +850,8 @@ public class NextUnlocksPlugin extends Plugin
 				}
 			}
 		}
-		return new Snapshot(levelCopy, xpCopy, boosted, filter(), config.levelsAhead(), unfinishedQuests, hiddenSections, Palette.of(config));
+		return new Snapshot(levelCopy, xpCopy, boosted, filter(), config.levelsAhead(), unfinishedQuests, hiddenSections, Palette.of(config),
+			questsToDo, finishedQuests, goals, config.almostThere());
 	}
 
 	/** Copies current stats for the panel. Client thread. */

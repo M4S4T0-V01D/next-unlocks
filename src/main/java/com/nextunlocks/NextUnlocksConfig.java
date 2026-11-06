@@ -6,6 +6,7 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
+import net.runelite.client.config.Notification;
 import net.runelite.client.config.Range;
 import net.runelite.client.config.Units;
 
@@ -314,6 +315,49 @@ public interface NextUnlocksConfig extends Config
 	}
 
 	@ConfigSection(
+		name = "Goals",
+		description = "Unlocks set as goals, and what's one requirement away",
+		position = 28
+	)
+	String goalSection = "goals";
+
+	@ConfigItem(
+		keyName = "goalInfoboxes",
+		name = "Goal infoboxes",
+		description = "Show an infobox with the XP left for each goal. Right-click an unlock in the side panel to set it as a goal",
+		position = 28,
+		section = goalSection
+	)
+	default boolean goalInfoboxes()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "goalNotification",
+		name = "Goal reached notification",
+		description = "Notify when you reach a goal; a chat message is always posted",
+		position = 29,
+		section = goalSection
+	)
+	default Notification goalNotification()
+	{
+		return Notification.ON;
+	}
+
+	@ConfigItem(
+		keyName = "almostThere",
+		name = "Almost there",
+		description = "List quests and diaries one skill level short, and unlocks you have the level for that only need a quest, in the side panel",
+		position = 30,
+		section = goalSection
+	)
+	default boolean almostThere()
+	{
+		return true;
+	}
+
+	@ConfigSection(
 		name = "Colors",
 		description = "Colors in the tooltip and the skill guide",
 		position = 30
@@ -440,6 +484,17 @@ public interface NextUnlocksConfig extends Config
 	default boolean chatShadow()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+		keyName = "goals",
+		name = "",
+		description = "Unlocks set as goals, as SKILL|level|text, one per line",
+		hidden = true
+	)
+	default String goals()
+	{
+		return "";
 	}
 
 	@ConfigItem(

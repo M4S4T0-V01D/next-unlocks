@@ -283,6 +283,23 @@ public class UnlockRepository
 		return quests;
 	}
 
+	/** Wiki titles of the quests that quest entries are for. */
+	public Set<String> questTitles()
+	{
+		Set<String> titles = new HashSet<>();
+		for (List<Unlock> unlocks : bySkill.values())
+		{
+			for (Unlock u : unlocks)
+			{
+				if (u.getType() == Unlock.Type.QUEST && u.getWiki() != null)
+				{
+					titles.add(u.getWiki());
+				}
+			}
+		}
+		return titles;
+	}
+
 	/**
 	 * Whether a boosted level is enough for an unlock. Equipment needs real levels, and so do the combat skills'
 	 * guide entries, which are mostly equipment and prayers; quests, diaries and skilling methods take boosts.
