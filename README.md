@@ -24,11 +24,20 @@ Hover a skill to see its next unlock level, the XP left, a progress bar and the 
 It can take over the game's XP tooltip so the two don't overlap, and its icon size, text size and background opacity are adjustable.
 
 Right-click a skill and choose **Pin** to keep its tooltip on screen above the chatbox. Right-click it again to unpin.
+Pinned cards sit side by side at the same height, and their XP and progress update as you train.
 
 <br clear="right">
 
+<p align="center">
+  <img src="screenshots/pin.png" alt="A pinned skill card above the chatbox">
+</p>
+
 ### Side panel
-<img src="screenshots/side-panel.png" alt="Side panel" align="right">
+<p align="center">
+  <img src="screenshots/side-panel.png" alt="Side panel: Almost there and every skill's next unlocks" height="640">
+  &nbsp;&nbsp;
+  <img src="screenshots/side-panel2.png" alt="Side panel: one skill's Almost there list and next unlock levels" height="640">
+</p>
 
 - Every skill sorted by the closest upcoming unlock, or one skill's next few unlock levels.
 - Items, spells and prayers show as their in-game icons with the level on them. Hover for the name and XP left, click to open it on the OSRS Wiki.
@@ -37,10 +46,11 @@ Right-click a skill and choose **Pin** to keep its tooltip on screen above the c
 - **Goals**: right-click any unlock and pick **Set as goal**. Goals sit at the top of the panel with the XP left, and show as infoboxes; right-click the infobox to remove one. Reaching a goal posts a chat message and a notification, then clears it.
 - **Almost there**: quests and achievement diaries where every skill requirement but one is met, closest first, and quests that are the only thing between you and unlocks you already have the level for. Click one to open it on the wiki. Diary completion isn't checked, so finished diaries can still show up.
 
-<br clear="right">
-
 ### Also
-- **Level-up message**: a chat message listing what the level you just reached unlocks, with the skill and level in grey and the unlocks in yellow by default, both changeable under Colors (e.g. **Smithing 10:** Bronze battleaxes; Bronze keel parts).
+- **Level-up message**: a chat message listing what the level you just reached unlocks, with the skill and level in grey and the unlocks in yellow by default, both changeable under Colors, with an optional text shadow.
+
+  <img src="screenshots/chat.png" alt="Level-up chat message: New at Fishing 5: Karambwanji; Sardine; Required for Tai Bwo Wannai Trio">
+
 - **Boosts**: unlocks your boosted level reaches count as reached for things the game lets you do boosted (skilling methods, spells, shortcuts, quests, diaries), but not equipment or prayers.
 - **Quest-locked unlocks**: unlocks that need a quest you haven't finished are greyed out.
 - **Filters**: members content (always, never, or match the world), quest and diary requirements, how many levels to list.
