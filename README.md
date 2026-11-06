@@ -38,7 +38,7 @@ Right-click a skill and choose **Pin** to keep its tooltip on screen above the c
 <br clear="right">
 
 ### Also
-- **Level-up message**: a chat message listing what the level you just reached unlocks, with the skill and level in grey and the unlocks in yellow (e.g. **Smithing 10:** Bronze battleaxes; Bronze keel parts).
+- **Level-up message**: a chat message listing what the level you just reached unlocks, with the skill and level in grey and the unlocks in yellow by default, both changeable under Colors (e.g. **Smithing 10:** Bronze battleaxes; Bronze keel parts).
 - **Boosts**: unlocks your boosted level reaches count as reached for things the game lets you do boosted (skilling methods, spells, shortcuts, quests, diaries), but not equipment or prayers.
 - **Quest-locked unlocks**: unlocks that need a quest you haven't finished are greyed out.
 - **Filters**: members content (always, never, or match the world), quest and diary requirements, how many levels to list.
@@ -50,7 +50,7 @@ Right-click a skill and choose **Pin** to keep its tooltip on screen above the c
 - **General**: members unlocks, quest and diary requirements, levels to show, level-up message, boosts, greying out quest-locked unlocks.
 - **Skills tab tooltip**: on/off, icons only, including the game's XP tooltip, progress bar, icon and text size, background opacity, outline.
 - **Skill guide**: the Next Unlocks tab, highlighting, fading, markings, progress bar, scrolling, dimming hidden sections.
-- **Colors**: next unlock, outline, progress bar and its background, level numbers, boost-reached and quest-locked, used by the tooltip, the side panel and the skill guide.
+- **Colors**: next unlock, outline, progress bar and its background, level numbers, boost-reached and quest-locked, used by the tooltip, the side panel and the skill guide; plus the level-up message's skill/level and unlocks colors and its text shadow.
 
 <br clear="right">
 

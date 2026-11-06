@@ -407,6 +407,42 @@ public interface NextUnlocksConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "colorChatLevel",
+		name = "Message skill and level",
+		description = "The skill and level (e.g. 'Smithing 10:') in the level-up message",
+		position = 38,
+		section = colorSection
+	)
+	default Color colorChatLevel()
+	{
+		return new Color(0xB4B4B4);
+	}
+
+	@ConfigItem(
+		keyName = "colorChatUnlocks",
+		name = "Message unlocks",
+		description = "The unlocks listed in the level-up message",
+		position = 39,
+		section = colorSection
+	)
+	default Color colorChatUnlocks()
+	{
+		return Color.YELLOW;
+	}
+
+	@ConfigItem(
+		keyName = "chatShadow",
+		name = "Message text shadow",
+		description = "Draw a black shadow under the coloured parts of the level-up message, so light colours stay readable on the opaque chatbox",
+		position = 40,
+		section = colorSection
+	)
+	default boolean chatShadow()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "pinnedSkills",
 		name = "",
 		description = "Skills whose tooltip is pinned above the chatbox, comma separated",
