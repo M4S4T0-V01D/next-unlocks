@@ -615,22 +615,32 @@ public class NextUnlocksPlugin extends Plugin
 			{
 				list += " (+" + (unlocks.size() - MESSAGE_ENTRIES) + " more)";
 			}
-			// chat fonts have no bold; a black shadow makes the text heavier and keeps yellow readable on parchment
-			boolean shadow = config.chatShadow();
-			String message = new ChatMessageBuilder()
-				.append(ChatColorType.NORMAL)
-				.append("New at ")
-				.append(shadow ? "<shad=000000>" : "")
-				.append(config.colorChatLevel(), skill.getName() + " " + level + ":")
-				.append(" ")
-				.append(config.colorChatUnlocks(), list)
-				.append(shadow ? "</shad>" : "")
-				.build();
-			chatMessageManager.queue(QueuedMessage.builder()
-				.type(ChatMessageType.GAMEMESSAGE)
-				.runeLiteFormattedMessage(message)
-				.build());
+			sendChat("New at ", skill.getName() + " " + level + ":", list);
 		}
+	}
+
+	/** A game message: a plain prefix, then the skill and level and the unlocks in their colors. */
+	private void sendChat(String prefix, String label, String text)
+	{
+		String colored = new ChatMessageBuilder()
+			.append(config.colorChatLevel(), label)
+			.append(" ")
+			.append(config.colorChatUnlocks(), text)
+			.build();
+		// chat fonts have no bold; a black shadow makes the text heavier and keeps yellow readable on parchment.
+		// The builder escapes tags in appended text, so the shadow goes around what it built.
+		if (config.chatShadow())
+		{
+			colored = "<shad=000000>" + colored + "</shad>";
+		}
+		String message = new ChatMessageBuilder()
+			.append(ChatColorType.NORMAL)
+			.append(prefix)
+			.build() + colored;
+		chatMessageManager.queue(QueuedMessage.builder()
+			.type(ChatMessageType.GAMEMESSAGE)
+			.runeLiteFormattedMessage(message)
+			.build());
 	}
 
 	/** Switches to the game's skill guide unlocks once the cache is loaded. Client thread. */
@@ -745,23 +755,10 @@ public class NextUnlocksPlugin extends Plugin
 		{
 			return;
 		}
-		boolean shadow = config.chatShadow();
 		for (Goal goal : reached)
 		{
 			String label = goal.getSkill().getName() + " " + goal.getLevel() + ":";
-			String message = new ChatMessageBuilder()
-				.append(ChatColorType.NORMAL)
-				.append("Goal reached! ")
-				.append(shadow ? "<shad=000000>" : "")
-				.append(config.colorChatLevel(), label)
-				.append(" ")
-				.append(config.colorChatUnlocks(), goal.getText())
-				.append(shadow ? "</shad>" : "")
-				.build();
-			chatMessageManager.queue(QueuedMessage.builder()
-				.type(ChatMessageType.GAMEMESSAGE)
-				.runeLiteFormattedMessage(message)
-				.build());
+			sendChat("Goal reached! ", label, goal.getText());
 			notifier.notify(config.goalNotification(), "Goal reached! " + label + " " + goal.getText());
 		}
 		synchronized (this)
