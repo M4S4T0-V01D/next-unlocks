@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.List;
+import java.util.function.IntConsumer;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.client.ui.overlay.components.BackgroundComponent;
@@ -30,11 +32,21 @@ class TooltipBox implements LayoutableRenderableEntity
 	@Setter
 	private int minHeight;
 
-	TooltipBox(PanelComponent panel, Color background, Color outline)
+	/** Rewrite the xp numbers and progress for new xp. */
+	private final List<IntConsumer> xpUpdates;
+
+	TooltipBox(PanelComponent panel, Color background, Color outline, List<IntConsumer> xpUpdates)
 	{
 		this.panel = panel;
 		this.background = background;
 		this.outline = outline;
+		this.xpUpdates = xpUpdates;
+	}
+
+	/** Update the xp shown without rebuilding, so the box keeps its size and place. */
+	void updateXp(int xp)
+	{
+		xpUpdates.forEach(u -> u.accept(xp));
 	}
 
 	@Override

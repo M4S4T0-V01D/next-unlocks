@@ -18,9 +18,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -163,6 +165,7 @@ public class NextUnlocksPlugin extends Plugin
 	private final UnlockRepository repository = new UnlockRepository();
 	/** Real levels as last seen; client thread only. Empty while logged out. */
 	private final Map<Skill, Integer> levels = new EnumMap<>(Skill.class);
+	private final Map<Skill, Integer> boosts = new EnumMap<>(Skill.class);
 	private final Map<Skill, TooltipBox> tooltipCache = new ConcurrentHashMap<>();
 
 	/** Skills whose tooltip is pinned above the chatbox, in pin order. Client thread. */
@@ -246,6 +249,7 @@ public class NextUnlocksPlugin extends Plugin
 		pinned.clear();
 		clientToolbar.removeNavigation(navButton);
 		levels.clear();
+		boosts.clear();
 		tooltipCache.clear();
 		unfinishedQuests = Collections.emptySet();
 		questsToDo = Collections.emptySet();
@@ -264,6 +268,7 @@ public class NextUnlocksPlugin extends Plugin
 				loadSkillGuide();
 				// stats arrive again after login; an empty map keeps those from looking like level-ups
 				levels.clear();
+				boosts.clear();
 				tooltipCache.clear();
 				unfinishedQuests = Collections.emptySet();
 				questsToDo = Collections.emptySet();
@@ -291,7 +296,17 @@ public class NextUnlocksPlugin extends Plugin
 
 		int level = event.getLevel();
 		Integer previous = levels.put(skill, level);
-		tooltipCache.remove(skill);
+		Integer previousBoost = boosts.put(skill, event.getBoostedLevel());
+		TooltipBox cached = tooltipCache.get(skill);
+		if (cached != null && Objects.equals(previous, level) && Objects.equals(previousBoost, event.getBoostedLevel()))
+		{
+			// only xp changed: update the numbers in place, rebuilding would make a pinned card jump
+			cached.updateXp(event.getXp());
+		}
+		else
+		{
+			tooltipCache.remove(skill);
+		}
 		if (previous == null || level > previous)
 		{
 			// also on login, for goals reached elsewhere
@@ -410,26 +425,34 @@ public class NextUnlocksPlugin extends Plugin
 
 		PanelComponent tooltip = new PanelComponent();
 		List<LayoutableRenderableEntity> lines = tooltip.getChildren();
+		List<IntConsumer> updates = new ArrayList<>();
 		if (config.tooltipXp())
 		{
 			// the lines of the game's own tooltip, which onBeforeRender hides
-			lines.add(line(font, skill.getName() + " XP:", number.format(xp)));
+			LineComponent current = line(font, skill.getName() + " XP:", number.format(xp));
+			lines.add(current);
+			updates.add(x -> current.setRight(number.format(x)));
 			if (level < Experience.MAX_REAL_LEVEL)
 			{
 				int nextXp = Experience.getXpForLevel(level + 1);
 				lines.add(line(font, "Next level at:", number.format(nextXp)));
-				lines.add(line(font, "Remaining XP:", number.format(Math.max(0, nextXp - xp))));
+				LineComponent remaining = line(font, "Remaining XP:", number.format(Math.max(0, nextXp - xp)));
+				lines.add(remaining);
+				updates.add(x -> remaining.setRight(number.format(Math.max(0, nextXp - x))));
 			}
 		}
 		if (!iconsOnly)
 		{
-			lines.add(LineComponent.builder()
+			LineComponent nextUnlock = LineComponent.builder()
 				.left("Next unlock: " + nextLevel)
 				.leftColor(palette.getNext())
 				.leftFont(font)
 				.right(number.format(xpToGo) + " xp")
 				.rightFont(font)
-				.build());
+				.build();
+			lines.add(nextUnlock);
+			int nextUnlockXp = Experience.getXpForLevel(nextLevel);
+			updates.add(x -> nextUnlock.setRight(number.format(Math.max(0, nextUnlockXp - x)) + " xp"));
 		}
 		if (config.tooltipProgress())
 		{
@@ -440,6 +463,7 @@ public class NextUnlocksPlugin extends Plugin
 			progress.setForegroundColor(palette.getProgress());
 			progress.setBackgroundColor(palette.getProgressBackground());
 			lines.add(progress);
+			updates.add(progress::setValue);
 		}
 		int iconsAt = lines.size();
 
@@ -496,7 +520,7 @@ public class NextUnlocksPlugin extends Plugin
 
 		Color base = runeLiteConfig.overlayBackgroundColor();
 		Color background = new Color(base.getRed(), base.getGreen(), base.getBlue(), 255 * config.tooltipOpacity() / 100);
-		TooltipBox box = new TooltipBox(tooltip, background, config.tooltipOutline() ? palette.getOutline() : null);
+		TooltipBox box = new TooltipBox(tooltip, background, config.tooltipOutline() ? palette.getOutline() : null, updates);
 		if (complete)
 		{
 			tooltipCache.put(skill, box);
