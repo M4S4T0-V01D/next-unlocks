@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import lombok.Getter;
 import lombok.Setter;
 import net.runelite.client.ui.overlay.components.BackgroundComponent;
 import net.runelite.client.ui.overlay.components.LayoutableRenderableEntity;
@@ -22,7 +23,8 @@ class TooltipBox implements LayoutableRenderableEntity
 	/** Null for none. */
 	private final Color outline;
 	private Point location = new Point();
-	/** Panel size from the last render; the panel lays out from its previous frame too. */
+	/** Panel size from the last render, before stretching; the panel lays out from its previous frame too. */
+	@Getter
 	private Dimension last;
 	/** Height to stretch to when the content is shorter; 0 for the content's own height. */
 	@Setter

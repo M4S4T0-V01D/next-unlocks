@@ -88,8 +88,11 @@ class PinnedOverlay extends Overlay
 			Dimension rendered = tooltip.render(graphics);
 			if (tooltip instanceof TooltipBox)
 			{
+				TooltipBox box = (TooltipBox) tooltip;
 				// the same box is the hover tooltip too
-				((TooltipBox) tooltip).setMinHeight(0);
+				box.setMinHeight(0);
+				// keep up with late changes, like item icons finishing loading
+				sizes.put(skill, box.getLast());
 			}
 			drawn.put(skill, new Rectangle(location, rendered));
 			x += rendered.width + GAP;
@@ -137,6 +140,8 @@ class PinnedOverlay extends Overlay
 			g.setFont(graphics.getFont());
 			g.setRenderingHints(graphics.getRenderingHints());
 			tooltip.setPreferredLocation(new Point());
+			// a new panel lays out from its previous frame, so the first pass is off; the second has settled
+			tooltip.render(g);
 			size = tooltip.render(g);
 			g.dispose();
 			measured.put(skill, tooltip);
