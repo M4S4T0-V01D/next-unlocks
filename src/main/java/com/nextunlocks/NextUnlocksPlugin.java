@@ -91,6 +91,8 @@ public class NextUnlocksPlugin extends Plugin
 	private static final String PIN = "Pin";
 	private static final String UNPIN = "Unpin";
 	private static final int MESSAGE_ENTRIES = 3;
+	private static final Color CHAT_LEVEL = new Color(0xB4B4B4);
+	private static final Color CHAT_UNLOCKS = Color.YELLOW;
 	/** Panel refresh interval for xp-only changes, in game ticks. */
 	private static final int PANEL_REFRESH_TICKS = 5;
 	/** How often quest states are checked again, in game ticks. */
@@ -577,11 +579,15 @@ public class NextUnlocksPlugin extends Plugin
 			{
 				list += " (+" + (unlocks.size() - MESSAGE_ENTRIES) + " more)";
 			}
+			// chat fonts have no bold; a black shadow makes the text heavier and keeps yellow readable on parchment
 			String message = new ChatMessageBuilder()
-				.append(ChatColorType.HIGHLIGHT)
-				.append("New at " + skill.getName() + " " + level + ": ")
 				.append(ChatColorType.NORMAL)
-				.append(list)
+				.append("New at ")
+				.append("<shad=000000>")
+				.append(CHAT_LEVEL, skill.getName() + " " + level + ":")
+				.append(" ")
+				.append(CHAT_UNLOCKS, list)
+				.append("</shad>")
 				.build();
 			chatMessageManager.queue(QueuedMessage.builder()
 				.type(ChatMessageType.GAMEMESSAGE)

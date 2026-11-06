@@ -38,7 +38,7 @@ Right-click a skill and choose **Pin** to keep its tooltip on screen above the c
 <br clear="right">
 
 ### Also
-- **Level-up message**: a chat message listing what the level you just reached unlocks.
+- **Level-up message**: a chat message listing what the level you just reached unlocks, with the skill and level in grey and the unlocks in yellow (e.g. **Smithing 10:** Bronze battleaxes; Bronze keel parts).
 - **Boosts**: unlocks your boosted level reaches count as reached for things the game lets you do boosted (skilling methods, spells, shortcuts, quests, diaries), but not equipment or prayers.
 - **Quest-locked unlocks**: unlocks that need a quest you haven't finished are greyed out.
 - **Filters**: members content (always, never, or match the world), quest and diary requirements, how many levels to list.
