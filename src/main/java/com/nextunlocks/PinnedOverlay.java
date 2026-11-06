@@ -57,20 +57,40 @@ class PinnedOverlay extends Overlay
 			return null;
 		}
 
+		// every box as tall as the tallest, so text-only ones line up with ones holding icons
+		Map<Skill, LayoutableRenderableEntity> tooltips = new EnumMap<>(Skill.class);
+		int height = 0;
+		for (Skill skill : plugin.getPinned())
+		{
+			LayoutableRenderableEntity tooltip = plugin.tooltip(skill);
+			if (tooltip != null)
+			{
+				tooltips.put(skill, tooltip);
+				height = Math.max(height, size(graphics, skill, tooltip).height);
+			}
+		}
+
 		int x = chat.x;
 		int bottom = chat.y - GAP;
 		for (Skill skill : plugin.getPinned())
 		{
-			LayoutableRenderableEntity tooltip = plugin.tooltip(skill);
+			LayoutableRenderableEntity tooltip = tooltips.get(skill);
 			if (tooltip == null)
 			{
 				continue;
 			}
-			Dimension size = size(graphics, skill, tooltip);
-			Point location = new Point(x, bottom - size.height);
+			Point location = new Point(x, bottom - height);
 			tooltip.setPreferredLocation(location);
+			if (tooltip instanceof TooltipBox)
+			{
+				((TooltipBox) tooltip).setMinHeight(height);
+			}
 			Dimension rendered = tooltip.render(graphics);
-			sizes.put(skill, rendered);
+			if (tooltip instanceof TooltipBox)
+			{
+				// the same box is the hover tooltip too
+				((TooltipBox) tooltip).setMinHeight(0);
+			}
 			drawn.put(skill, new Rectangle(location, rendered));
 			x += rendered.width + GAP;
 		}
