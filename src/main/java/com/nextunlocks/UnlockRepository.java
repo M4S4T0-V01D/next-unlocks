@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -281,6 +282,32 @@ public class UnlockRepository
 			}
 		}
 		return quests;
+	}
+
+	/** Skill levels each achievement diary needs, highest first, from the bundled wiki data. */
+	public Map<String, Map<Skill, Integer>> diaries()
+	{
+		Map<String, Map<Skill, Integer>> needs = new TreeMap<>();
+		for (Map.Entry<Skill, List<Unlock>> e : wiki.entrySet())
+		{
+			for (Unlock u : e.getValue())
+			{
+				if (u.getType() == Unlock.Type.DIARY && u.getWiki() != null)
+				{
+					needs.computeIfAbsent(u.getWiki(), t -> new EnumMap<>(Skill.class)).merge(e.getKey(), u.getLevel(), Math::max);
+				}
+			}
+		}
+		Map<String, Map<Skill, Integer>> sorted = new TreeMap<>();
+		needs.forEach((title, skills) ->
+		{
+			Map<Skill, Integer> ordered = new LinkedHashMap<>();
+			skills.entrySet().stream()
+				.sorted(Map.Entry.<Skill, Integer>comparingByValue().reversed())
+				.forEach(s -> ordered.put(s.getKey(), s.getValue()));
+			sorted.put(title, ordered);
+		});
+		return sorted;
 	}
 
 	/** Wiki titles of the quests that quest entries are for. */

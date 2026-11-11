@@ -1,0 +1,2695 @@
+{
+"source": "https://oldschool.runescape.wiki (CC BY-NC-SA 3.0)",
+"quests": [
+{
+"name": "A Kingdom Divided",
+"wiki": "A Kingdom Divided",
+"members": true,
+"skills": {
+"AGILITY": 54,
+"THIEVING": 52,
+"WOODCUTTING": 52,
+"HERBLORE": 50,
+"MINING": 42,
+"CRAFTING": 38,
+"MAGIC": 35
+},
+"quests": [
+"The Depths of Despair",
+"The Queen of Thieves",
+"The Ascent of Arceuus",
+"The Forsaken Tower",
+"Tale of the Righteous",
+"Client of Kourend",
+"X Marks the Spot"
+]
+},
+{
+"name": "A Night at the Theatre",
+"wiki": "A Night at the Theatre",
+"members": true,
+"quests": [
+"A Taste of Hope",
+"Darkness of Hallowvale",
+"In Aid of the Myreque",
+"In Search of the Myreque",
+"Nature Spirit",
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "A Porcine of Interest",
+"wiki": "A Porcine of Interest",
+"members": true
+},
+{
+"name": "A Ruff Situation",
+"wiki": "A Ruff Situation",
+"members": true,
+"skills": {
+"CRAFTING": 15
+}
+},
+{
+"name": "A Soul's Bane",
+"wiki": "A Soul's Bane",
+"members": true
+},
+{
+"name": "A Tail of Two Cats",
+"wiki": "A Tail of Two Cats",
+"members": true,
+"quests": [
+"Icthlarin's Little Helper",
+"Gertrude's Cat"
+]
+},
+{
+"name": "A Taste of Hope",
+"wiki": "A Taste of Hope",
+"members": true,
+"skills": {
+"CRAFTING": 48,
+"AGILITY": 45,
+"ATTACK": 40,
+"HERBLORE": 40,
+"SLAYER": 38
+},
+"quests": [
+"Darkness of Hallowvale",
+"In Aid of the Myreque",
+"In Search of the Myreque",
+"Nature Spirit",
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "Alfred Grimhand's Barcrawl",
+"wiki": "Alfred Grimhand's Barcrawl",
+"members": true
+},
+{
+"name": "Animal Magnetism",
+"wiki": "Animal Magnetism",
+"members": true,
+"skills": {
+"SLAYER": 18,
+"CRAFTING": 19,
+"RANGED": 30,
+"WOODCUTTING": 35
+},
+"quests": [
+"The Restless Ghost",
+"Ernest the Chicken",
+"Priest in Peril"
+]
+},
+{
+"name": "Another Slice of H.A.M.",
+"wiki": "Another Slice of H.A.M.",
+"members": true,
+"skills": {
+"ATTACK": 15,
+"PRAYER": 25
+},
+"quests": [
+"Death to the Dorgeshuun",
+"The Lost Tribe",
+"Goblin Diplomacy",
+"Rune Mysteries",
+"The Giant Dwarf",
+"The Dig Site"
+]
+},
+{
+"name": "At First Light",
+"wiki": "At First Light",
+"members": true,
+"skills": {
+"HUNTER": 46,
+"HERBLORE": 30,
+"CONSTRUCTION": 27
+},
+"quests": [
+"Children of the Sun",
+"Eagles' Peak"
+]
+},
+{
+"name": "Barbarian Training",
+"wiki": "Barbarian Training",
+"members": true,
+"skills": {
+"FISHING": 55,
+"FIREMAKING": 35,
+"STRENGTH": 35,
+"AGILITY": 15,
+"FARMING": 15,
+"CRAFTING": 11,
+"SMITHING": 5,
+"HERBLORE": 4
+},
+"quests": [
+"Tai Bwo Wannai Trio"
+]
+},
+{
+"name": "Bear Your Soul",
+"wiki": "Bear Your Soul",
+"members": true
+},
+{
+"name": "Below Ice Mountain",
+"wiki": "Below Ice Mountain",
+"members": false,
+"questPoints": 16
+},
+{
+"name": "Beneath Cursed Sands",
+"wiki": "Beneath Cursed Sands",
+"members": true,
+"skills": {
+"AGILITY": 62,
+"CRAFTING": 55,
+"FIREMAKING": 55
+},
+"quests": [
+"Contact!",
+"Prince Ali Rescue",
+"Icthlarin's Little Helper",
+"Gertrude's Cat"
+]
+},
+{
+"name": "Between a Rock...",
+"wiki": "Between a Rock...",
+"members": true,
+"skills": {
+"DEFENCE": 30,
+"MINING": 40,
+"SMITHING": 50
+},
+"quests": [
+"Dwarf Cannon",
+"Fishing Contest"
+]
+},
+{
+"name": "Big Chompy Bird Hunting",
+"wiki": "Big Chompy Bird Hunting",
+"members": true,
+"skills": {
+"FLETCHING": 5,
+"COOKING": 30,
+"RANGED": 30
+}
+},
+{
+"name": "Biohazard",
+"wiki": "Biohazard",
+"members": true,
+"quests": [
+"Plague City"
+]
+},
+{
+"name": "Black Knights' Fortress",
+"wiki": "Black Knights' Fortress",
+"members": false,
+"questPoints": 12
+},
+{
+"name": "Bone Voyage",
+"wiki": "Bone Voyage",
+"members": true,
+"quests": [
+"The Dig Site"
+]
+},
+{
+"name": "Burial at Sea",
+"wiki": "Burial at Sea",
+"members": true,
+"skills": {
+"SAILING": 42,
+"SMITHING": 38,
+"CONSTRUCTION": 32
+},
+"quests": [
+"Pandemonium",
+"Cook's Assistant"
+]
+},
+{
+"name": "Cabin Fever",
+"wiki": "Cabin Fever",
+"members": true,
+"skills": {
+"AGILITY": 42,
+"CRAFTING": 45,
+"SMITHING": 50,
+"RANGED": 40
+},
+"quests": [
+"Pirate's Treasure",
+"Rum Deal",
+"Zogre Flesh Eaters",
+"Big Chompy Bird Hunting",
+"Jungle Potion",
+"Druidic Ritual",
+"Priest in Peril"
+]
+},
+{
+"name": "Children of the Sun",
+"wiki": "Children of the Sun",
+"members": true
+},
+{
+"name": "Client of Kourend",
+"wiki": "Client of Kourend",
+"members": true,
+"quests": [
+"X Marks the Spot"
+]
+},
+{
+"name": "Clock Tower",
+"wiki": "Clock Tower",
+"members": true
+},
+{
+"name": "Cold War",
+"wiki": "Cold War",
+"members": true,
+"skills": {
+"HUNTER": 10,
+"AGILITY": 30,
+"CRAFTING": 30,
+"CONSTRUCTION": 34,
+"THIEVING": 15
+}
+},
+{
+"name": "Contact!",
+"wiki": "Contact!",
+"members": true,
+"quests": [
+"Prince Ali Rescue",
+"Icthlarin's Little Helper",
+"Gertrude's Cat"
+]
+},
+{
+"name": "Cook's Assistant",
+"wiki": "Cook's Assistant",
+"members": false
+},
+{
+"name": "Crab Quest",
+"wiki": "Crab Quest",
+"members": true,
+"skills": {
+"SAILING": 40,
+"FISHING": 30
+}
+},
+{
+"name": "Creature of Fenkenstrain",
+"wiki": "Creature of Fenkenstrain",
+"members": true,
+"skills": {
+"CRAFTING": 20,
+"THIEVING": 25
+},
+"quests": [
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "Current Affairs",
+"wiki": "Current Affairs",
+"members": true,
+"skills": {
+"SAILING": 22,
+"FISHING": 10
+},
+"quests": [
+"Pandemonium"
+]
+},
+{
+"name": "Curse of the Empty Lord",
+"wiki": "Curse of the Empty Lord",
+"members": true,
+"skills": {
+"THIEVING": 53,
+"PRAYER": 31
+},
+"quests": [
+"Desert Treasure I",
+"The Restless Ghost"
+]
+},
+{
+"name": "Daddy's Home",
+"wiki": "Daddy's Home",
+"members": true
+},
+{
+"name": "Darkness of Hallowvale",
+"wiki": "Darkness of Hallowvale",
+"members": true,
+"skills": {
+"CONSTRUCTION": 5,
+"MINING": 20,
+"THIEVING": 22,
+"AGILITY": 26,
+"CRAFTING": 32,
+"MAGIC": 33,
+"STRENGTH": 40
+},
+"quests": [
+"In Aid of the Myreque",
+"In Search of the Myreque",
+"Nature Spirit",
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "Death Plateau",
+"wiki": "Death Plateau",
+"members": true
+},
+{
+"name": "Death on the Isle",
+"wiki": "Death on the Isle",
+"members": true,
+"skills": {
+"THIEVING": 34,
+"AGILITY": 32
+},
+"quests": [
+"Children of the Sun"
+]
+},
+{
+"name": "Death to the Dorgeshuun",
+"wiki": "Death to the Dorgeshuun",
+"members": true,
+"skills": {
+"AGILITY": 23,
+"THIEVING": 23
+},
+"quests": [
+"The Lost Tribe",
+"Goblin Diplomacy",
+"Rune Mysteries"
+]
+},
+{
+"name": "Defender of Varrock",
+"wiki": "Defender of Varrock",
+"members": true,
+"skills": {
+"SMITHING": 55,
+"HUNTER": 52
+},
+"quests": [
+"Shield of Arrav",
+"Temple of Ikov",
+"Below Ice Mountain",
+"Family Crest",
+"Garden of Tranquillity",
+"Creature of Fenkenstrain",
+"Priest in Peril",
+"The Restless Ghost",
+"What Lies Below",
+"Rune Mysteries",
+"Romeo & Juliet",
+"Demon Slayer"
+]
+},
+{
+"name": "Demon Slayer",
+"wiki": "Demon Slayer",
+"members": false
+},
+{
+"name": "Desert Treasure I",
+"wiki": "Desert Treasure I",
+"members": true,
+"skills": {
+"THIEVING": 53,
+"MAGIC": 50,
+"FIREMAKING": 50,
+"SLAYER": 10
+},
+"quests": [
+"The Dig Site",
+"Temple of Ikov",
+"The Tourist Trap",
+"Troll Stronghold",
+"Death Plateau",
+"Priest in Peril",
+"Waterfall Quest",
+"Plague City"
+]
+},
+{
+"name": "Desert Treasure II - The Fallen Empire",
+"wiki": "Desert Treasure II - The Fallen Empire",
+"members": true,
+"skills": {
+"FIREMAKING": 75,
+"MAGIC": 75,
+"THIEVING": 70,
+"HERBLORE": 62,
+"RUNECRAFT": 60,
+"CONSTRUCTION": 60
+},
+"quests": [
+"Desert Treasure I",
+"The Dig Site",
+"Temple of Ikov",
+"The Tourist Trap",
+"Troll Stronghold",
+"Death Plateau",
+"Priest in Peril",
+"Waterfall Quest",
+"Secrets of the North",
+"Making Friends with My Arm",
+"My Arm's Big Adventure",
+"Eadgar's Ruse",
+"Druidic Ritual",
+"The Feud",
+"Jungle Potion",
+"Swan Song",
+"One Small Favour",
+"Rune Mysteries",
+"Shilo Village",
+"Garden of Tranquillity",
+"Creature of Fenkenstrain",
+"The Restless Ghost",
+"Cold War",
+"Romeo & Juliet",
+"The General's Shadow",
+"Curse of the Empty Lord",
+"Fight Arena",
+"Devious Minds",
+"Wanted!",
+"Recruitment Drive",
+"Black Knights' Fortress",
+"The Lost Tribe",
+"Goblin Diplomacy",
+"Doric's Quest",
+"Enter the Abyss",
+"Hazeel Cult",
+"Enakhra's Lament",
+"Temple of the Eye",
+"The Garden of Death",
+"Below Ice Mountain",
+"His Faithful Servants"
+]
+},
+{
+"name": "Devious Minds",
+"wiki": "Devious Minds",
+"members": true,
+"skills": {
+"SMITHING": 65,
+"RUNECRAFT": 50,
+"FLETCHING": 50
+},
+"quests": [
+"Wanted!",
+"Recruitment Drive",
+"Black Knights' Fortress",
+"Druidic Ritual",
+"The Lost Tribe",
+"Goblin Diplomacy",
+"Rune Mysteries",
+"Priest in Peril",
+"Enter the Abyss",
+"Troll Stronghold",
+"Death Plateau",
+"Doric's Quest"
+]
+},
+{
+"name": "Doric's Quest",
+"wiki": "Doric's Quest",
+"members": false
+},
+{
+"name": "Dragon Slayer I",
+"wiki": "Dragon Slayer I",
+"members": false,
+"questPoints": 32
+},
+{
+"name": "Dragon Slayer II",
+"wiki": "Dragon Slayer II",
+"members": true,
+"skills": {
+"MAGIC": 75,
+"SMITHING": 70,
+"MINING": 68,
+"CRAFTING": 62,
+"AGILITY": 60,
+"THIEVING": 60,
+"CONSTRUCTION": 50,
+"HITPOINTS": 50
+},
+"questPoints": 200,
+"quests": [
+"Legends' Quest",
+"Family Crest",
+"Heroes' Quest",
+"Shield of Arrav",
+"Lost City",
+"Merlin's Crystal",
+"Dragon Slayer I",
+"Underground Pass",
+"Biohazard",
+"Plague City",
+"Waterfall Quest",
+"Dream Mentor",
+"Lunar Diplomacy",
+"The Fremennik Trials",
+"Rune Mysteries",
+"Shilo Village",
+"Jungle Potion",
+"Eadgar's Ruse",
+"Druidic Ritual",
+"Troll Stronghold",
+"Death Plateau",
+"A Tail of Two Cats",
+"Icthlarin's Little Helper",
+"Gertrude's Cat",
+"Animal Magnetism",
+"Ernest the Chicken",
+"Priest in Peril",
+"The Restless Ghost",
+"Ghosts Ahoy",
+"Bone Voyage",
+"The Dig Site",
+"Client of Kourend",
+"X Marks the Spot",
+"Barbarian Training"
+]
+},
+{
+"name": "Dream Mentor",
+"wiki": "Dream Mentor",
+"members": true,
+"combat": 85,
+"quests": [
+"Lunar Diplomacy",
+"The Fremennik Trials",
+"Lost City",
+"Rune Mysteries",
+"Shilo Village",
+"Jungle Potion",
+"Eadgar's Ruse",
+"Druidic Ritual",
+"Troll Stronghold",
+"Death Plateau"
+]
+},
+{
+"name": "Druidic Ritual",
+"wiki": "Druidic Ritual",
+"members": true
+},
+{
+"name": "Dwarf Cannon",
+"wiki": "Dwarf Cannon",
+"members": true
+},
+{
+"name": "Eadgar's Ruse",
+"wiki": "Eadgar's Ruse",
+"members": true,
+"skills": {
+"HERBLORE": 31
+},
+"quests": [
+"Druidic Ritual",
+"Troll Stronghold",
+"Death Plateau"
+]
+},
+{
+"name": "Eagles' Peak",
+"wiki": "Eagles' Peak",
+"members": true,
+"skills": {
+"HUNTER": 27
+}
+},
+{
+"name": "Elemental Workshop I",
+"wiki": "Elemental Workshop I",
+"members": true,
+"skills": {
+"MINING": 20,
+"SMITHING": 20,
+"CRAFTING": 20
+}
+},
+{
+"name": "Elemental Workshop II",
+"wiki": "Elemental Workshop II",
+"members": true,
+"skills": {
+"MAGIC": 20,
+"SMITHING": 30
+},
+"quests": [
+"Elemental Workshop I"
+]
+},
+{
+"name": "Enakhra's Lament",
+"wiki": "Enakhra's Lament",
+"members": true,
+"skills": {
+"CRAFTING": 50,
+"FIREMAKING": 45,
+"PRAYER": 43,
+"MAGIC": 39
+}
+},
+{
+"name": "Enlightened Journey",
+"wiki": "Enlightened Journey",
+"members": true,
+"skills": {
+"FIREMAKING": 20,
+"FARMING": 30,
+"CRAFTING": 36
+},
+"questPoints": 20
+},
+{
+"name": "Enter the Abyss",
+"wiki": "Enter the Abyss",
+"members": true,
+"quests": [
+"Rune Mysteries"
+]
+},
+{
+"name": "Ernest the Chicken",
+"wiki": "Ernest the Chicken",
+"members": false
+},
+{
+"name": "Ethically Acquired Antiquities",
+"wiki": "Ethically Acquired Antiquities",
+"members": true,
+"skills": {
+"THIEVING": 25
+},
+"quests": [
+"Children of the Sun",
+"Shield of Arrav"
+]
+},
+{
+"name": "Fairytale I - Growing Pains",
+"wiki": "Fairytale I - Growing Pains",
+"members": true,
+"quests": [
+"Lost City",
+"Nature Spirit",
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "Fairytale II - Cure a Queen",
+"wiki": "Fairytale II - Cure a Queen",
+"members": true,
+"skills": {
+"THIEVING": 40,
+"FARMING": 49,
+"HERBLORE": 57
+},
+"quests": [
+"Fairytale I - Growing Pains",
+"Lost City",
+"Nature Spirit",
+"The Restless Ghost",
+"Priest in Peril"
+]
+},
+{
+"name": "Fairytale III - Nexus of Power",
+"wiki": "Fairytale III - Nexus of Power",
+"members": true
+},
+{
+"name": "Fallen From Grace",
+"wiki": "Fallen From Grace",
+"members": true,
+"skills": {
+"SAILING": 62,
+"CRAFTING": 60,
+"RUNECRAFT": 47,
+"MINING": 53
+},
+"quests": [
+"Pandemonium"
+]
+},
+{
+"name": "Family Crest",
+"wiki": "Family Crest",
+"members": true,
+"skills": {
+"MINING": 40,
+"SMITHING": 40,
+"MAGIC": 59,
+"CRAFTING": 40
+}
+},
+{
+"name": "Family Pest",
+"wiki": "Family Pest",
+"members": true,
+"quests": [
+"Family Crest"
+]
+},
+{
+"name": "Fight Arena",
+"wiki": "Fight Arena",
+"members": true
+},
+{
+"name": "Fishing Contest",
+"wiki": "Fishing Contest",
+"members": true,
+"skills": {
+"FISHING": 10
+}
+},
+{
+"name": "Fool's Gold",
+"wiki": "Fool's Gold",
+"members": true,
+"quests": [
+"Beneath Cursed Sands",
+"Contact!",
+"Prince Ali Rescue",
+"Icthlarin's Little Helper",
+"Gertrude's Cat"
+]
+},
+{
+"name": "Forgettable Tale...",
+"wiki": "Forgettable Tale...",
+"members": true,
+"skills": {
+"COOKING": 22,
+"FARMING": 17
+},
+"quests": [
+"The Giant Dwarf",
+"Fishing Contest"
+]
+},
+{
+"name": "Garden of Tranquillity",
+"wiki": "Garden of Tranquillity",
+"members": true,
+"skills": {
+"FARMING": 25
+},
+"quests": [
+"Creature of Fenkenstrain",
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "Gertrude's Cat",
+"wiki": "Gertrude's Cat",
+"members": true
+},
+{
+"name": "Getting Ahead",
+"wiki": "Getting Ahead",
+"members": true,
+"skills": {
+"CRAFTING": 30,
+"CONSTRUCTION": 26
+}
+},
+{
+"name": "Ghosts Ahoy",
+"wiki": "Ghosts Ahoy",
+"members": true,
+"skills": {
+"AGILITY": 25,
+"COOKING": 20
+},
+"quests": [
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "Goblin Diplomacy",
+"wiki": "Goblin Diplomacy",
+"members": false
+},
+{
+"name": "Grim Tales",
+"wiki": "Grim Tales",
+"members": true,
+"skills": {
+"FARMING": 45,
+"HERBLORE": 52,
+"THIEVING": 58,
+"AGILITY": 59,
+"WOODCUTTING": 71
+},
+"quests": [
+"Witch's House"
+]
+},
+{
+"name": "Haunted Mine",
+"wiki": "Haunted Mine",
+"members": true,
+"skills": {
+"CRAFTING": 35
+},
+"quests": [
+"Priest in Peril"
+]
+},
+{
+"name": "Hazeel Cult",
+"wiki": "Hazeel Cult",
+"members": true
+},
+{
+"name": "Heroes' Quest",
+"wiki": "Heroes' Quest",
+"members": true,
+"skills": {
+"COOKING": 53,
+"FISHING": 53,
+"HERBLORE": 25,
+"MINING": 50
+},
+"questPoints": 55,
+"quests": [
+"Shield of Arrav",
+"Lost City",
+"Merlin's Crystal",
+"Dragon Slayer I"
+]
+},
+{
+"name": "His Faithful Servants",
+"wiki": "His Faithful Servants",
+"members": true,
+"quests": [
+"Priest in Peril"
+]
+},
+{
+"name": "Holy Grail",
+"wiki": "Holy Grail",
+"members": true,
+"skills": {
+"ATTACK": 20
+},
+"quests": [
+"Merlin's Crystal"
+]
+},
+{
+"name": "Hopespear's Will",
+"wiki": "Hopespear's Will",
+"members": true,
+"skills": {
+"PRAYER": 50
+},
+"quests": [
+"The Restless Ghost",
+"Desert Treasure I",
+"Fairytale II - Cure a Queen",
+"Land of the Goblins"
+]
+},
+{
+"name": "Horror from the Deep",
+"wiki": "Horror from the Deep",
+"members": true,
+"skills": {
+"AGILITY": 35
+},
+"quests": [
+"Alfred Grimhand's Barcrawl"
+]
+},
+{
+"name": "Icthlarin's Little Helper",
+"wiki": "Icthlarin's Little Helper",
+"members": true,
+"quests": [
+"Gertrude's Cat"
+]
+},
+{
+"name": "Imp Catcher",
+"wiki": "Imp Catcher",
+"members": false
+},
+{
+"name": "In Aid of the Myreque",
+"wiki": "In Aid of the Myreque",
+"members": true,
+"skills": {
+"AGILITY": 25,
+"CRAFTING": 25,
+"MINING": 15,
+"MAGIC": 7
+},
+"quests": [
+"In Search of the Myreque",
+"Nature Spirit",
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "In Search of Knowledge",
+"wiki": "In Search of Knowledge",
+"members": true
+},
+{
+"name": "In Search of the Myreque",
+"wiki": "In Search of the Myreque",
+"members": true,
+"skills": {
+"AGILITY": 25
+},
+"quests": [
+"Nature Spirit",
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "Into the Tombs",
+"wiki": "Into the Tombs",
+"members": true,
+"quests": [
+"Beneath Cursed Sands",
+"Contact!",
+"Prince Ali Rescue",
+"Icthlarin's Little Helper",
+"Gertrude's Cat"
+]
+},
+{
+"name": "Jungle Potion",
+"wiki": "Jungle Potion",
+"members": true,
+"skills": {
+"HERBLORE": 3
+},
+"quests": [
+"Druidic Ritual"
+]
+},
+{
+"name": "King's Ransom",
+"wiki": "King's Ransom",
+"members": true,
+"skills": {
+"MAGIC": 45,
+"DEFENCE": 65
+},
+"quests": [
+"Black Knights' Fortress",
+"Holy Grail",
+"Merlin's Crystal",
+"Murder Mystery",
+"One Small Favour",
+"Rune Mysteries",
+"Shilo Village",
+"Jungle Potion",
+"Druidic Ritual"
+]
+},
+{
+"name": "Lair of Tarn Razorlor",
+"wiki": "Lair of Tarn Razorlor",
+"members": true,
+"skills": {
+"SLAYER": 40
+},
+"quests": [
+"Haunted Mine"
+]
+},
+{
+"name": "Land of the Goblins",
+"wiki": "Land of the Goblins",
+"members": true,
+"skills": {
+"AGILITY": 38,
+"FISHING": 40,
+"THIEVING": 45,
+"HERBLORE": 48
+},
+"quests": [
+"Another Slice of H.A.M.",
+"Death to the Dorgeshuun",
+"The Lost Tribe",
+"Goblin Diplomacy",
+"Rune Mysteries",
+"The Giant Dwarf",
+"The Dig Site",
+"Fishing Contest"
+]
+},
+{
+"name": "Learning the Ropes",
+"wiki": "Learning the Ropes",
+"members": false
+},
+{
+"name": "Legends' Quest",
+"wiki": "Legends' Quest",
+"members": true,
+"skills": {
+"AGILITY": 50,
+"CRAFTING": 50,
+"HERBLORE": 45,
+"MAGIC": 56,
+"MINING": 52,
+"PRAYER": 42,
+"SMITHING": 50,
+"STRENGTH": 50,
+"THIEVING": 50,
+"WOODCUTTING": 50
+},
+"questPoints": 107,
+"quests": [
+"Family Crest",
+"Heroes' Quest",
+"Shield of Arrav",
+"Lost City",
+"Merlin's Crystal",
+"Dragon Slayer I",
+"Shilo Village",
+"Jungle Potion",
+"Druidic Ritual",
+"Underground Pass",
+"Biohazard",
+"Plague City",
+"Waterfall Quest"
+]
+},
+{
+"name": "Lost City",
+"wiki": "Lost City",
+"members": true,
+"skills": {
+"CRAFTING": 31,
+"WOODCUTTING": 36
+}
+},
+{
+"name": "Lunar Diplomacy",
+"wiki": "Lunar Diplomacy",
+"members": true,
+"skills": {
+"HERBLORE": 5,
+"CRAFTING": 61,
+"DEFENCE": 40,
+"FIREMAKING": 49,
+"MAGIC": 65,
+"MINING": 60,
+"WOODCUTTING": 55
+},
+"quests": [
+"The Fremennik Trials",
+"Lost City",
+"Rune Mysteries",
+"Shilo Village",
+"Jungle Potion",
+"Druidic Ritual"
+]
+},
+{
+"name": "Mage Arena I",
+"wiki": "Mage Arena I",
+"members": true,
+"skills": {
+"MAGIC": 60
+}
+},
+{
+"name": "Mage Arena II",
+"wiki": "Mage Arena II",
+"members": true,
+"skills": {
+"MAGIC": 75
+},
+"quests": [
+"Mage Arena I"
+]
+},
+{
+"name": "Making Friends with My Arm",
+"wiki": "Making Friends with My Arm",
+"members": true,
+"skills": {
+"FIREMAKING": 66,
+"MINING": 72,
+"CONSTRUCTION": 35,
+"AGILITY": 68
+},
+"quests": [
+"My Arm's Big Adventure",
+"Eadgar's Ruse",
+"Druidic Ritual",
+"Troll Stronghold",
+"Death Plateau",
+"The Feud",
+"Jungle Potion",
+"Swan Song",
+"One Small Favour",
+"Rune Mysteries",
+"Shilo Village",
+"Garden of Tranquillity",
+"Creature of Fenkenstrain",
+"Priest in Peril",
+"The Restless Ghost",
+"Cold War",
+"Romeo & Juliet"
+]
+},
+{
+"name": "Making History",
+"wiki": "Making History",
+"members": true,
+"quests": [
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "Meat and Greet",
+"wiki": "Meat and Greet",
+"members": true,
+"quests": [
+"Children of the Sun"
+]
+},
+{
+"name": "Merlin's Crystal",
+"wiki": "Merlin's Crystal",
+"members": true
+},
+{
+"name": "Misthalin Mystery",
+"wiki": "Misthalin Mystery",
+"members": false
+},
+{
+"name": "Monk's Friend",
+"wiki": "Monk's Friend",
+"members": true
+},
+{
+"name": "Monkey Madness I",
+"wiki": "Monkey Madness I",
+"members": true,
+"quests": [
+"The Grand Tree",
+"Tree Gnome Village"
+]
+},
+{
+"name": "Monkey Madness II",
+"wiki": "Monkey Madness II",
+"members": true,
+"skills": {
+"SLAYER": 69,
+"CRAFTING": 70,
+"HUNTER": 60,
+"AGILITY": 55,
+"THIEVING": 55,
+"FIREMAKING": 60
+},
+"quests": [
+"Enlightened Journey",
+"The Eyes of Glouphrie",
+"Monkey Madness I",
+"The Grand Tree",
+"Tree Gnome Village",
+"Troll Stronghold",
+"Death Plateau",
+"Watchtower"
+]
+},
+{
+"name": "Mountain Daughter",
+"wiki": "Mountain Daughter",
+"members": true,
+"skills": {
+"AGILITY": 20
+}
+},
+{
+"name": "Mourning's End Part I",
+"wiki": "Mourning's End Part I",
+"members": true,
+"skills": {
+"RANGED": 60,
+"THIEVING": 50
+},
+"quests": [
+"Roving Elves",
+"Regicide",
+"Underground Pass",
+"Biohazard",
+"Plague City",
+"Waterfall Quest",
+"Big Chompy Bird Hunting",
+"Sheep Herder"
+]
+},
+{
+"name": "Mourning's End Part II",
+"wiki": "Mourning's End Part II",
+"members": true,
+"quests": [
+"Mourning's End Part I",
+"Roving Elves",
+"Regicide",
+"Underground Pass",
+"Biohazard",
+"Plague City",
+"Waterfall Quest",
+"Big Chompy Bird Hunting",
+"Sheep Herder"
+]
+},
+{
+"name": "Mudfoot's Big Adventure",
+"wiki": "Mudfoot's Big Adventure",
+"members": false
+},
+{
+"name": "Murder Mystery",
+"wiki": "Murder Mystery",
+"members": true
+},
+{
+"name": "My Arm's Big Adventure",
+"wiki": "My Arm's Big Adventure",
+"members": true,
+"skills": {
+"FARMING": 29,
+"WOODCUTTING": 10
+},
+"quests": [
+"Eadgar's Ruse",
+"Druidic Ritual",
+"Troll Stronghold",
+"Death Plateau",
+"The Feud",
+"Jungle Potion"
+]
+},
+{
+"name": "Nature Spirit",
+"wiki": "Nature Spirit",
+"members": true,
+"quests": [
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "Observatory Quest",
+"wiki": "Observatory Quest",
+"members": true
+},
+{
+"name": "Olaf's Quest",
+"wiki": "Olaf's Quest",
+"members": true,
+"skills": {
+"FIREMAKING": 40,
+"WOODCUTTING": 50
+},
+"quests": [
+"The Fremennik Trials"
+]
+},
+{
+"name": "One Small Favour",
+"wiki": "One Small Favour",
+"members": true,
+"skills": {
+"AGILITY": 36,
+"CRAFTING": 25,
+"HERBLORE": 18,
+"SMITHING": 30
+},
+"quests": [
+"Rune Mysteries",
+"Shilo Village",
+"Jungle Potion",
+"Druidic Ritual"
+]
+},
+{
+"name": "Pandemonium",
+"wiki": "Pandemonium",
+"members": true
+},
+{
+"name": "Perilous Moons",
+"wiki": "Perilous Moons",
+"members": true,
+"skills": {
+"SLAYER": 48,
+"HUNTER": 20,
+"FISHING": 20,
+"RUNECRAFT": 20,
+"CONSTRUCTION": 10
+},
+"quests": [
+"Twilight's Promise",
+"Children of the Sun"
+]
+},
+{
+"name": "Pirate's Treasure",
+"wiki": "Pirate's Treasure",
+"members": false
+},
+{
+"name": "Plague City",
+"wiki": "Plague City",
+"members": true
+},
+{
+"name": "Priest in Peril",
+"wiki": "Priest in Peril",
+"members": true
+},
+{
+"name": "Prince Ali Rescue",
+"wiki": "Prince Ali Rescue",
+"members": false
+},
+{
+"name": "Prying Times",
+"wiki": "Prying Times",
+"members": true,
+"skills": {
+"SMITHING": 30,
+"SAILING": 12
+},
+"quests": [
+"Pandemonium",
+"The Knight's Sword"
+]
+},
+{
+"name": "Rag and Bone Man I",
+"wiki": "Rag and Bone Man I",
+"members": true
+},
+{
+"name": "Rag and Bone Man II",
+"wiki": "Rag and Bone Man II",
+"members": true,
+"skills": {
+"SLAYER": 40,
+"DEFENCE": 20
+},
+"quests": [
+"Rag and Bone Man I",
+"Skippy and the Mogres",
+"Creature of Fenkenstrain"
+]
+},
+{
+"name": "Ratcatchers",
+"wiki": "Ratcatchers",
+"members": true,
+"quests": [
+"Icthlarin's Little Helper",
+"Gertrude's Cat",
+"The Giant Dwarf"
+]
+},
+{
+"name": "Recipe for Disaster",
+"wiki": "Recipe for Disaster",
+"members": true,
+"skills": {
+"COOKING": 70,
+"AGILITY": 48,
+"MINING": 50,
+"FISHING": 53,
+"THIEVING": 53,
+"HERBLORE": 25,
+"MAGIC": 59,
+"SMITHING": 40,
+"FIREMAKING": 50,
+"RANGED": 40,
+"CRAFTING": 40,
+"FLETCHING": 10,
+"WOODCUTTING": 36
+},
+"questPoints": 175,
+"quests": [
+"Cook's Assistant",
+"Fishing Contest",
+"Goblin Diplomacy",
+"Big Chompy Bird Hunting",
+"Murder Mystery",
+"Nature Spirit",
+"Priest in Peril",
+"The Restless Ghost",
+"Witch's House",
+"Gertrude's Cat",
+"Shadow of the Storm",
+"Demon Slayer",
+"The Golem",
+"Legends' Quest",
+"Family Crest",
+"Heroes' Quest",
+"Shield of Arrav",
+"Lost City",
+"Merlin's Crystal",
+"Dragon Slayer I",
+"Shilo Village",
+"Jungle Potion",
+"Druidic Ritual",
+"Underground Pass",
+"Biohazard",
+"Plague City",
+"Monkey Madness I",
+"The Grand Tree",
+"Tree Gnome Village",
+"Desert Treasure I",
+"The Dig Site",
+"The Tourist Trap",
+"Temple of Ikov",
+"Waterfall Quest",
+"Troll Stronghold",
+"Death Plateau",
+"Horror from the Deep",
+"Alfred Grimhand's Barcrawl"
+]
+},
+{
+"name": "Recruitment Drive",
+"wiki": "Recruitment Drive",
+"members": true,
+"quests": [
+"Black Knights' Fortress",
+"Druidic Ritual"
+]
+},
+{
+"name": "Regicide",
+"wiki": "Regicide",
+"members": true,
+"skills": {
+"CRAFTING": 10,
+"AGILITY": 56
+},
+"quests": [
+"Underground Pass",
+"Biohazard",
+"Plague City"
+]
+},
+{
+"name": "Romeo & Juliet",
+"wiki": "Romeo & Juliet",
+"members": false
+},
+{
+"name": "Roving Elves",
+"wiki": "Roving Elves",
+"members": true,
+"skills": {
+"AGILITY": 56
+},
+"quests": [
+"Regicide",
+"Underground Pass",
+"Biohazard",
+"Plague City",
+"Waterfall Quest"
+]
+},
+{
+"name": "Royal Trouble",
+"wiki": "Royal Trouble",
+"members": true,
+"skills": {
+"AGILITY": 40,
+"SLAYER": 40
+},
+"quests": [
+"Throne of Miscellania",
+"Heroes' Quest",
+"Shield of Arrav",
+"Lost City",
+"Merlin's Crystal",
+"Dragon Slayer I",
+"The Fremennik Trials"
+]
+},
+{
+"name": "Rum Deal",
+"wiki": "Rum Deal",
+"members": true,
+"skills": {
+"CRAFTING": 42,
+"FARMING": 40,
+"PRAYER": 47,
+"SLAYER": 42,
+"FISHING": 50
+},
+"quests": [
+"Zogre Flesh Eaters",
+"Big Chompy Bird Hunting",
+"Jungle Potion",
+"Druidic Ritual",
+"Priest in Peril"
+]
+},
+{
+"name": "Rune Mysteries",
+"wiki": "Rune Mysteries",
+"members": false
+},
+{
+"name": "Scorpion Catcher",
+"wiki": "Scorpion Catcher",
+"members": true,
+"skills": {
+"PRAYER": 31
+},
+"quests": [
+"Alfred Grimhand's Barcrawl"
+]
+},
+{
+"name": "Scrambled!",
+"wiki": "Scrambled!",
+"members": true,
+"skills": {
+"CONSTRUCTION": 38,
+"COOKING": 36,
+"SMITHING": 35
+},
+"quests": [
+"Children of the Sun"
+]
+},
+{
+"name": "Sea Slug",
+"wiki": "Sea Slug",
+"members": true,
+"skills": {
+"FIREMAKING": 30
+}
+},
+{
+"name": "Secrets of the North",
+"wiki": "Secrets of the North",
+"members": true,
+"skills": {
+"AGILITY": 69,
+"THIEVING": 64,
+"HUNTER": 56
+},
+"quests": [
+"Making Friends with My Arm",
+"My Arm's Big Adventure",
+"Eadgar's Ruse",
+"Druidic Ritual",
+"Troll Stronghold",
+"Death Plateau",
+"The Feud",
+"Jungle Potion",
+"Swan Song",
+"One Small Favour",
+"Rune Mysteries",
+"Shilo Village",
+"Garden of Tranquillity",
+"Creature of Fenkenstrain",
+"Priest in Peril",
+"The Restless Ghost",
+"Cold War",
+"Romeo & Juliet",
+"The General's Shadow",
+"Curse of the Empty Lord",
+"Desert Treasure I",
+"Fight Arena",
+"Devious Minds",
+"Wanted!",
+"Recruitment Drive",
+"Black Knights' Fortress",
+"The Lost Tribe",
+"Goblin Diplomacy",
+"Doric's Quest",
+"Enter the Abyss",
+"Hazeel Cult"
+]
+},
+{
+"name": "Shades of Mort'ton",
+"wiki": "Shades of Mort'ton",
+"members": true,
+"skills": {
+"CRAFTING": 20,
+"HERBLORE": 15,
+"FIREMAKING": 5
+},
+"quests": [
+"Priest in Peril"
+]
+},
+{
+"name": "Shadow of the Storm",
+"wiki": "Shadow of the Storm",
+"members": true,
+"skills": {
+"CRAFTING": 30
+},
+"quests": [
+"The Golem",
+"Demon Slayer"
+]
+},
+{
+"name": "Shadows of Custodia",
+"wiki": "Shadows of Custodia",
+"members": true,
+"skills": {
+"SLAYER": 54,
+"FISHING": 45,
+"CONSTRUCTION": 41,
+"HUNTER": 36
+},
+"quests": [
+"Children of the Sun"
+]
+},
+{
+"name": "Sheep Herder",
+"wiki": "Sheep Herder",
+"members": true
+},
+{
+"name": "Sheep Shearer",
+"wiki": "Sheep Shearer",
+"members": false
+},
+{
+"name": "Shield of Arrav",
+"wiki": "Shield of Arrav",
+"members": false
+},
+{
+"name": "Shilo Village",
+"wiki": "Shilo Village",
+"members": true,
+"skills": {
+"CRAFTING": 20,
+"AGILITY": 32
+},
+"quests": [
+"Jungle Potion",
+"Druidic Ritual"
+]
+},
+{
+"name": "Sins of the Father",
+"wiki": "Sins of the Father",
+"members": true,
+"skills": {
+"WOODCUTTING": 62,
+"FLETCHING": 60,
+"CRAFTING": 56,
+"AGILITY": 52,
+"ATTACK": 50,
+"SLAYER": 50,
+"MAGIC": 49
+},
+"quests": [
+"Vampyre Slayer",
+"A Taste of Hope",
+"Darkness of Hallowvale",
+"In Aid of the Myreque",
+"In Search of the Myreque",
+"Nature Spirit",
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "Skippy and the Mogres",
+"wiki": "Skippy and the Mogres",
+"members": true,
+"skills": {
+"COOKING": 20
+}
+},
+{
+"name": "Sleeping Giants",
+"wiki": "Sleeping Giants",
+"members": true,
+"skills": {
+"SMITHING": 15
+}
+},
+{
+"name": "Song of the Elves",
+"wiki": "Song of the Elves",
+"members": true,
+"skills": {
+"AGILITY": 70,
+"CONSTRUCTION": 70,
+"FARMING": 70,
+"HERBLORE": 70,
+"HUNTER": 70,
+"MINING": 70,
+"SMITHING": 70,
+"WOODCUTTING": 70
+},
+"quests": [
+"Mourning's End Part II",
+"Mourning's End Part I",
+"Big Chompy Bird Hunting",
+"Sheep Herder",
+"Roving Elves",
+"Waterfall Quest",
+"Regicide",
+"Underground Pass",
+"Biohazard",
+"Plague City",
+"Making History",
+"Priest in Peril",
+"The Restless Ghost",
+"Druidic Ritual"
+]
+},
+{
+"name": "Spirits of the Elid",
+"wiki": "Spirits of the Elid",
+"members": true,
+"skills": {
+"MAGIC": 33,
+"RANGED": 37,
+"MINING": 37,
+"THIEVING": 37
+}
+},
+{
+"name": "Swan Song",
+"wiki": "Swan Song",
+"members": true,
+"skills": {
+"MAGIC": 66,
+"COOKING": 62,
+"FISHING": 62,
+"SMITHING": 45,
+"FIREMAKING": 42,
+"CRAFTING": 40
+},
+"questPoints": 100,
+"quests": [
+"One Small Favour",
+"Rune Mysteries",
+"Shilo Village",
+"Jungle Potion",
+"Druidic Ritual",
+"Garden of Tranquillity",
+"Creature of Fenkenstrain",
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "Tai Bwo Wannai Trio",
+"wiki": "Tai Bwo Wannai Trio",
+"members": true,
+"skills": {
+"AGILITY": 15,
+"COOKING": 30,
+"FISHING": 5
+},
+"quests": [
+"Jungle Potion",
+"Druidic Ritual"
+]
+},
+{
+"name": "Tale of the Righteous",
+"wiki": "Tale of the Righteous",
+"members": true,
+"skills": {
+"STRENGTH": 16,
+"MINING": 10
+},
+"quests": [
+"Client of Kourend",
+"X Marks the Spot"
+]
+},
+{
+"name": "Tears of Guthix",
+"wiki": "Tears of Guthix",
+"members": true,
+"skills": {
+"FIREMAKING": 49,
+"CRAFTING": 20,
+"MINING": 20
+},
+"questPoints": 43
+},
+{
+"name": "Temple of Ikov",
+"wiki": "Temple of Ikov",
+"members": true,
+"skills": {
+"THIEVING": 42,
+"RANGED": 40
+}
+},
+{
+"name": "Temple of the Eye",
+"wiki": "Temple of the Eye",
+"members": true,
+"skills": {
+"RUNECRAFT": 10
+},
+"quests": [
+"Enter the Abyss",
+"Rune Mysteries"
+]
+},
+{
+"name": "The Ascent of Arceuus",
+"wiki": "The Ascent of Arceuus",
+"members": true,
+"skills": {
+"HUNTER": 12
+},
+"quests": [
+"Client of Kourend",
+"X Marks the Spot"
+]
+},
+{
+"name": "The Blood Moon Rises",
+"wiki": "The Blood Moon Rises",
+"members": true,
+"skills": {
+"SLAYER": 74,
+"WOODCUTTING": 74,
+"SMITHING": 72,
+"COOKING": 72,
+"FLETCHING": 70,
+"MINING": 66,
+"HUNTER": 65,
+"CRAFTING": 64,
+"HERBLORE": 64,
+"MAGIC": 57
+},
+"quests": [
+"A Night at the Theatre",
+"Sins of the Father",
+"Vampyre Slayer",
+"A Taste of Hope",
+"Darkness of Hallowvale",
+"In Aid of the Myreque",
+"In Search of the Myreque",
+"Nature Spirit",
+"Priest in Peril",
+"The Restless Ghost"
+]
+},
+{
+"name": "The Chosen Commander",
+"wiki": "The Chosen Commander",
+"members": true,
+"skills": {
+"AGILITY": 58,
+"THIEVING": 54,
+"STRENGTH": 46
+},
+"quests": [
+"Land of the Goblins",
+"Another Slice of H.A.M.",
+"Death to the Dorgeshuun",
+"The Lost Tribe",
+"Goblin Diplomacy",
+"Rune Mysteries",
+"The Giant Dwarf",
+"The Dig Site",
+"Fishing Contest"
+]
+},
+{
+"name": "The Corsair Curse",
+"wiki": "The Corsair Curse",
+"members": false
+},
+{
+"name": "The Curse of Arrav",
+"wiki": "The Curse of Arrav",
+"members": true,
+"skills": {
+"MINING": 64,
+"RANGED": 62,
+"THIEVING": 62,
+"AGILITY": 61,
+"STRENGTH": 58,
+"SLAYER": 37
+},
+"quests": [
+"Defender of Varrock",
+"Shield of Arrav",
+"Temple of Ikov",
+"Below Ice Mountain",
+"Family Crest",
+"Garden of Tranquillity",
+"Creature of Fenkenstrain",
+"Priest in Peril",
+"The Restless Ghost",
+"What Lies Below",
+"Rune Mysteries",
+"Romeo & Juliet",
+"Demon Slayer",
+"Troll Romance",
+"Troll Stronghold",
+"Death Plateau"
+]
+},
+{
+"name": "The Depths of Despair",
+"wiki": "The Depths of Despair",
+"members": true,
+"skills": {
+"AGILITY": 18
+},
+"quests": [
+"Client of Kourend",
+"X Marks the Spot"
+]
+},
+{
+"name": "The Dig Site",
+"wiki": "The Dig Site",
+"members": true,
+"skills": {
+"AGILITY": 10,
+"HERBLORE": 10,
+"THIEVING": 25
+}
+},
+{
+"name": "The Enchanted Key",
+"wiki": "The Enchanted Key",
+"members": true,
+"quests": [
+"Making History"
+]
+},
+{
+"name": "The Eyes of Glouphrie",
+"wiki": "The Eyes of Glouphrie",
+"members": true,
+"skills": {
+"CONSTRUCTION": 5,
+"MAGIC": 46
+},
+"quests": [
+"The Grand Tree"
+]
+},
+{
+"name": "The Feud",
+"wiki": "The Feud",
+"members": true,
+"skills": {
+"THIEVING": 30
+}
+},
+{
+"name": "The Final Dawn",
+"wiki": "The Final Dawn",
+"members": true,
+"skills": {
+"THIEVING": 66,
+"RUNECRAFT": 52,
+"FLETCHING": 52
+},
+"quests": [
+"The Heart of Darkness",
+"Twilight's Promise",
+"Children of the Sun",
+"Perilous Moons"
+]
+},
+{
+"name": "The Forsaken Tower",
+"wiki": "The Forsaken Tower",
+"members": true,
+"quests": [
+"Client of Kourend",
+"X Marks the Spot"
+]
+},
+{
+"name": "The Fractured Archive",
+"wiki": "The Fractured Archive (miniquest)",
+"members": true,
+"quests": [
+"While Guthix Sleeps",
+"Defender of Varrock",
+"Shield of Arrav",
+"Temple of Ikov",
+"Below Ice Mountain",
+"Family Crest",
+"What Lies Below",
+"Romeo & Juliet",
+"Demon Slayer",
+"Garden of Tranquillity",
+"Creature of Fenkenstrain",
+"Priest in Peril",
+"The Restless Ghost",
+"The Path of Glouphrie",
+"The Eyes of Glouphrie",
+"The Grand Tree",
+"Waterfall Quest",
+"Tree Gnome Village",
+"Fight Arena",
+"Dream Mentor",
+"Eadgar's Ruse",
+"Druidic Ritual",
+"Troll Stronghold",
+"Death Plateau",
+"Lunar Diplomacy",
+"The Fremennik Trials",
+"Lost City",
+"Rune Mysteries",
+"Shilo Village",
+"Jungle Potion",
+"The Hand in the Sand",
+"Wanted!",
+"Recruitment Drive",
+"Black Knights' Fortress",
+"The Lost Tribe",
+"Goblin Diplomacy",
+"Temple of the Eye",
+"Enter the Abyss",
+"Tears of Guthix",
+"Nature Spirit",
+"A Tail of Two Cats",
+"Icthlarin's Little Helper",
+"Gertrude's Cat"
+]
+},
+{
+"name": "The Fremennik Exiles",
+"wiki": "The Fremennik Exiles",
+"members": true,
+"skills": {
+"CRAFTING": 65,
+"SLAYER": 60,
+"SMITHING": 60,
+"FISHING": 60,
+"RUNECRAFT": 55,
+"MINING": 60
+},
+"quests": [
+"The Fremennik Isles",
+"The Fremennik Trials",
+"Lunar Diplomacy",
+"Lost City",
+"Rune Mysteries",
+"Shilo Village",
+"Jungle Potion",
+"Druidic Ritual",
+"Mountain Daughter",
+"Heroes' Quest",
+"Dragon Slayer I",
+"Merlin's Crystal",
+"Shield of Arrav"
+]
+},
+{
+"name": "The Fremennik Isles",
+"wiki": "The Fremennik Isles",
+"members": true,
+"skills": {
+"CONSTRUCTION": 20
+},
+"quests": [
+"The Fremennik Trials"
+]
+},
+{
+"name": "The Fremennik Trials",
+"wiki": "The Fremennik Trials",
+"members": true
+},
+{
+"name": "The Frozen Door",
+"wiki": "The Frozen Door",
+"members": true,
+"skills": {
+"AGILITY": 70,
+"HITPOINTS": 70,
+"RANGED": 70,
+"STRENGTH": 70
+},
+"quests": [
+"Desert Treasure I"
+]
+},
+{
+"name": "The Garden of Death",
+"wiki": "The Garden of Death",
+"members": true,
+"skills": {
+"FARMING": 20
+}
+},
+{
+"name": "The General's Shadow",
+"wiki": "The General's Shadow",
+"members": true,
+"quests": [
+"Curse of the Empty Lord",
+"Desert Treasure I",
+"Fight Arena"
+]
+},
+{
+"name": "The Giant Dwarf",
+"wiki": "The Giant Dwarf",
+"members": true,
+"skills": {
+"CRAFTING": 12,
+"FIREMAKING": 16,
+"MAGIC": 33,
+"THIEVING": 14
+}
+},
+{
+"name": "The Golem",
+"wiki": "The Golem",
+"members": true,
+"skills": {
+"CRAFTING": 20,
+"THIEVING": 25
+}
+},
+{
+"name": "The Grand Tree",
+"wiki": "The Grand Tree",
+"members": true,
+"skills": {
+"AGILITY": 25
+}
+},
+{
+"name": "The Graveyard",
+"wiki": "The Graveyard",
+"members": true,
+"skills": {
+"SAILING": 65,
+"AGILITY": 65,
+"WOODCUTTING": 56,
+"FLETCHING": 54
+},
+"quests": [
+"The Fremennik Exiles",
+"The Fremennik Isles",
+"The Fremennik Trials",
+"Lunar Diplomacy",
+"Lost City",
+"Rune Mysteries",
+"Shilo Village",
+"Jungle Potion",
+"Druidic Ritual",
+"Mountain Daughter",
+"Heroes' Quest",
+"Dragon Slayer I",
+"Merlin's Crystal",
+"Shield of Arrav",
+"Olaf's Quest",
+"Pandemonium"
+]
+},
+{
+"name": "The Great Brain Robbery",
+"wiki": "The Great Brain Robbery",
+"members": true,
+"skills": {
+"CRAFTING": 16,
+"CONSTRUCTION": 30,
+"PRAYER": 50
+},
+"quests": [
+"Cabin Fever",
+"Creature of Fenkenstrain",
+"Pirate's Treasure",
+"Rum Deal",
+"Priest in Peril",
+"Zogre Flesh Eaters",
+"Big Chompy Bird Hunting",
+"Jungle Potion",
+"Druidic Ritual",
+"Cook's Assistant"
+]
+},
+{
+"name": "The Hand in the Sand",
+"wiki": "The Hand in the Sand",
+"members": true,
+"skills": {
+"THIEVING": 17,
+"CRAFTING": 49
+}
+},
+{
+"name": "The Heart of Darkness",
+"wiki": "The Heart of Darkness",
+"members": true,
+"skills": {
+"MINING": 55,
+"THIEVING": 48,
+"SLAYER": 48,
+"AGILITY": 46
+},
+"quests": [
+"Twilight's Promise",
+"Children of the Sun"
+]
+},
+{
+"name": "The Ides of Milk",
+"wiki": "The Ides of Milk",
+"members": false
+},
+{
+"name": "The Knight's Sword",
+"wiki": "The Knight's Sword",
+"members": false,
+"skills": {
+"MINING": 10
+}
+},
+{
+"name": "The Lost Tribe",
+"wiki": "The Lost Tribe",
+"members": true,
+"skills": {
+"AGILITY": 13,
+"THIEVING": 13,
+"MINING": 17
+},
+"quests": [
+"Goblin Diplomacy",
+"Rune Mysteries"
+]
+},
+{
+"name": "The Path of Glouphrie",
+"wiki": "The Path of Glouphrie",
+"members": true,
+"skills": {
+"STRENGTH": 60,
+"SLAYER": 56,
+"THIEVING": 56,
+"RANGED": 47,
+"AGILITY": 45
+},
+"quests": [
+"The Eyes of Glouphrie",
+"The Grand Tree",
+"Waterfall Quest",
+"Tree Gnome Village"
+]
+},
+{
+"name": "The Queen of Thieves",
+"wiki": "The Queen of Thieves",
+"members": true,
+"skills": {
+"THIEVING": 20
+},
+"quests": [
+"Client of Kourend",
+"X Marks the Spot"
+]
+},
+{
+"name": "The Red Reef",
+"wiki": "The Red Reef",
+"members": true,
+"skills": {
+"SAILING": 52,
+"SMITHING": 48
+},
+"quests": [
+"Troubled Tortugans",
+"Pandemonium"
+]
+},
+{
+"name": "The Restless Ghost",
+"wiki": "The Restless Ghost",
+"members": false
+},
+{
+"name": "The Ribbiting Tale of a Lily Pad Labour Dispute",
+"wiki": "The Ribbiting Tale of a Lily Pad Labour Dispute",
+"members": true,
+"skills": {
+"WOODCUTTING": 15
+},
+"quests": [
+"Children of the Sun"
+]
+},
+{
+"name": "The Slug Menace",
+"wiki": "The Slug Menace",
+"members": true,
+"skills": {
+"CRAFTING": 30,
+"RUNECRAFT": 30,
+"SLAYER": 30,
+"THIEVING": 30
+},
+"quests": [
+"Wanted!",
+"Recruitment Drive",
+"Black Knights' Fortress",
+"Druidic Ritual",
+"The Lost Tribe",
+"Rune Mysteries",
+"Goblin Diplomacy",
+"Enter the Abyss",
+"Priest in Peril",
+"Sea Slug"
+]
+},
+{
+"name": "The Tourist Trap",
+"wiki": "The Tourist Trap",
+"members": true,
+"skills": {
+"FLETCHING": 10,
+"SMITHING": 20
+}
+},
+{
+"name": "The Writing's on the Wall",
+"wiki": "The Writing's on the Wall",
+"members": true,
+"skills": {
+"AGILITY": 22,
+"THIEVING": 20
+}
+},
+{
+"name": "Throne of Miscellania",
+"wiki": "Throne of Miscellania",
+"members": true,
+"quests": [
+"Heroes' Quest",
+"Shield of Arrav",
+"Lost City",
+"Merlin's Crystal",
+"Dragon Slayer I",
+"The Fremennik Trials"
+]
+},
+{
+"name": "Tower of Life",
+"wiki": "Tower of Life",
+"members": true,
+"skills": {
+"CONSTRUCTION": 10
+}
+},
+{
+"name": "Tree Gnome Village",
+"wiki": "Tree Gnome Village",
+"members": true
+},
+{
+"name": "Tribal Totem",
+"wiki": "Tribal Totem",
+"members": true,
+"skills": {
+"THIEVING": 21
+}
+},
+{
+"name": "Troll Romance",
+"wiki": "Troll Romance",
+"members": true,
+"skills": {
+"AGILITY": 28
+},
+"quests": [
+"Troll Stronghold",
+"Death Plateau"
+]
+},
+{
+"name": "Troll Stronghold",
+"wiki": "Troll Stronghold",
+"members": true,
+"skills": {
+"AGILITY": 15
+},
+"quests": [
+"Death Plateau"
+]
+},
+{
+"name": "Troubled Tortugans",
+"wiki": "Troubled Tortugans",
+"members": true,
+"skills": {
+"SLAYER": 51,
+"CONSTRUCTION": 48,
+"SAILING": 45,
+"HUNTER": 45,
+"WOODCUTTING": 40,
+"CRAFTING": 34
+},
+"quests": [
+"Pandemonium"
+]
+},
+{
+"name": "Twilight's Promise",
+"wiki": "Twilight's Promise",
+"members": true,
+"quests": [
+"Children of the Sun"
+]
+},
+{
+"name": "Underground Pass",
+"wiki": "Underground Pass",
+"members": true,
+"skills": {
+"RANGED": 25
+},
+"quests": [
+"Biohazard",
+"Plague City"
+]
+},
+{
+"name": "Vale Totems",
+"wiki": "Vale Totems (miniquest)",
+"members": true,
+"skills": {
+"FLETCHING": 20
+},
+"quests": [
+"Children of the Sun"
+]
+},
+{
+"name": "Vampyre Slayer",
+"wiki": "Vampyre Slayer",
+"members": false
+},
+{
+"name": "Wanted!",
+"wiki": "Wanted!",
+"members": true,
+"questPoints": 32,
+"quests": [
+"Recruitment Drive",
+"Black Knights' Fortress",
+"Druidic Ritual",
+"The Lost Tribe",
+"Rune Mysteries",
+"Goblin Diplomacy",
+"Priest in Peril",
+"Enter the Abyss"
+]
+},
+{
+"name": "Watchtower",
+"wiki": "Watchtower",
+"members": true,
+"skills": {
+"MAGIC": 14,
+"THIEVING": 15,
+"AGILITY": 25,
+"HERBLORE": 14,
+"MINING": 40
+}
+},
+{
+"name": "Waterfall Quest",
+"wiki": "Waterfall Quest",
+"members": true
+},
+{
+"name": "What Lies Below",
+"wiki": "What Lies Below",
+"members": true,
+"skills": {
+"RUNECRAFT": 35
+},
+"quests": [
+"Rune Mysteries"
+]
+},
+{
+"name": "While Guthix Sleeps",
+"wiki": "While Guthix Sleeps",
+"members": true,
+"skills": {
+"THIEVING": 72,
+"MAGIC": 67,
+"AGILITY": 66,
+"FARMING": 65,
+"HERBLORE": 65,
+"HUNTER": 62,
+"FIREMAKING": 49,
+"ATTACK": 99,
+"STRENGTH": 99
+},
+"questPoints": 180,
+"quests": [
+"Defender of Varrock",
+"Shield of Arrav",
+"Temple of Ikov",
+"Below Ice Mountain",
+"Family Crest",
+"What Lies Below",
+"Romeo & Juliet",
+"Demon Slayer",
+"Garden of Tranquillity",
+"Creature of Fenkenstrain",
+"Priest in Peril",
+"The Restless Ghost",
+"The Path of Glouphrie",
+"The Eyes of Glouphrie",
+"The Grand Tree",
+"Waterfall Quest",
+"Tree Gnome Village",
+"Fight Arena",
+"Dream Mentor",
+"Eadgar's Ruse",
+"Druidic Ritual",
+"Troll Stronghold",
+"Death Plateau",
+"Lunar Diplomacy",
+"The Fremennik Trials",
+"Lost City",
+"Shilo Village",
+"Jungle Potion",
+"The Hand in the Sand",
+"Wanted!",
+"Recruitment Drive",
+"Black Knights' Fortress",
+"The Lost Tribe",
+"Goblin Diplomacy",
+"Temple of the Eye",
+"Enter the Abyss",
+"Rune Mysteries",
+"Tears of Guthix",
+"Nature Spirit",
+"A Tail of Two Cats",
+"Icthlarin's Little Helper",
+"Gertrude's Cat"
+]
+},
+{
+"name": "Witch's House",
+"wiki": "Witch's House",
+"members": true
+},
+{
+"name": "Witch's Potion",
+"wiki": "Witch's Potion",
+"members": false
+},
+{
+"name": "X Marks the Spot",
+"wiki": "X Marks the Spot",
+"members": false
+},
+{
+"name": "Zogre Flesh Eaters",
+"wiki": "Zogre Flesh Eaters",
+"members": true,
+"skills": {
+"SMITHING": 4,
+"HERBLORE": 8,
+"RANGED": 30
+},
+"quests": [
+"Big Chompy Bird Hunting",
+"Jungle Potion",
+"Druidic Ritual"
+]
+}
+]
+}

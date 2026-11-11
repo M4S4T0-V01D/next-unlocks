@@ -23,6 +23,12 @@ class Goal
 		return new Goal(skill, u.getLevel(), u.getText());
 	}
 
+	/** A goal of just reaching a level. */
+	static Goal level(Skill skill, int level)
+	{
+		return new Goal(skill, level, "Level " + level);
+	}
+
 	boolean is(Skill skill, Unlock u)
 	{
 		return this.skill == skill && level == u.getLevel() && text.equals(u.getText());

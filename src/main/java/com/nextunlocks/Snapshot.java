@@ -14,7 +14,7 @@ class Snapshot
 {
 	static final Snapshot EMPTY = new Snapshot(Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(),
 		u -> true, 5, Collections.emptySet(), Collections.emptySet(), Palette.DEFAULT,
-		Collections.emptySet(), Collections.emptySet(), Collections.emptyList(), false);
+		Collections.emptySet(), Collections.emptySet(), Collections.emptyList(), false, Collections.emptySet());
 
 	/** Real levels. */
 	Map<Skill, Integer> levels;
@@ -36,6 +36,8 @@ class Snapshot
 	List<Goal> goals;
 	/** Whether the panel lists what's one requirement away. */
 	boolean almostThere;
+	/** Wiki titles of the pinned quests and diaries. */
+	Set<String> pinnedTasks;
 
 	static String sectionKey(Skill skill, String section)
 	{

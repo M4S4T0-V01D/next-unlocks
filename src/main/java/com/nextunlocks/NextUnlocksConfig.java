@@ -223,6 +223,30 @@ public interface NextUnlocksConfig extends Config
 		return false;
 	}
 
+	@ConfigItem(
+		keyName = "pinnedLevel",
+		name = "Level on pinned cards",
+		description = "Head pinned cards with the skill and your current level, boosted level first when boosted",
+		position = 19,
+		section = tooltipSection
+	)
+	default boolean pinnedLevel()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "pinnedGoal",
+		name = "Goal bar on pinned cards",
+		description = "Show the XP left and a bar in the skill's color for the skill's nearest goal on its pinned card",
+		position = 20,
+		section = tooltipSection
+	)
+	default boolean pinnedGoal()
+	{
+		return true;
+	}
+
 	@ConfigSection(
 		name = "Skill guide",
 		description = "Additions to the game's skill guide",
@@ -324,7 +348,7 @@ public interface NextUnlocksConfig extends Config
 	@ConfigItem(
 		keyName = "goalInfoboxes",
 		name = "Goal infoboxes",
-		description = "Show an infobox with the XP left for each goal. Right-click an unlock in the side panel to set it as a goal",
+		description = "Show an infobox with the XP left for each goal. Right-click an unlock in the side panel, or a skill, to set a goal",
 		position = 28,
 		section = goalSection
 	)
@@ -504,6 +528,17 @@ public interface NextUnlocksConfig extends Config
 		hidden = true
 	)
 	default String pinnedSkills()
+	{
+		return "";
+	}
+
+	@ConfigItem(
+		keyName = "pinnedTasks",
+		name = "",
+		description = "Wiki titles of the quests and diaries pinned above the chatbox, one per line",
+		hidden = true
+	)
+	default String pinnedTasks()
 	{
 		return "";
 	}

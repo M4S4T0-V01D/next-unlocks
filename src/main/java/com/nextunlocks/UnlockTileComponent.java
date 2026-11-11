@@ -7,6 +7,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import lombok.Getter;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.components.LayoutableRenderableEntity;
 
@@ -14,6 +15,9 @@ import net.runelite.client.ui.overlay.components.LayoutableRenderableEntity;
 class UnlockTileComponent implements LayoutableRenderableEntity
 {
 	private final BufferedImage image;
+	/** What the icon unlocks, shown when it's hovered on a pinned card. */
+	@Getter
+	private final String name;
 	private final String level;
 	private final Color levelColor;
 	private final boolean dimmed;
@@ -24,9 +28,10 @@ class UnlockTileComponent implements LayoutableRenderableEntity
 	private Point preferredLocation = new Point();
 
 	/** The image may still be loading (an item's AsyncBufferedImage); it's read on every render. */
-	UnlockTileComponent(BufferedImage image, int level, Color levelColor, boolean dimmed, double scale)
+	UnlockTileComponent(BufferedImage image, String name, int level, Color levelColor, boolean dimmed, double scale)
 	{
 		this.image = image;
+		this.name = name;
 		this.level = String.valueOf(level);
 		this.levelColor = levelColor;
 		this.dimmed = dimmed;

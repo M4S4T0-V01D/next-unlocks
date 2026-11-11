@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -77,6 +78,10 @@ class NextUnlocksPanel extends PluginPanel
 	private final BiConsumer<String, Boolean> sectionToggle;
 	/** Called with a goal to set, or to drop when it is one already. */
 	private final Consumer<Goal> goalToggle;
+	/** Whether a wiki title is a quest or diary that can be pinned. */
+	private final Predicate<String> pinnable;
+	/** Called with a quest or diary's wiki title to pin, or to unpin when it is pinned. */
+	private final Consumer<String> taskToggle;
 	private final IconTextField search = new IconTextField();
 	private final JComboBox<Skill> skillBox = new JComboBox<>();
 	private final JPanel content = new JPanel();
@@ -87,7 +92,7 @@ class NextUnlocksPanel extends PluginPanel
 	private boolean almostThereOpen = true;
 
 	NextUnlocksPanel(UnlockRepository repository, SkillIconManager iconManager, ItemManager itemManager, SpriteManager spriteManager,
-		BiConsumer<String, Boolean> sectionToggle, Consumer<Goal> goalToggle)
+		BiConsumer<String, Boolean> sectionToggle, Consumer<Goal> goalToggle, Predicate<String> pinnable, Consumer<String> taskToggle)
 	{
 		this.repository = repository;
 		this.iconManager = iconManager;
@@ -95,6 +100,8 @@ class NextUnlocksPanel extends PluginPanel
 		this.spriteManager = spriteManager;
 		this.sectionToggle = sectionToggle;
 		this.goalToggle = goalToggle;
+		this.pinnable = pinnable;
+		this.taskToggle = taskToggle;
 
 		setLayout(new BorderLayout(0, 8));
 		setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -405,6 +412,7 @@ class NextUnlocksPanel extends PluginPanel
 				+ (o.getType() == Unlock.Type.DIARY ? "<br>Diary completion isn't checked" : "")
 				+ "<br>Open " + escape(o.getTitle()) + " on the OSRS Wiki</html>");
 			clickable(row, () -> openWiki(o.getTitle()));
+			row.setComponentPopupMenu(taskMenu(o.getTitle()));
 			content.add(row);
 			content.add(Box.createVerticalStrut(4));
 		}
@@ -432,6 +440,7 @@ class NextUnlocksPanel extends PluginPanel
 			tip.append("Open ").append(escape(w.getQuest())).append(" on the OSRS Wiki</html>");
 			row.setToolTipText(tip.toString());
 			clickable(row, () -> openWiki(w.getQuest()));
+			row.setComponentPopupMenu(taskMenu(w.getQuest()));
 			content.add(row);
 			content.add(Box.createVerticalStrut(4));
 		}
@@ -755,11 +764,33 @@ class NextUnlocksPanel extends PluginPanel
 		{
 			menu.add(menuItem(goal ? "Remove goal" : "Set as goal", () -> goalToggle.accept(Goal.of(skill, u))));
 		}
+		if (u.getType() != Unlock.Type.UNLOCK && pinnable.test(u.getWiki()))
+		{
+			menu.add(pinItem(u.getWiki()));
+		}
 		if (u.getWiki() != null)
 		{
 			menu.add(menuItem("Open on the OSRS Wiki", () -> openWiki(u)));
 		}
 		return menu.getComponentCount() == 0 ? null : menu;
+	}
+
+	/** Right-click menu of an Almost there row: pin its requirements, open its wiki page. */
+	private JPopupMenu taskMenu(String title)
+	{
+		JPopupMenu menu = new JPopupMenu();
+		if (pinnable.test(title))
+		{
+			menu.add(pinItem(title));
+		}
+		menu.add(menuItem("Open on the OSRS Wiki", () -> openWiki(title)));
+		return menu;
+	}
+
+	private JMenuItem pinItem(String title)
+	{
+		return menuItem(snapshot.getPinnedTasks().contains(title) ? "Unpin requirements" : "Pin requirements",
+			() -> taskToggle.accept(title));
 	}
 
 	private static JMenuItem menuItem(String text, Runnable action)

@@ -31,7 +31,7 @@ public class AlmostThereTest
 			levels.put(skill, skill == exception ? exceptionLevel : level);
 		}
 		return new Snapshot(levels, Collections.emptyMap(), Collections.emptyMap(), u -> true, 5, Collections.emptySet(),
-			Collections.emptySet(), Palette.DEFAULT, questsToDo, finished, Collections.emptyList(), true);
+			Collections.emptySet(), Palette.DEFAULT, questsToDo, finished, Collections.emptyList(), true, Collections.emptySet());
 	}
 
 	@Test

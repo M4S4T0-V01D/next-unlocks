@@ -25,6 +25,23 @@ public class GoalTest
 	}
 
 	@Test
+	public void levelGoalsRoundTrip()
+	{
+		Goal goal = Goal.level(Skill.FISHING, 99);
+		assertEquals("Level 99", goal.getText());
+		assertEquals(Arrays.asList(goal), Goal.parse(Goal.format(Arrays.asList(goal))));
+	}
+
+	@Test
+	public void everySkillHasAColor()
+	{
+		for (Skill skill : Skills.STATS_TAB.keySet())
+		{
+			assertTrue(skill.getName(), Skills.COLORS.containsKey(skill));
+		}
+	}
+
+	@Test
 	public void matchesItsUnlock()
 	{
 		Unlock ore = UnlockRepository.guideUnlock(13, 85, 1, "Rocks", "Runite ore", null, true, 451, null, null);

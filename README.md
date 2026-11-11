@@ -24,7 +24,12 @@ Hover a skill to see its next unlock level, the XP left, a progress bar and the 
 It can take over the game's XP tooltip so the two don't overlap, and its icon size, text size and background opacity are adjustable.
 
 Right-click a skill and choose **Pin** to keep its tooltip on screen above the chatbox. Right-click it again to unpin.
-Pinned cards sit side by side at the same height, and their XP and progress update as you train.
+Pinned cards sit side by side at the same height and show the skill and your level, and their XP and progress update as you train.
+**Set goal** on the same menu picks one of the next few unlocks, the next level or 99; the nearest goal shows as a bar in the skill's color on its card.
+
+Quests and achievement diaries can be pinned too: right-click a quest in the quest list, or a quest or diary in the side panel, and choose **Pin**.
+The card lists the hard requirements (skill levels, quest points, combat level and the quests needed first), unmet in red first, then met in green. Diary cards list skill levels only.
+A pinned quest unpins itself with a chat message once you finish it.
 
 <br clear="right">
 
@@ -60,7 +65,7 @@ Pinned cards sit side by side at the same height, and their XP and progress upda
 <img src="screenshots/settings.png" alt="Settings" align="right">
 
 - **General**: members unlocks, quest and diary requirements, levels to show, level-up message, boosts, greying out quest-locked unlocks.
-- **Skills tab tooltip**: on/off, icons only, including the game's XP tooltip, progress bar, icon and text size, background opacity, outline.
+- **Skills tab tooltip**: on/off, icons only, including the game's XP tooltip, progress bar, icon and text size, background opacity, outline, the level and goal bar on pinned cards.
 - **Goals**: goal infoboxes, the goal-reached notification, the Almost there list.
 - **Skill guide**: the Next Unlocks tab, highlighting, fading, markings, progress bar, scrolling, dimming hidden sections.
 - **Colors**: next unlock, outline, progress bar and its background, level numbers, boost-reached and quest-locked, used by the tooltip, the side panel and the skill guide; plus the level-up message's skill/level and unlocks colors and its text shadow.

@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntConsumer;
 import lombok.Getter;
@@ -47,6 +48,29 @@ class TooltipBox implements LayoutableRenderableEntity
 	void updateXp(int xp)
 	{
 		xpUpdates.forEach(u -> u.accept(xp));
+	}
+
+	/** The icon tiles inside, where they were drawn last. */
+	List<UnlockTileComponent> tiles()
+	{
+		List<UnlockTileComponent> tiles = new ArrayList<>();
+		collect(panel, tiles);
+		return tiles;
+	}
+
+	private static void collect(PanelComponent panel, List<UnlockTileComponent> tiles)
+	{
+		for (LayoutableRenderableEntity child : panel.getChildren())
+		{
+			if (child instanceof UnlockTileComponent)
+			{
+				tiles.add((UnlockTileComponent) child);
+			}
+			else if (child instanceof PanelComponent)
+			{
+				collect((PanelComponent) child, tiles);
+			}
+		}
 	}
 
 	@Override
