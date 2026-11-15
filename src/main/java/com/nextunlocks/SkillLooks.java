@@ -53,7 +53,6 @@ final class SkillLooks
 		row(Skill.HERBLORE, NextUnlocksConfig.CardStyle.GLASS, new Color(20, 80, 30, 120), new Color(120, 220, 140, 140), rgb(0x9cf0a8), rgb(0x30b048), NextUnlocksConfig.XpEffect.BUBBLES);
 		row(Skill.AGILITY, NextUnlocksConfig.CardStyle.MODERN, rgb(0x101a2a), null, rgb(0x60a0ff), rgb(0x3070e0), NextUnlocksConfig.XpEffect.PIXELS);
 		row(Skill.THIEVING, NextUnlocksConfig.CardStyle.MODERN, rgb(0x1a1020), null, rgb(0xc080ff), rgb(0x8040c0), NextUnlocksConfig.XpEffect.STARS);
-		row(Skill.SLAYER, NextUnlocksConfig.CardStyle.NEON, rgb(0x1a0606), rgb(0xa01010), rgb(0xff4040), rgb(0xb01818), NextUnlocksConfig.XpEffect.EMBERS);
 		row(Skill.FARMING, NextUnlocksConfig.CardStyle.PARCHMENT, null, null, rgb(0x2e7a1e), rgb(0x3e9a2a), NextUnlocksConfig.XpEffect.LEAVES);
 		ROWS.put(Skill.RUNECRAFT, new Row(NextUnlocksConfig.CardStyle.ARCADE, rgb(0x0c0a1a), rgb(0xe0c060), rgb(0x8060ff),
 			rgb(0xffd860), rgb(0xa070ff), NextUnlocksConfig.XpEffect.RUNES));
@@ -84,6 +83,10 @@ final class SkillLooks
 		{
 			return NextUnlocksConfig.XpEffect.STARS;
 		}
+		if (skill == Skill.SLAYER)
+		{
+			return NextUnlocksConfig.XpEffect.EMBERS;
+		}
 		Row row = ROWS.get(skill);
 		return row == null ? NextUnlocksConfig.XpEffect.SPARKS : row.effect;
 	}
@@ -94,6 +97,10 @@ final class SkillLooks
 		if (skill == Skill.MAGIC)
 		{
 			return magic(palette);
+		}
+		if (skill == Skill.SLAYER)
+		{
+			return slayer(palette, classic);
 		}
 		Row row = ROWS.get(skill);
 		if (row == null)
@@ -136,6 +143,45 @@ final class SkillLooks
 			theme.barFill2(CardTheme.shade(row.fill, Color.WHITE, 0.5));
 		}
 		return theme.build();
+	}
+
+	/** A scroll gone dark: near-black parchment in a blood-red frame, with red and dark tan writing. */
+	private static CardTheme slayer(Palette palette, CardTheme classic)
+	{
+		Color red = new Color(0xc8282a);
+		Color tan = new Color(0xa88a62);
+		Color light = new Color(0xd2bc94);
+		return CardTheme.preset(NextUnlocksConfig.CardStyle.PARCHMENT, palette, classic, null).toBuilder()
+			.background(new Color(0x262322))
+			.background2(new Color(0x141212))
+			.border(new Color(0x8c1414))
+			.innerBorder(new Color(0x4a1010))
+			.skillName(red)
+			.levelLabel(tan)
+			.levelValue(light)
+			.xpLabel(tan)
+			.xpValue(light)
+			.nextLevelLabel(tan)
+			.nextLevelValue(light)
+			.remainingLabel(tan)
+			.remainingValue(light)
+			.nextUnlockLabel(tan)
+			.nextUnlockLevel(red)
+			.nextUnlockXp(light)
+			.unlock(light)
+			.locked(new Color(0x6a5e52))
+			.more(new Color(0x8a7a66))
+			.goalLabel(tan)
+			.goalLevel(red)
+			.goalXp(light)
+			.taskTitle(red)
+			.met(new Color(0x6aa050))
+			.unmet(red)
+			.barFill(new Color(0xa01818))
+			.barBackground(new Color(0x3a3230))
+			.barText(light)
+			.xpEffect(NextUnlocksConfig.XpEffect.EMBERS)
+			.build();
 	}
 
 	/** A raised window in dusky rose with a navy title band, cyan and yellow text and a starry burst as xp comes in. */

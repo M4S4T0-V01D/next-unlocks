@@ -593,6 +593,18 @@ public interface NextUnlocksConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "pinSkillIcon",
+		name = "Skill icon",
+		description = "The skill's icon before its name on pinned cards, as tall as the text",
+		position = 108,
+		section = pinStyleSection
+	)
+	default boolean pinSkillIcon()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "pinCustomColors",
 		name = "Use my colors",
 		description = "Color every word and number on pinned cards with the colors in 'Pinned card colors' instead of the style's",

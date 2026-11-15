@@ -11,6 +11,7 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.awt.Image;
 import lombok.Getter;
 import net.runelite.client.ui.overlay.components.LayoutableRenderableEntity;
 
@@ -50,6 +51,11 @@ class CardLine implements LayoutableRenderableEntity
 	private BufferedImage glow;
 	private String glowKey;
 
+	/** An icon before the left side, as tall as the text; null for none. */
+	private BufferedImage icon;
+	private Image scaled;
+	private int scaledHeight;
+
 	CardLine(CardTheme theme, Font font)
 	{
 		this(theme, font, false);
@@ -65,6 +71,13 @@ class CardLine implements LayoutableRenderableEntity
 	CardLine left(String text, Color color)
 	{
 		left.add(new Part(text, color));
+		return this;
+	}
+
+	/** Put an icon before the left side, scaled to the text's height. */
+	CardLine icon(BufferedImage image)
+	{
+		icon = image;
 		return this;
 	}
 
@@ -94,7 +107,19 @@ class CardLine implements LayoutableRenderableEntity
 		int lineHeight = metrics.getHeight();
 		int width = preferred.width;
 		int rightWidth = width(metrics, right);
-		int room = right.isEmpty() ? width : width - rightWidth - GAP;
+		int indent = 0;
+		int iconHeight = metrics.getAscent() - metrics.getDescent() + 2;
+		if (icon != null && iconHeight > 0)
+		{
+			if (scaled == null || scaledHeight != iconHeight)
+			{
+				int iconWidth = Math.max(1, Math.round(icon.getWidth() * iconHeight / (float) icon.getHeight()));
+				scaled = icon.getScaledInstance(iconWidth, iconHeight, Image.SCALE_SMOOTH);
+				scaledHeight = iconHeight;
+			}
+			indent = scaled.getWidth(null) + 3;
+		}
+		int room = (right.isEmpty() ? width : width - rightWidth - GAP) - indent;
 
 		// a single long left part wraps, like the game's tooltips; the right side stays on the first line
 		List<String> wrapped = null;
@@ -106,13 +131,19 @@ class CardLine implements LayoutableRenderableEntity
 		int height = lines * lineHeight;
 		int x = location.x;
 		int baseline = location.y + lineHeight;
+		if (indent > 0)
+		{
+			// sits on the text's baseline, from the top of its capitals
+			graphics.drawImage(scaled, x, baseline - metrics.getDescent() - iconHeight + 1, null);
+		}
 
 		if (theme.isGlowText() && theme.getGlow() != null)
 		{
-			String key = width + "|" + text(left) + "|" + text(right) + "|" + (wrapped == null ? "" : String.join("\n", wrapped));
+			String key = width + "|" + indent + "|" + text(left) + "|" + text(right) + "|" + (wrapped == null ? "" : String.join("\n", wrapped));
 			if (glow == null || !key.equals(glowKey))
 			{
 				List<String> lefts = wrapped;
+				int at = indent;
 				glow = Glow.paint(width, height, theme.getGlowSize(), g ->
 				{
 					g.setFont(font);
@@ -120,7 +151,7 @@ class CardLine implements LayoutableRenderableEntity
 					// a few copies a pixel apart, so the blur has enough to spread
 					for (int[] o : new int[][]{{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}})
 					{
-						paintText(g, metrics, lefts, o[0], lineHeight + o[1], width, rightWidth, theme.getGlow());
+						paintText(g, metrics, lefts, at + o[0], lineHeight + o[1], width - at, rightWidth, theme.getGlow());
 					}
 				});
 				glowKey = key;
@@ -132,9 +163,9 @@ class CardLine implements LayoutableRenderableEntity
 		Color color = graphics.getColor();
 		if (theme.isShadow())
 		{
-			paintText(graphics, metrics, wrapped, x + 1, baseline + 1, width, rightWidth, Color.BLACK);
+			paintText(graphics, metrics, wrapped, x + indent + 1, baseline + 1, width - indent, rightWidth, Color.BLACK);
 		}
-		paintText(graphics, metrics, wrapped, x, baseline, width, rightWidth, null);
+		paintText(graphics, metrics, wrapped, x + indent, baseline, width - indent, rightWidth, null);
 		graphics.setColor(color);
 		graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, aa);
 		graphics.setFont(previous);

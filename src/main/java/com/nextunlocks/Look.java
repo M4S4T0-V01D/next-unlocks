@@ -28,6 +28,7 @@ final class Look
 		k.put("pinGlowSize", NextUnlocksConfig::pinGlowSize);
 		k.put("pinTextShadow", NextUnlocksConfig::pinTextShadow);
 		k.put("pinScanlines", NextUnlocksConfig::pinScanlines);
+		k.put("pinSkillIcon", NextUnlocksConfig::pinSkillIcon);
 		k.put("pinXpEffect", NextUnlocksConfig::pinXpEffect);
 		k.put("pinXpPopup", NextUnlocksConfig::pinXpPopup);
 		k.put("pinXpPulse", NextUnlocksConfig::pinXpPulse);

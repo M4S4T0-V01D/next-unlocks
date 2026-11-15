@@ -686,6 +686,7 @@ public class NextUnlocksPlugin extends Plugin
 			// boosted or drained levels read like the skills tab, 47/45
 			int boosted = client.getBoostedSkillLevel(skill);
 			lines.add(new CardLine(theme, font, true)
+				.icon(theme.isSkillIcon() ? skillIconManager.getSkillImage(skill, true) : null)
 				.left(skill.getName(), theme.getSkillName())
 				.right("Level ", theme.getLevelLabel())
 				.right(boosted == level ? String.valueOf(level) : boosted + "/" + level,

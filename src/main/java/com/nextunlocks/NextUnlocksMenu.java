@@ -283,6 +283,7 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		sizeSliders.add(new Slider("Text size", "tooltipTextSize", 10, 32, config::tooltipTextSize));
 		sizeSliders.add(new Slider("Icon size", "tooltipIconSize", 50, 200, config::tooltipIconSize));
 		lookToggles.add(new Toggle("Own colours", "pinCustomColors", () -> plugin.look(target).<Boolean>get("pinCustomColors")));
+		lookToggles.add(new Toggle("Skill icon", "pinSkillIcon", () -> plugin.look(target).<Boolean>get("pinSkillIcon")));
 		lookToggles.add(new Toggle("Outline", "tooltipOutline", config::tooltipOutline));
 
 		frames.add(lookChoice("Background fade", "pinBackgroundGradient", toggle));
@@ -589,7 +590,7 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 				}
 				else
 				{
-					cy = toggles(g, mouse, out, lookToggles.subList(0, 1), left, cy, inner, 2);
+					cy = toggles(g, mouse, out, lookToggles.subList(0, 2), left, cy, inner, 2);
 				}
 				break;
 			case FRAME:

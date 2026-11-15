@@ -73,6 +73,8 @@ class CardTheme
 	boolean xpPopup;
 	/** The bar lights up as xp comes in. */
 	boolean xpPulse;
+	/** The skill's icon before its name on the title line. */
+	boolean skillIcon;
 
 	Color skillName;
 	Color levelLabel;
@@ -151,6 +153,7 @@ class CardTheme
 		theme.levelUp(look.<NextUnlocksConfig.StyleToggle>get("pinLevelUp").on(style.levelUp));
 		theme.shadow(look.<NextUnlocksConfig.StyleToggle>get("pinTextShadow").on(style.shadow));
 		theme.scanlines(look.<NextUnlocksConfig.StyleToggle>get("pinScanlines").on(style.scanlines));
+		theme.skillIcon(look.<Boolean>get("pinSkillIcon"));
 		NextUnlocksConfig.GlowMode mode = look.get("pinGlow");
 		if (mode != NextUnlocksConfig.GlowMode.STYLE)
 		{
