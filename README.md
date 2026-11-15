@@ -30,6 +30,10 @@ It can take over the game's XP tooltip so the two don't overlap, and its icon si
 Right-click a skill and choose **Pin** to keep its tooltip on screen above the chatbox. Right-click it again to unpin. With split private chat on, pinned cards move up above your private messages so they never cover them.
 Pinned cards sit side by side at the same height and show the skill and your level, and their XP and progress update as you train.
 Cards come in several styles (Classic RuneLite, 90s arcade, Neon synthwave, CRT terminal, Handheld, Windows 95, Modern, Minimal), with a choice of font, progress bar, level-up effect, glow and text shadow, and every color can be set by hand.
+
+<p align="center">
+  <img src="screenshots/card-themes.png" alt="The eight pinned card styles: Classic RuneLite, 90s arcade, Neon synthwave, CRT terminal, Handheld, Windows 95, Modern and Minimal">
+</p>
 **Set goal** on the same menu picks one of the next few unlocks, the next level or 99, or **Choose level...** to type any level; the nearest goal shows as a bar in the skill's color on its card.
 
 Quests and achievement diaries can be pinned too: right-click a quest in the quest list, or a quest or diary in the side panel, and choose **Pin**. The card shows the quest or diary icon and its name in large text.
