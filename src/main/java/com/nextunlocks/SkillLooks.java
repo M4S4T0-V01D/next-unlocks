@@ -5,7 +5,10 @@ import java.util.EnumMap;
 import java.util.Map;
 import net.runelite.api.Skill;
 
-/** Each skill's own card for the Each skill's own style: a base style recolored to the skill's feel, with its own xp effect. */
+/**
+ * Each skill's own card for the Each skill's own style: a base style recolored to the skill's feel, with its own frame,
+ * xp effect, ambient and border motion.
+ */
 final class SkillLooks
 {
 	private static final class Row
@@ -18,6 +21,12 @@ final class SkillLooks
 		final Color accent;
 		final Color fill;
 		final NextUnlocksConfig.XpEffect effect;
+		/** Null keeps the base style's. */
+		CardTheme.Frame frame;
+		/** Null for none. */
+		NextUnlocksConfig.Ambient ambient;
+		/** Null for none. */
+		NextUnlocksConfig.BorderMotion motion;
 
 		Row(NextUnlocksConfig.CardStyle base, Color background, Color border, Color innerBorder, Color accent, Color fill,
 			NextUnlocksConfig.XpEffect effect)
@@ -41,8 +50,8 @@ final class SkillLooks
 		row(Skill.DEFENCE, NextUnlocksConfig.CardStyle.STONE, rgb(0x141c2a), rgb(0x6a86b0), rgb(0x9cc4ff), rgb(0x4a78c0), NextUnlocksConfig.XpEffect.SPARKS);
 		row(Skill.RANGED, NextUnlocksConfig.CardStyle.STONE, rgb(0x18240f), rgb(0x5a7a2a), rgb(0xb4e05a), rgb(0x6a9a2a), NextUnlocksConfig.XpEffect.LEAVES);
 		row(Skill.PRAYER, NextUnlocksConfig.CardStyle.GILDED, rgb(0x1c1a14), rgb(0xe8e0c0), rgb(0xfffbe0), rgb(0xf0e6b4), NextUnlocksConfig.XpEffect.STARS);
-		row(Skill.HITPOINTS, NextUnlocksConfig.CardStyle.NEON, rgb(0x2a0810), rgb(0xff3050), rgb(0xff6070), rgb(0xe01030), NextUnlocksConfig.XpEffect.EMBERS);
-		row(Skill.COOKING, NextUnlocksConfig.CardStyle.PARCHMENT, null, null, rgb(0xb03a10), rgb(0xd06020), NextUnlocksConfig.XpEffect.EMBERS);
+		row(Skill.HITPOINTS, NextUnlocksConfig.CardStyle.NEON, rgb(0x2a0810), rgb(0xff3050), rgb(0xff6070), rgb(0xe01030), NextUnlocksConfig.XpEffect.HEARTS);
+		row(Skill.COOKING, NextUnlocksConfig.CardStyle.PARCHMENT, null, null, rgb(0xb03a10), rgb(0xd06020), NextUnlocksConfig.XpEffect.SMOKE);
 		row(Skill.WOODCUTTING, NextUnlocksConfig.CardStyle.STONE, rgb(0x1f170c), rgb(0x6b4a23), rgb(0x8fd16a), rgb(0x4f8a2a), NextUnlocksConfig.XpEffect.LEAVES);
 		row(Skill.FLETCHING, NextUnlocksConfig.CardStyle.PARCHMENT, null, null, rgb(0x1f6b5a), rgb(0x2a8a72), NextUnlocksConfig.XpEffect.LEAVES);
 		row(Skill.FISHING, NextUnlocksConfig.CardStyle.GLASS, new Color(40, 110, 170, 120), new Color(150, 210, 255, 140), rgb(0x8fe0ff), rgb(0x3aa0e0), NextUnlocksConfig.XpEffect.BUBBLES);
@@ -51,14 +60,54 @@ final class SkillLooks
 		row(Skill.SMITHING, NextUnlocksConfig.CardStyle.STONE, rgb(0x1a1a1c), rgb(0x8a8a90), rgb(0xffa040), rgb(0xe06a1a), NextUnlocksConfig.XpEffect.SPARKS);
 		row(Skill.MINING, NextUnlocksConfig.CardStyle.STONE, rgb(0x1c1812), rgb(0x6a5a48), rgb(0xd0b890), rgb(0x8a7458), NextUnlocksConfig.XpEffect.SPARKS);
 		row(Skill.HERBLORE, NextUnlocksConfig.CardStyle.GLASS, new Color(20, 80, 30, 120), new Color(120, 220, 140, 140), rgb(0x9cf0a8), rgb(0x30b048), NextUnlocksConfig.XpEffect.BUBBLES);
-		row(Skill.AGILITY, NextUnlocksConfig.CardStyle.MODERN, rgb(0x101a2a), null, rgb(0x60a0ff), rgb(0x3070e0), NextUnlocksConfig.XpEffect.PIXELS);
-		row(Skill.THIEVING, NextUnlocksConfig.CardStyle.MODERN, rgb(0x1a1020), null, rgb(0xc080ff), rgb(0x8040c0), NextUnlocksConfig.XpEffect.STARS);
+		row(Skill.AGILITY, NextUnlocksConfig.CardStyle.MODERN, rgb(0x101a2a), null, rgb(0x60a0ff), rgb(0x3070e0), NextUnlocksConfig.XpEffect.BOLTS);
+		row(Skill.THIEVING, NextUnlocksConfig.CardStyle.MODERN, rgb(0x1a1020), null, rgb(0xc080ff), rgb(0x8040c0), NextUnlocksConfig.XpEffect.COINS);
 		row(Skill.FARMING, NextUnlocksConfig.CardStyle.PARCHMENT, null, null, rgb(0x2e7a1e), rgb(0x3e9a2a), NextUnlocksConfig.XpEffect.LEAVES);
 		ROWS.put(Skill.RUNECRAFT, new Row(NextUnlocksConfig.CardStyle.ARCADE, rgb(0x0c0a1a), rgb(0xe0c060), rgb(0x8060ff),
 			rgb(0xffd860), rgb(0xa070ff), NextUnlocksConfig.XpEffect.RUNES));
 		row(Skill.HUNTER, NextUnlocksConfig.CardStyle.PARCHMENT, rgb(0xd8c89a), null, rgb(0x6b4a23), rgb(0x8b6a33), NextUnlocksConfig.XpEffect.LEAVES);
 		row(Skill.CONSTRUCTION, NextUnlocksConfig.CardStyle.PARCHMENT, null, null, rgb(0x7a4a1a), rgb(0xa06a30), NextUnlocksConfig.XpEffect.PIXELS);
 		row(Skill.SAILING, NextUnlocksConfig.CardStyle.GLASS, new Color(30, 100, 150, 120), new Color(170, 225, 255, 140), rgb(0xffe9a8), rgb(0x2e9ac4), NextUnlocksConfig.XpEffect.BUBBLES);
+
+		CardTheme.Frame notched = CardTheme.Frame.NOTCHED;
+		CardTheme.Frame riveted = CardTheme.Frame.RIVETED;
+		CardTheme.Frame brackets = CardTheme.Frame.BRACKETS;
+		CardTheme.Frame ornate = CardTheme.Frame.ORNATE;
+		CardTheme.Frame pixel = CardTheme.Frame.PIXEL;
+		CardTheme.Frame dashed = CardTheme.Frame.DASHED;
+		NextUnlocksConfig.Ambient embers = NextUnlocksConfig.Ambient.EMBERS;
+		NextUnlocksConfig.Ambient bubbles = NextUnlocksConfig.Ambient.BUBBLES;
+		NextUnlocksConfig.Ambient fireflies = NextUnlocksConfig.Ambient.FIREFLIES;
+		NextUnlocksConfig.Ambient sparkles = NextUnlocksConfig.Ambient.SPARKLES;
+		NextUnlocksConfig.Ambient leaves = NextUnlocksConfig.Ambient.LEAVES;
+		NextUnlocksConfig.Ambient runes = NextUnlocksConfig.Ambient.RUNES;
+		NextUnlocksConfig.Ambient dust = NextUnlocksConfig.Ambient.DUST;
+		NextUnlocksConfig.BorderMotion pulse = NextUnlocksConfig.BorderMotion.PULSE;
+		NextUnlocksConfig.BorderMotion runner = NextUnlocksConfig.BorderMotion.RUNNER;
+		NextUnlocksConfig.BorderMotion march = NextUnlocksConfig.BorderMotion.MARCH;
+		NextUnlocksConfig.BorderMotion flicker = NextUnlocksConfig.BorderMotion.FLICKER;
+		fx(Skill.ATTACK, notched, null, pulse);
+		fx(Skill.STRENGTH, riveted, null, pulse);
+		fx(Skill.DEFENCE, riveted, null, runner);
+		fx(Skill.RANGED, brackets, leaves, null);
+		fx(Skill.PRAYER, ornate, sparkles, pulse);
+		fx(Skill.HITPOINTS, null, null, pulse);
+		fx(Skill.COOKING, null, embers, flicker);
+		fx(Skill.WOODCUTTING, notched, leaves, null);
+		fx(Skill.FLETCHING, brackets, dust, null);
+		fx(Skill.FISHING, null, bubbles, null);
+		fx(Skill.FIREMAKING, null, embers, flicker);
+		fx(Skill.CRAFTING, ornate, sparkles, runner);
+		fx(Skill.SMITHING, riveted, embers, flicker);
+		fx(Skill.MINING, riveted, dust, null);
+		fx(Skill.HERBLORE, null, bubbles, pulse);
+		fx(Skill.AGILITY, brackets, null, runner);
+		fx(Skill.THIEVING, dashed, dust, march);
+		fx(Skill.FARMING, null, fireflies, null);
+		fx(Skill.RUNECRAFT, pixel, runes, runner);
+		fx(Skill.HUNTER, brackets, fireflies, null);
+		fx(Skill.CONSTRUCTION, riveted, dust, null);
+		fx(Skill.SAILING, null, bubbles, pulse);
 	}
 
 	private SkillLooks()
@@ -69,6 +118,18 @@ final class SkillLooks
 		NextUnlocksConfig.XpEffect effect)
 	{
 		ROWS.put(skill, new Row(base, background, border, null, accent, fill, effect));
+	}
+
+	private static void fx(Skill skill, CardTheme.Frame frame, NextUnlocksConfig.Ambient ambient,
+		NextUnlocksConfig.BorderMotion motion)
+	{
+		Row row = ROWS.get(skill);
+		if (row != null)
+		{
+			row.frame = frame;
+			row.ambient = ambient;
+			row.motion = motion;
+		}
 	}
 
 	private static Color rgb(int rgb)
@@ -89,6 +150,21 @@ final class SkillLooks
 		}
 		Row row = ROWS.get(skill);
 		return row == null ? NextUnlocksConfig.XpEffect.SPARKS : row.effect;
+	}
+
+	/** What drifts about inside the skill's card, for Skill's own. */
+	static NextUnlocksConfig.Ambient ambient(Skill skill)
+	{
+		if (skill == Skill.MAGIC)
+		{
+			return NextUnlocksConfig.Ambient.SPARKLES;
+		}
+		if (skill == Skill.SLAYER)
+		{
+			return NextUnlocksConfig.Ambient.EMBERS;
+		}
+		Row row = ROWS.get(skill);
+		return row == null || row.ambient == null ? NextUnlocksConfig.Ambient.DUST : row.ambient;
 	}
 
 	/** The skill's own card. */
@@ -117,7 +193,13 @@ final class SkillLooks
 			.nextUnlockLevel(row.accent)
 			.taskTitle(row.accent)
 			.barFill(row.fill)
-			.xpEffect(row.effect);
+			.xpEffect(row.effect)
+			.ambient(row.ambient)
+			.borderMotion(row.motion);
+		if (row.frame != null)
+		{
+			theme.frame(row.frame);
+		}
 		if (row.background != null)
 		{
 			theme.background(row.background);
@@ -181,6 +263,8 @@ final class SkillLooks
 			.barBackground(new Color(0x3a3230))
 			.barText(light)
 			.xpEffect(NextUnlocksConfig.XpEffect.EMBERS)
+			.ambient(NextUnlocksConfig.Ambient.EMBERS)
+			.borderMotion(NextUnlocksConfig.BorderMotion.PULSE)
 			.build();
 	}
 

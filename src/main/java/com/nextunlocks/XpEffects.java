@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.geom.Ellipse2D;
 import java.util.Locale;
 import java.util.Random;
 import lombok.Value;
@@ -37,6 +38,25 @@ final class XpEffects
 	};
 	private static final Color[] LEAVES = {
 		new Color(90, 170, 60), new Color(140, 200, 70), new Color(60, 130, 40), new Color(200, 180, 60),
+	};
+	private static final Color[] HEARTS = {
+		new Color(255, 60, 80), new Color(220, 20, 50), new Color(255, 120, 140),
+	};
+	private static final Color[] COINS = {
+		new Color(255, 215, 60), new Color(230, 180, 30), new Color(255, 240, 140),
+	};
+	private static final Color[] SMOKE = {
+		new Color(190, 190, 190, 150), new Color(150, 150, 150, 150), new Color(220, 220, 220, 130),
+	};
+	private static final Color[] BOLTS = {
+		new Color(200, 235, 255), new Color(140, 200, 255), Color.WHITE, new Color(255, 250, 170),
+	};
+	/** A little heart, row by row. */
+	private static final String[] HEART = {
+		".X.X.",
+		"XXXXX",
+		".XXX.",
+		"..X..",
 	};
 
 	/** The xp a skill just gained, added up over gains that came close together. */
@@ -103,7 +123,7 @@ final class XpEffects
 	{
 		NextUnlocksConfig.XpEffect effect = theme.getXpEffect();
 		boolean smooth = effect == NextUnlocksConfig.XpEffect.BUBBLES || effect == NextUnlocksConfig.XpEffect.STARS
-			|| effect == NextUnlocksConfig.XpEffect.LEAVES;
+			|| effect == NextUnlocksConfig.XpEffect.LEAVES || effect == NextUnlocksConfig.XpEffect.SMOKE;
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 			smooth ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF);
 		Color[] colors = colors(theme, effect);
@@ -206,6 +226,63 @@ final class XpEffects
 					graphics.fillRect((int) x, (int) y - 1, 1, 2);
 					break;
 				}
+				case HEARTS:
+				{
+					double x = sx + Math.sin(age * 5 + i) * 3;
+					double y = sy - 4 - (18 + random.nextDouble() * 24) * age;
+					heart(graphics, (int) x - 2, (int) y - 2);
+					break;
+				}
+				case COINS:
+				{
+					double vx = (random.nextDouble() * 2 - 1) * 50;
+					double vy = -(70 + random.nextDouble() * 70);
+					double x = sx + vx * age;
+					double y = sy + vy * age + 0.5 * 380 * age * age;
+					// turning over as it flies: narrow, wide, narrow
+					int w = Math.max(1, (int) Math.round(3 * Math.abs(Math.cos(age * 12 + i))));
+					graphics.fillRect((int) x - w / 2, (int) y - 1, w, 3);
+					if (w > 1)
+					{
+						graphics.setColor(new Color(255, 250, 210, color.getAlpha()));
+						graphics.fillRect((int) x - w / 2, (int) y - 1, 1, 1);
+					}
+					break;
+				}
+				case SMOKE:
+				{
+					double x = sx + Math.sin(age * 3 + i) * 3 + 8 * age;
+					double y = sy - (14 + random.nextDouble() * 16) * age;
+					// spreads out and thins as it rises
+					double size = 2 + 6 * age / life;
+					graphics.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (c.getAlpha() * left * 0.8)));
+					graphics.fill(new Ellipse2D.Double(x - size / 2, y - size / 2, size, size));
+					break;
+				}
+				case BOLTS:
+				{
+					// a quick crooked flash off the bar, gone before it moves
+					if (age > life * 0.35)
+					{
+						break;
+					}
+					graphics.setStroke(new BasicStroke(1));
+					double angle = -Math.PI / 2 + (random.nextDouble() * 2 - 1) * 1.1;
+					double x = sx;
+					double y = sy;
+					int steps = 3 + random.nextInt(3);
+					for (int s = 0; s < steps; s++)
+					{
+						double reach = 3 + random.nextDouble() * 4;
+						double turn = angle + (random.nextDouble() * 2 - 1) * 0.9;
+						double nx = x + Math.cos(turn) * reach;
+						double ny = y + Math.sin(turn) * reach;
+						graphics.drawLine((int) x, (int) y, (int) nx, (int) ny);
+						x = nx;
+						y = ny;
+					}
+					break;
+				}
 				case PIXELS:
 				default:
 				{
@@ -225,12 +302,13 @@ final class XpEffects
 	static int count(NextUnlocksConfig.XpEffect effect, int amount)
 	{
 		int base = effect == NextUnlocksConfig.XpEffect.BUBBLES || effect == NextUnlocksConfig.XpEffect.RUNES
-			|| effect == NextUnlocksConfig.XpEffect.LEAVES ? 5 : 9;
+			|| effect == NextUnlocksConfig.XpEffect.LEAVES || effect == NextUnlocksConfig.XpEffect.HEARTS
+			|| effect == NextUnlocksConfig.XpEffect.SMOKE || effect == NextUnlocksConfig.XpEffect.BOLTS ? 5 : 9;
 		int extra = (int) Math.round(Math.log10(Math.max(1, amount)) * 3);
 		return Math.min(base * 2 + 6, base + extra);
 	}
 
-	/** The fixed colors of fire, water and leaves; stars, runes and pixels take the card's own. */
+	/** The fixed colors of fire, water, leaves and the like; stars, runes and pixels take the card's own. */
 	static Color[] colors(CardTheme theme, NextUnlocksConfig.XpEffect effect)
 	{
 		switch (effect)
@@ -243,6 +321,14 @@ final class XpEffects
 				return BUBBLES;
 			case LEAVES:
 				return LEAVES;
+			case HEARTS:
+				return HEARTS;
+			case COINS:
+				return COINS;
+			case SMOKE:
+				return SMOKE;
+			case BOLTS:
+				return BOLTS;
 			case PIXELS:
 				if (theme.getBurst() != null)
 				{
@@ -272,6 +358,20 @@ final class XpEffects
 		graphics.drawString(text, x + 1, y + 1);
 		graphics.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha));
 		graphics.drawString(text, x, y);
+	}
+
+	private static void heart(Graphics2D graphics, int x, int y)
+	{
+		for (int row = 0; row < HEART.length; row++)
+		{
+			for (int col = 0; col < HEART[row].length(); col++)
+			{
+				if (HEART[row].charAt(col) == 'X')
+				{
+					graphics.fillRect(x + col, y + row, 1, 1);
+				}
+			}
+		}
 	}
 
 	private static long seed(long h)

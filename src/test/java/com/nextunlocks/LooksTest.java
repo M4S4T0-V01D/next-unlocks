@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import net.runelite.api.Skill;
+import net.runelite.client.ui.overlay.components.LineComponent;
+import net.runelite.client.ui.overlay.components.PanelComponent;
 import org.junit.Test;
 
 public class LooksTest
@@ -115,7 +117,7 @@ public class LooksTest
 	{
 		assertNull(pinned(Skill.ATTACK, "pinBorderWidth", "NONE").getBorder());
 		assertEquals(3, pinned(Skill.ATTACK, "pinBorderWidth", "HEAVY").getBorderWidth());
-		assertEquals(CardTheme.Frame.ROUNDED, pinned(Skill.ATTACK, "pinCorner", "ROUND").getFrame());
+		assertEquals(CardTheme.Frame.ROUNDED, pinned(Skill.ATTACK, "pinStyle", "CLASSIC", "pinCorner", "ROUND").getFrame());
 		assertEquals(6, pinned(Skill.ATTACK, "pinCorner", "ROUND").getCorner());
 		assertEquals(8, pinned(Skill.ATTACK, "pinPadding", "ROOMY").getPadding());
 		assertNull(pinned(Skill.ATTACK, "pinXpEffect", "OFF").getXpEffect());
@@ -142,6 +144,56 @@ public class LooksTest
 			for (Skill skill : new Skill[]{null, Skill.MAGIC, Skill.SAILING})
 			{
 				assertNotNull(style.name(), pinned(skill, "pinStyle", style.name()));
+			}
+		}
+	}
+
+	@Test
+	public void framesMatchTheMenu()
+	{
+		for (NextUnlocksConfig.FrameStyle frame : NextUnlocksConfig.FrameStyle.values())
+		{
+			if (frame != NextUnlocksConfig.FrameStyle.STYLE)
+			{
+				assertEquals(frame.name(), CardTheme.Frame.valueOf(frame.name()),
+					pinned(Skill.ATTACK, "pinStyle", "CLASSIC", "pinFrame", frame.name()).getFrame());
+			}
+		}
+		assertEquals(CardTheme.Frame.NOTCHED, pinned(Skill.ATTACK).getFrame());
+		assertEquals(NextUnlocksConfig.Ambient.LEAVES, pinned(Skill.WOODCUTTING, "pinStyle", "CLASSIC", "pinAmbient", "AUTO").getAmbient());
+		assertNull(pinned(Skill.WOODCUTTING, "pinAmbient", "OFF").getAmbient());
+		assertNull(pinned(null, "pinStyle", "CLASSIC", "pinAmbient", "AUTO").getAmbient());
+		assertEquals(NextUnlocksConfig.BorderMotion.RAINBOW, pinned(Skill.ATTACK, "pinBorderMotion", "RAINBOW").getBorderMotion());
+		assertNull(pinned(Skill.ATTACK, "pinBorderMotion", "OFF").getBorderMotion());
+		for (Skill skill : Skills.STATS_TAB.keySet())
+		{
+			assertNotNull(skill.getName(), SkillLooks.ambient(skill));
+		}
+	}
+
+	@Test
+	public void everyFrameMotionAndAmbientDraws()
+	{
+		NextUnlocksConfig.FrameStyle[] frames = NextUnlocksConfig.FrameStyle.values();
+		NextUnlocksConfig.BorderMotion[] motions = NextUnlocksConfig.BorderMotion.values();
+		NextUnlocksConfig.Ambient[] ambients = NextUnlocksConfig.Ambient.values();
+		int runs = Math.max(frames.length, Math.max(motions.length, ambients.length));
+		for (int i = 0; i < runs; i++)
+		{
+			for (String width : new String[]{"NONE", "HEAVY"})
+			{
+				CardTheme theme = pinned(Skill.ATTACK, "pinFrame", frames[i % frames.length].name(),
+					"pinBorderMotion", motions[i % motions.length].name(), "pinAmbient", ambients[i % ambients.length].name(),
+					"pinBorderWidth", width, "pinScanlines", "ON");
+				PanelComponent panel = new PanelComponent();
+				panel.getChildren().add(LineComponent.builder().left("Attack").right("50").build());
+				TooltipBox box = new TooltipBox(panel, theme, new java.util.ArrayList<>());
+				BufferedImage image = new BufferedImage(260, 120, BufferedImage.TYPE_INT_ARGB);
+				Graphics2D g = image.createGraphics();
+				box.setPreferredLocation(new Point(10, 10));
+				box.render(g);
+				box.render(g);
+				g.dispose();
 			}
 		}
 	}

@@ -26,6 +26,17 @@ class CardTheme
 		/** Raised grey edges, like an old desktop window. */
 		BEVEL,
 		ROUNDED,
+		/** Corners cut off on the slant; the corner setting sizes the cut. */
+		NOTCHED,
+		/** A double frame bolted down at the corners and along the edges. */
+		RIVETED,
+		/** A faint edge with heavy brackets at the corners. */
+		BRACKETS,
+		/** A double frame with diamonds at the corners and the middle of the top and bottom. */
+		ORNATE,
+		/** Stepped corners, like an old console's text box. */
+		PIXEL,
+		DASHED,
 	}
 
 	private static final Color[] GREENS = {
@@ -75,6 +86,10 @@ class CardTheme
 	boolean xpPulse;
 	/** The skill's icon before its name on the title line. */
 	boolean skillIcon;
+	/** What drifts about inside the card all the time; null for nothing. */
+	NextUnlocksConfig.Ambient ambient;
+	/** How the border moves; null for not at all. */
+	NextUnlocksConfig.BorderMotion borderMotion;
 
 	Color skillName;
 	Color levelLabel;
@@ -249,6 +264,21 @@ class CardTheme
 			effect = skill == null ? null : SkillLooks.effect(skill);
 		}
 		theme.xpEffect(effect == NextUnlocksConfig.XpEffect.OFF ? null : effect);
+		NextUnlocksConfig.Ambient ambient = look.get("pinAmbient");
+		if (ambient == NextUnlocksConfig.Ambient.STYLE)
+		{
+			ambient = style.ambient;
+		}
+		if (ambient == NextUnlocksConfig.Ambient.AUTO)
+		{
+			ambient = skill == null ? null : SkillLooks.ambient(skill);
+		}
+		theme.ambient(ambient == NextUnlocksConfig.Ambient.OFF ? null : ambient);
+		NextUnlocksConfig.BorderMotion motion = look.get("pinBorderMotion");
+		if (motion != NextUnlocksConfig.BorderMotion.STYLE)
+		{
+			theme.borderMotion(motion == NextUnlocksConfig.BorderMotion.OFF ? null : motion);
+		}
 
 		NextUnlocksConfig.BorderWidth width = look.get("pinBorderWidth");
 		if (width == NextUnlocksConfig.BorderWidth.NONE)
@@ -263,13 +293,23 @@ class CardTheme
 		if (corner != NextUnlocksConfig.Corner.STYLE)
 		{
 			theme.corner(corner.radius);
-			if (corner.radius > 0 && colored.frame != Frame.BEVEL)
+			if (corner.radius > 0 && (colored.frame == Frame.CLASSIC || colored.frame == Frame.FLAT || colored.frame == Frame.DOUBLE))
 			{
 				theme.frame(Frame.ROUNDED);
 			}
 			else if (corner.radius == 0 && colored.frame == Frame.ROUNDED)
 			{
 				theme.frame(Frame.FLAT);
+			}
+		}
+		NextUnlocksConfig.FrameStyle frame = look.get("pinFrame");
+		if (frame != NextUnlocksConfig.FrameStyle.STYLE)
+		{
+			theme.frame(Frame.valueOf(frame.name()));
+			if (frame == NextUnlocksConfig.FrameStyle.ROUNDED && (corner == NextUnlocksConfig.Corner.STYLE ? colored.corner : corner.radius) == 0)
+			{
+				// rounded with square corners would only be flat
+				theme.corner(NextUnlocksConfig.Corner.ROUND.radius);
 			}
 		}
 		NextUnlocksConfig.Padding padding = look.get("pinPadding");

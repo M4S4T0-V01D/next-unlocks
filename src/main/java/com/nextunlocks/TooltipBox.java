@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
 import java.awt.Paint;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
@@ -171,6 +172,11 @@ class TooltipBox implements LayoutableRenderableEntity
 				graphics.setPaint(fill);
 				graphics.fill(new RoundRectangle2D.Double(box.x, box.y, box.width, box.height, corner(), corner()));
 				break;
+			case NOTCHED:
+			case PIXEL:
+				graphics.setPaint(fill);
+				graphics.fill(outline(box));
+				break;
 			default:
 				graphics.setPaint(fill);
 				graphics.fillRect(box.x, box.y, box.width, box.height);
@@ -188,10 +194,14 @@ class TooltipBox implements LayoutableRenderableEntity
 			int bottom = header.y + header.height + 1;
 			if (bottom > top)
 			{
+				Shape clip = graphics.getClip();
+				graphics.clip(outline(box));
 				graphics.setColor(theme.getHeaderBand());
 				graphics.fillRect(box.x + inset, top, box.width - inset * 2, bottom - top);
+				graphics.setClip(clip);
 			}
 		}
+		CardMotion.ambient(graphics, theme, outline(box), box);
 		graphics.setColor(color);
 	}
 
@@ -204,10 +214,7 @@ class TooltipBox implements LayoutableRenderableEntity
 		if (theme.isScanlines())
 		{
 			Shape clip = graphics.getClip();
-			if (theme.getFrame() == CardTheme.Frame.ROUNDED)
-			{
-				graphics.clip(outline(box));
-			}
+			graphics.clip(outline(box));
 			graphics.setColor(new Color(0, 0, 0, 40));
 			for (int y = box.y + 1; y < box.y + box.height; y += 2)
 			{
@@ -250,24 +257,91 @@ class TooltipBox implements LayoutableRenderableEntity
 					graphics.draw(new RoundRectangle2D.Double(box.x + w / 2.0, box.y + w / 2.0, box.width - w, box.height - w, corner(), corner()));
 				}
 				break;
-			default:
+			case NOTCHED:
+			case PIXEL:
+			{
+				boolean notched = theme.getFrame() == CardTheme.Frame.NOTCHED;
 				int w = theme.getBorderWidth();
 				if (border != null)
 				{
 					graphics.setColor(border);
 					for (int i = 0; i < w; i++)
 					{
-						graphics.drawRect(box.x + i, box.y + i, box.width - 1 - i * 2, box.height - 1 - i * 2);
+						graphics.drawPolygon(notched ? notched(box.x + i, box.y + i, right - i, bottom - i, notch(i))
+							: pixel(box.x + i, box.y + i, right - i, bottom - i));
 					}
 				}
-				if (theme.getFrame() == CardTheme.Frame.DOUBLE && theme.getInnerBorder() != null)
+				if (theme.getInnerBorder() != null)
 				{
 					int in = Math.max(1, w) + 1;
 					graphics.setColor(theme.getInnerBorder());
-					graphics.drawRect(box.x + in, box.y + in, box.width - 1 - in * 2, box.height - 1 - in * 2);
+					graphics.drawPolygon(notched ? notched(box.x + in, box.y + in, right - in, bottom - in, notch(in))
+						: pixel(box.x + in, box.y + in, right - in, bottom - in));
 				}
 				break;
+			}
+			case BRACKETS:
+			{
+				if (border == null)
+				{
+					break;
+				}
+				int t = Math.max(2, theme.getBorderWidth());
+				int arm = Math.max(6, Math.min(12, Math.min(box.width, box.height) / 5));
+				graphics.setColor(new Color(border.getRed(), border.getGreen(), border.getBlue(), border.getAlpha() / 3));
+				graphics.drawRect(box.x, box.y, box.width - 1, box.height - 1);
+				graphics.setColor(border);
+				graphics.fillRect(box.x, box.y, arm, t);
+				graphics.fillRect(box.x, box.y, t, arm);
+				graphics.fillRect(right + 1 - arm, box.y, arm, t);
+				graphics.fillRect(right + 1 - t, box.y, t, arm);
+				graphics.fillRect(box.x, bottom + 1 - t, arm, t);
+				graphics.fillRect(box.x, bottom + 1 - arm, t, arm);
+				graphics.fillRect(right + 1 - arm, bottom + 1 - t, arm, t);
+				graphics.fillRect(right + 1 - t, bottom + 1 - arm, t, arm);
+				break;
+			}
+			default:
+			{
+				int w = theme.getBorderWidth();
+				CardTheme.Frame frame = theme.getFrame();
+				if (border != null)
+				{
+					graphics.setColor(border);
+					if (frame == CardTheme.Frame.DASHED)
+					{
+						graphics.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, new float[]{5, 3}, 0));
+					}
+					for (int i = 0; i < w; i++)
+					{
+						graphics.drawRect(box.x + i, box.y + i, box.width - 1 - i * 2, box.height - 1 - i * 2);
+					}
+					graphics.setStroke(stroke);
+				}
+				// riveted and ornate frames always have an inner line; one the style lacks is the border, darker
+				Color inner = theme.getInnerBorder();
+				if (inner == null && border != null && (frame == CardTheme.Frame.RIVETED || frame == CardTheme.Frame.ORNATE))
+				{
+					inner = CardTheme.shade(border, Color.BLACK, 0.45);
+				}
+				if (inner != null && frame != CardTheme.Frame.CLASSIC && frame != CardTheme.Frame.FLAT)
+				{
+					int in = Math.max(1, w) + 1;
+					graphics.setColor(inner);
+					graphics.drawRect(box.x + in, box.y + in, box.width - 1 - in * 2, box.height - 1 - in * 2);
+				}
+				if (border != null && frame == CardTheme.Frame.RIVETED)
+				{
+					rivets(graphics, box, border);
+				}
+				if (border != null && frame == CardTheme.Frame.ORNATE)
+				{
+					ornaments(graphics, box, border, inner);
+				}
+				break;
+			}
 		}
+		CardMotion.border(graphics, theme, borderPath(box), box);
 		graphics.setStroke(stroke);
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, aa);
 		graphics.setColor(color);
@@ -302,19 +376,134 @@ class TooltipBox implements LayoutableRenderableEntity
 		graphics.setClip(clip);
 	}
 
+	/** Bolts at the corners and every so often along the edges. */
+	private static void rivets(Graphics2D graphics, Rectangle box, Color border)
+	{
+		Color dark = CardTheme.shade(border, Color.BLACK, 0.55);
+		Color light = CardTheme.shade(border, Color.WHITE, 0.45);
+		int size = 4;
+		int right = box.x + box.width - size;
+		int bottom = box.y + box.height - size;
+		int across = Math.max(1, (box.width - size) / 56);
+		int down = Math.max(1, (box.height - size) / 56);
+		for (int i = 0; i <= across; i++)
+		{
+			int x = box.x + (right - box.x) * i / across;
+			rivet(graphics, x, box.y, dark, light);
+			rivet(graphics, x, bottom, dark, light);
+		}
+		for (int i = 1; i < down; i++)
+		{
+			int y = box.y + (bottom - box.y) * i / down;
+			rivet(graphics, box.x, y, dark, light);
+			rivet(graphics, right, y, dark, light);
+		}
+	}
+
+	private static void rivet(Graphics2D graphics, int x, int y, Color dark, Color light)
+	{
+		graphics.setColor(dark);
+		graphics.fillRect(x + 1, y, 2, 4);
+		graphics.fillRect(x, y + 1, 4, 2);
+		graphics.setColor(light);
+		graphics.fillRect(x + 1, y + 1, 2, 2);
+		graphics.setColor(Color.WHITE);
+		graphics.fillRect(x + 1, y + 1, 1, 1);
+	}
+
+	/** Diamonds where the two lines meet at the corners, and smaller ones halfway along the top and bottom. */
+	private static void ornaments(Graphics2D graphics, Rectangle box, Color border, Color inner)
+	{
+		Color fill = CardTheme.shade(border, Color.WHITE, 0.35);
+		Color middle = inner != null ? inner : CardTheme.shade(border, Color.BLACK, 0.45);
+		int right = box.x + box.width - 1;
+		int bottom = box.y + box.height - 1;
+		diamond(graphics, box.x + 3, box.y + 3, 3, fill, middle);
+		diamond(graphics, right - 3, box.y + 3, 3, fill, middle);
+		diamond(graphics, box.x + 3, bottom - 3, 3, fill, middle);
+		diamond(graphics, right - 3, bottom - 3, 3, fill, middle);
+		int mid = box.x + box.width / 2;
+		diamond(graphics, mid, box.y + 2, 2, fill, middle);
+		diamond(graphics, mid, bottom - 2, 2, fill, middle);
+	}
+
+	private static void diamond(Graphics2D graphics, int x, int y, int r, Color fill, Color middle)
+	{
+		graphics.setColor(fill);
+		for (int d = -r; d <= r; d++)
+		{
+			int half = r - Math.abs(d);
+			graphics.fillRect(x - half, y + d, half * 2 + 1, 1);
+		}
+		graphics.setColor(middle);
+		graphics.fillRect(x, y, 1, 1);
+	}
+
 	private int corner()
 	{
 		return theme.getCorner() * 2;
 	}
 
+	/** How far the cut corners go in, at an inset; the corner setting makes them bigger. */
+	private int notch(int inset)
+	{
+		int cut = Math.max(4, theme.getCorner() + 2);
+		return Math.max(1, cut - (int) Math.round(inset * 0.414));
+	}
+
+	/** An eight-sided box with its corners cut by n. */
+	private static Polygon notched(int x, int y, int right, int bottom, int n)
+	{
+		return new Polygon(
+			new int[]{x + n, right - n, right, right, right - n, x + n, x, x},
+			new int[]{y, y, y + n, bottom - n, bottom, bottom, bottom - n, y + n}, 8);
+	}
+
+	/** A box with corners stepped two pixels at a time. */
+	private static Polygon pixel(int x, int y, int right, int bottom)
+	{
+		int s = 2;
+		return new Polygon(
+			new int[]{x + 2 * s, right - 2 * s, right - 2 * s, right - s, right - s, right, right, right - s, right - s,
+				right - 2 * s, right - 2 * s, x + 2 * s, x + 2 * s, x + s, x + s, x, x, x + s, x + s, x + 2 * s},
+			new int[]{y, y, y + s, y + s, y + 2 * s, y + 2 * s, bottom - 2 * s, bottom - 2 * s, bottom - s, bottom - s,
+				bottom, bottom, bottom - s, bottom - s, bottom - 2 * s, bottom - 2 * s, y + 2 * s, y + 2 * s, y + s, y + s}, 20);
+	}
+
 	/** The frame's outline shape, for the glow and for clipping. */
 	private Shape outline(Rectangle box)
 	{
-		if (theme.getFrame() == CardTheme.Frame.ROUNDED)
+		switch (theme.getFrame())
 		{
-			return new RoundRectangle2D.Double(box.x, box.y, box.width, box.height, corner(), corner());
+			case ROUNDED:
+				return new RoundRectangle2D.Double(box.x, box.y, box.width, box.height, corner(), corner());
+			case NOTCHED:
+				return notched(box.x, box.y, box.x + box.width, box.y + box.height, notch(0));
+			case PIXEL:
+				return pixel(box.x, box.y, box.x + box.width, box.y + box.height);
+			default:
+				return box;
 		}
-		return box;
+	}
+
+	/** The line the border's pixels run along, for moving borders. */
+	private Shape borderPath(Rectangle box)
+	{
+		int w = Math.max(1, theme.getBorderWidth());
+		int h = (w - 1) / 2;
+		int right = box.x + box.width - 1 - h;
+		int bottom = box.y + box.height - 1 - h;
+		switch (theme.getFrame())
+		{
+			case ROUNDED:
+				return new RoundRectangle2D.Double(box.x + w / 2.0, box.y + w / 2.0, box.width - w, box.height - w, corner(), corner());
+			case NOTCHED:
+				return notched(box.x + h, box.y + h, right, bottom, notch(h));
+			case PIXEL:
+				return pixel(box.x + h, box.y + h, right, bottom);
+			default:
+				return new Rectangle(box.x + h, box.y + h, right - box.x - h, bottom - box.y - h);
+		}
 	}
 
 	/** Where the title line was last drawn, if the card starts with one. */

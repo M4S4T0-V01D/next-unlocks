@@ -385,11 +385,99 @@ public interface NextUnlocksConfig extends Config
 		LEAVES("Leaves"),
 		STARS("Stars"),
 		PIXELS("Pixels"),
-		RUNES("Runes");
+		RUNES("Runes"),
+		HEARTS("Hearts"),
+		COINS("Coins"),
+		SMOKE("Smoke"),
+		BOLTS("Lightning");
 
 		private final String name;
 
 		XpEffect(String name)
+		{
+			this.name = name;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
+	/** The shape of a card's frame; the names match the card's own frames. */
+	enum FrameStyle
+	{
+		STYLE("Style default"),
+		CLASSIC("Classic"),
+		FLAT("Flat"),
+		DOUBLE("Double"),
+		BEVEL("Raised"),
+		ROUNDED("Rounded"),
+		NOTCHED("Cut corners"),
+		RIVETED("Riveted"),
+		BRACKETS("Corner brackets"),
+		ORNATE("Ornate"),
+		PIXEL("Pixel"),
+		DASHED("Dashed");
+
+		private final String name;
+
+		FrameStyle(String name)
+		{
+			this.name = name;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
+	/** What drifts about inside a card all the time, behind the text. */
+	enum Ambient
+	{
+		STYLE("Style default"),
+		AUTO("Skill's own"),
+		OFF("Off"),
+		EMBERS("Embers"),
+		BUBBLES("Bubbles"),
+		SNOW("Snow"),
+		FIREFLIES("Fireflies"),
+		SPARKLES("Sparkles"),
+		LEAVES("Leaves"),
+		RUNES("Runes"),
+		DUST("Dust");
+
+		private final String name;
+
+		Ambient(String name)
+		{
+			this.name = name;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
+	/** How a card's border moves. */
+	enum BorderMotion
+	{
+		STYLE("Style default"),
+		OFF("Off"),
+		PULSE("Pulse"),
+		RUNNER("Running light"),
+		RAINBOW("Rainbow"),
+		MARCH("Marching"),
+		FLICKER("Flicker");
+
+		private final String name;
+
+		BorderMotion(String name)
 		{
 			this.name = name;
 		}
@@ -734,6 +822,42 @@ public interface NextUnlocksConfig extends Config
 	default Padding pinPadding()
 	{
 		return Padding.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinFrame",
+		name = "Frame",
+		description = "The shape of the card's frame: cut corners, rivets, corner brackets, ornaments and more",
+		position = 120,
+		section = pinStyleSection
+	)
+	default FrameStyle pinFrame()
+	{
+		return FrameStyle.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinBorderMotion",
+		name = "Border motion",
+		description = "Make the border pulse, flicker, cycle colors or run a light around the card",
+		position = 121,
+		section = pinStyleSection
+	)
+	default BorderMotion pinBorderMotion()
+	{
+		return BorderMotion.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinAmbient",
+		name = "Ambient",
+		description = "Something that drifts about inside the card all the time, behind the text. Skill's own picks one for each skill",
+		position = 122,
+		section = pinStyleSection
+	)
+	default Ambient pinAmbient()
+	{
+		return Ambient.STYLE;
 	}
 
 	@ConfigSection(

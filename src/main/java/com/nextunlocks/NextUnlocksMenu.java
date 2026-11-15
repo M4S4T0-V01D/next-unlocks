@@ -290,12 +290,15 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		frames.add(lookChoice("Bar fade", "pinBarGradient", toggle));
 		frames.add(lookChoice("Title band", "pinHeaderBand", toggle));
 		frames.add(lookChoice("Shimmer", "pinShimmer", toggle));
+		frames.add(lookChoice("Frame", "pinFrame", NextUnlocksConfig.FrameStyle.values()));
 		frames.add(lookChoice("Border", "pinBorderWidth", NextUnlocksConfig.BorderWidth.values()));
+		frames.add(lookChoice("Border motion", "pinBorderMotion", NextUnlocksConfig.BorderMotion.values()));
 		frames.add(lookChoice("Corners", "pinCorner", NextUnlocksConfig.Corner.values()));
 		frames.add(lookChoice("Padding", "pinPadding", NextUnlocksConfig.Padding.values()));
 		opacity = new Slider("Opacity", "tooltipOpacity", 0, 100, () -> plugin.look(target).<Integer>get("tooltipOpacity"));
 
 		effects.add(lookChoice("XP effect", "pinXpEffect", NextUnlocksConfig.XpEffect.values()));
+		effects.add(lookChoice("Ambient", "pinAmbient", NextUnlocksConfig.Ambient.values()));
 		effects.add(lookChoice("XP popup", "pinXpPopup", toggle));
 		effects.add(lookChoice("Bar pulse", "pinXpPulse", toggle));
 		effects.add(lookChoice("Level-up flash", "pinLevelUp", toggle));
