@@ -14,11 +14,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -36,6 +38,8 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.Experience;
 import net.runelite.api.GameState;
+import net.runelite.api.Item;
+import net.runelite.api.ItemContainer;
 import net.runelite.api.Menu;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
@@ -53,6 +57,8 @@ import net.runelite.api.events.ScriptPostFired;
 import net.runelite.api.events.ScriptPreFired;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.gameval.InterfaceID;
+import net.runelite.api.gameval.InventoryID;
+import net.runelite.api.gameval.SpriteID;
 import net.runelite.api.gameval.VarPlayerID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.Notifier;
@@ -65,10 +71,13 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
-import net.runelite.client.events.OverlayMenuClicked;
+import net.runelite.client.game.chatbox.ChatboxPanelManager;
+import net.runelite.client.events.InfoBoxMenuClicked;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.game.SpriteManager;
+import net.runelite.client.input.KeyManager;
+import net.runelite.client.input.MouseManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -79,10 +88,9 @@ import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.components.ComponentConstants;
 import net.runelite.client.ui.overlay.components.ComponentOrientation;
 import net.runelite.client.ui.overlay.components.LayoutableRenderableEntity;
-import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
-import net.runelite.client.ui.overlay.components.ProgressBarComponent;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
+import net.runelite.client.util.AsyncBufferedImage;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
@@ -102,8 +110,11 @@ public class NextUnlocksPlugin extends Plugin
 	private static final int ICON_TOP_PADDING = 3;
 	/** PanelComponent's default left plus right border. */
 	private static final int PANEL_BORDER = 10;
+	/** PanelComponent's default border on each side, which the classic card keeps. */
+	private static final int PANEL_PADDING = 4;
 	private static final String PIN = "Pin";
 	private static final String UNPIN = "Unpin";
+	private static final String EXAMINE = "Examine";
 	private static final String REMOVE_GOAL = "Remove goal";
 	private static final String SET_GOAL = "Set goal";
 	/** Upcoming unlock levels offered in the Set goal menu. */
@@ -117,6 +128,16 @@ public class NextUnlocksPlugin extends Plugin
 	private static final String TASK_SEPARATOR = "\n";
 	/** Requirement lines on a quest or diary card before the rest are counted as "+N more". */
 	private static final int TASK_LINES = 10;
+	/** The material line under an item goal's making level: its text size against the card's, and the smallest. */
+	private static final float MATERIAL_SIZE = 0.75f;
+	private static final int MATERIAL_MIN_SIZE = 10;
+	/** Points the name on a quest or diary card is set bigger than the card's text. */
+	private static final int TASK_TITLE_GROWTH = 4;
+	/** Unmet requirements of a quest an unlock or item needs, on tiny lines under it, before "+N more". */
+	private static final int QUEST_SUB_LINES = 3;
+	/** Between a pinned card's key and a requirement's label in the checked-off list. */
+	private static final String CHECK_SEPARATOR = "\t";
+	private static final String SET_AMOUNT = "Set amount goal";
 	private static final Map<Integer, Quest> QUESTS = new HashMap<>();
 	private static final Map<String, Quest> QUESTS_BY_NAME = new HashMap<>();
 
@@ -177,6 +198,18 @@ public class NextUnlocksPlugin extends Plugin
 	@Inject
 	private InfoBoxManager infoBoxManager;
 
+	@Inject
+	private ChatboxPanelManager chatboxPanelManager;
+
+	@Inject
+	private NextUnlocksMenu menu;
+
+	@Inject
+	private MouseManager mouseManager;
+
+	@Inject
+	private KeyManager keyManager;
+
 	private final UnlockRepository repository = new UnlockRepository();
 	/** Real levels as last seen; client thread only. Empty while logged out. */
 	private final Map<Skill, Integer> levels = new EnumMap<>(Skill.class);
@@ -184,6 +217,8 @@ public class NextUnlocksPlugin extends Plugin
 	private final Map<Skill, TooltipBox> tooltipCache = new ConcurrentHashMap<>();
 	/** Pinned cards, built apart from the hover tooltips since they also show the skill and level. */
 	private final Map<Skill, TooltipBox> pinnedCache = new ConcurrentHashMap<>();
+	/** Each skill's latest level-up, for the arcade bar's show; client thread. */
+	private final Map<Skill, PinBar.LevelUp> levelUps = new EnumMap<>(Skill.class);
 
 	/** Skills whose tooltip is pinned above the chatbox, in pin order. Client thread. */
 	@Getter
@@ -218,6 +253,15 @@ public class NextUnlocksPlugin extends Plugin
 	private Set<String> finishedQuests = Collections.emptySet();
 	/** Client thread. */
 	private final List<GoalInfoBox> goalBoxes = new ArrayList<>();
+	/** Requirements checked off by hand, as the card's key, a tab and the requirement's label; replaced whole. */
+	private volatile Set<String> checkedOff = Collections.emptySet();
+	/** Amount goals by pin key, in the order set; client thread. */
+	private final Map<String, Tally> tallies = new ConcurrentHashMap<>();
+	/** The inventory's amounts at the last tick, by unnoted item ID, or null before the first; client thread. */
+	private Map<Integer, Integer> lastInventory;
+	/** The xp of each skill with an amount goal at the last tick, and the skills that gained some then; client thread. */
+	private final Map<Skill, Integer> lastXp = new EnumMap<>(Skill.class);
+	private Set<Skill> gainedLastTick = EnumSet.noneOf(Skill.class);
 
 	@Provides
 	NextUnlocksConfig provideConfig(ConfigManager configManager)
@@ -230,11 +274,13 @@ public class NextUnlocksPlugin extends Plugin
 	{
 		repository.load(gson);
 		tasks.load(gson, repository.diaries());
+		tasks.setUnlocks(this::unlockTask);
 
 		loadHiddenSections();
 		goals = Goal.parse(config.goals());
 		panel = new NextUnlocksPanel(repository, skillIconManager, itemManager, spriteManager, this::setSectionHidden, this::toggleGoal,
-			title -> tasks.get(title) != null, this::toggleTaskLater);
+			title -> tasks.get(title) != null, this::toggleTaskLater, tasks::items,
+			(skill, item) -> clientThread.invokeLater(() -> askTally(skill, item)));
 		BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 		navButton = NavigationButton.builder()
 			.tooltip("Next Unlocks")
@@ -245,6 +291,10 @@ public class NextUnlocksPlugin extends Plugin
 		clientToolbar.addNavigation(navButton);
 		overlayManager.add(tooltipOverlay);
 		overlayManager.add(pinnedOverlay);
+		overlayManager.add(menu);
+		mouseManager.registerMouseListener(menu);
+		mouseManager.registerMouseWheelListener(menu);
+		keyManager.registerKeyListener(menu);
 		skillGuide = new SkillGuide(client, clientThread, config, repository, this::snapshot);
 
 		clientThread.invokeLater(() ->
@@ -270,16 +320,25 @@ public class NextUnlocksPlugin extends Plugin
 	{
 		overlayManager.remove(tooltipOverlay);
 		overlayManager.remove(pinnedOverlay);
+		keyManager.unregisterKeyListener(menu);
+		mouseManager.unregisterMouseWheelListener(menu);
+		mouseManager.unregisterMouseListener(menu);
+		overlayManager.remove(menu);
+		menu.close();
 		goalBoxes.forEach(infoBoxManager::removeInfoBox);
 		goalBoxes.clear();
 		skillGuide.shutDown();
 		skillGuide = null;
 		pinned.clear();
 		pinnedTasks.clear();
+		tallies.clear();
+		lastInventory = null;
+		lastXp.clear();
 		questStates = Collections.emptyMap();
 		clientToolbar.removeNavigation(navButton);
 		levels.clear();
 		boosts.clear();
+		levelUps.clear();
 		clearTooltips();
 		unfinishedQuests = Collections.emptySet();
 		questsToDo = Collections.emptySet();
@@ -298,7 +357,10 @@ public class NextUnlocksPlugin extends Plugin
 				loadSkillGuide();
 				// stats arrive again after login; an empty map keeps those from looking like level-ups
 				levels.clear();
+				lastInventory = null;
+				lastXp.clear();
 				boosts.clear();
+				levelUps.clear();
 				clearTooltips();
 				unfinishedQuests = Collections.emptySet();
 				questsToDo = Collections.emptySet();
@@ -353,6 +415,9 @@ public class NextUnlocksPlugin extends Plugin
 		}
 		if (previous != null && level > previous)
 		{
+			// reached the unlock its bar was filling toward, or just another level on the way
+			NavigableMap<Integer, List<Unlock>> wasNext = repository.upcoming(skill, previous, snapshot().upcoming(skill), 1);
+			levelUps.put(skill, new PinBar.LevelUp(System.currentTimeMillis(), !wasNext.isEmpty() && wasNext.firstKey() <= level));
 			if (config.levelUpMessage())
 			{
 				announce(skill, previous, level);
@@ -377,6 +442,113 @@ public class NextUnlocksPlugin extends Plugin
 		{
 			pushToPanel();
 		}
+		countTallies();
+	}
+
+	/**
+	 * Counts what the amount goals' skills made or gathered this tick: the change in each item's inventory amount, on a
+	 * tick the skill gained xp or the one after, since an item can land a tick after its xp.
+	 */
+	private void countTallies()
+	{
+		if (tallies.isEmpty() || client.getGameState() != GameState.LOGGED_IN)
+		{
+			lastInventory = null;
+			return;
+		}
+		Set<Skill> gained = EnumSet.noneOf(Skill.class);
+		for (Tally tally : tallies.values())
+		{
+			int xp = client.getSkillExperience(tally.getSkill());
+			Integer was = lastXp.put(tally.getSkill(), xp);
+			if (was != null && xp > was)
+			{
+				gained.add(tally.getSkill());
+			}
+		}
+		Map<Integer, Integer> inventory = new HashMap<>();
+		ItemContainer container = client.getItemContainer(InventoryID.INV);
+		for (Item item : container == null ? new Item[0] : container.getItems())
+		{
+			if (item.getId() > 0)
+			{
+				inventory.merge(itemManager.canonicalize(item.getId()), item.getQuantity(), Integer::sum);
+			}
+		}
+		Map<Integer, Integer> before = lastInventory;
+		Set<Skill> gainedBefore = gainedLastTick;
+		lastInventory = inventory;
+		gainedLastTick = gained;
+		if (before == null)
+		{
+			return;
+		}
+		boolean changed = false;
+		for (Map.Entry<String, Tally> e : tallies.entrySet())
+		{
+			Tally tally = e.getValue();
+			int change = inventory.getOrDefault(tally.getItem(), 0) - before.getOrDefault(tally.getItem(), 0);
+			int add = tally.isDone() ? 0 : Tally.counted(tally.getSkill(), change,
+				gained.contains(tally.getSkill()) || gainedBefore.contains(tally.getSkill()));
+			if (add > 0)
+			{
+				Tally now = tally.withCount(tally.getCount() + add);
+				e.setValue(now);
+				taskCache.remove(e.getKey());
+				changed = true;
+				if (now.isDone())
+				{
+					sendChat("Amount goal reached! ", tally.getSkill().getName() + ":", now.goalText());
+					notifier.notify(config.goalNotification(), "Amount goal reached! " + now.goalText());
+				}
+			}
+		}
+		if (changed)
+		{
+			saveTallies();
+		}
+	}
+
+	private void saveTallies()
+	{
+		configManager.setConfiguration(NextUnlocksConfig.GROUP, "tallies", Tally.format(tallies.values()));
+	}
+
+	/** Asks in the chatbox how many of a skill's item to aim for, and pins or updates that amount goal. Client thread. */
+	void askTally(Skill skill, int itemId)
+	{
+		int item = itemManager.canonicalize(itemId);
+		String name = itemManager.getItemComposition(item).getName();
+		String key = Tally.key(skill, item);
+		chatboxPanelManager.openTextInput("How many " + name + " to " + Tally.verb(skill).toLowerCase() + "? (like 500 or 2k)")
+			.onDone((String text) -> clientThread.invoke(() ->
+			{
+				int amount = Tally.parseAmount(text);
+				if (amount <= 0)
+				{
+					return;
+				}
+				Tally old = tallies.get(key);
+				tallies.put(key, old != null ? old.withTarget(amount) : new Tally(skill, item, name, amount, 0));
+				pinnedTasks.add(key);
+				taskCache.remove(key);
+				saveTallies();
+				saveTaskPins();
+				pushToPanel();
+			}))
+			.build();
+	}
+
+	/** Starts an amount goal's count again from 0. Client thread. */
+	private void resetTally(String key)
+	{
+		Tally tally = tallies.get(key);
+		if (tally != null)
+		{
+			tallies.put(key, tally.withCount(0));
+			taskCache.remove(key);
+			saveTallies();
+		}
 	}
 
 	@Subscribe
@@ -396,6 +568,11 @@ public class NextUnlocksPlugin extends Plugin
 	{
 		if (NextUnlocksConfig.GROUP.equals(event.getGroup()))
 		{
+			if ("tallies".equals(event.getKey()) || "checkedOff".equals(event.getKey()))
+			{
+				// saved by the plugin itself, which already updated its cards
+				return;
+			}
 			if ("hiddenSections".equals(event.getKey()))
 			{
 				loadHiddenSections();
@@ -476,9 +653,10 @@ public class NextUnlocksPlugin extends Plugin
 		int xp = client.getSkillExperience(skill);
 		int xpToGo = Math.max(0, Experience.getXpForLevel(nextLevel) - xp);
 
+		CardTheme theme = theme(palette, pinnedCard);
 		int textSize = config.tooltipTextSize();
 		Font regular = FontManager.getRunescapeFont();
-		Font font = textSize == regular.getSize() ? regular : regular.deriveFont((float) textSize);
+		Font font = theme.font(textSize);
 		double scale = config.tooltipIconSize() / 100.0;
 		boolean iconsOnly = config.tooltipIconsOnly() && unlocks.stream().anyMatch(Unlock::hasIcon);
 		NumberFormat number = NumberFormat.getIntegerInstance();
@@ -490,52 +668,48 @@ public class NextUnlocksPlugin extends Plugin
 		{
 			// boosted or drained levels read like the skills tab, 47/45
 			int boosted = client.getBoostedSkillLevel(skill);
-			lines.add(LineComponent.builder()
-				.left(skill.getName())
-				.leftColor(palette.getNext())
-				.leftFont(font)
-				.right(boosted == level ? "Level " + level : "Level " + boosted + "/" + level)
-				.rightColor(boosted > level ? Color.GREEN : boosted < level ? Color.RED : Color.WHITE)
-				.rightFont(font)
-				.build());
+			lines.add(new CardLine(theme, font, true)
+				.left(skill.getName(), theme.getSkillName())
+				.right("Level ", theme.getLevelLabel())
+				.right(boosted == level ? String.valueOf(level) : boosted + "/" + level,
+					boosted > level ? Color.GREEN : boosted < level ? Color.RED : theme.getLevelValue()));
 		}
 		if (config.tooltipXp())
 		{
 			// the lines of the game's own tooltip, which onBeforeRender hides
 			// the header already names the skill
-			LineComponent current = line(font, header ? "XP:" : skill.getName() + " XP:", number.format(xp));
+			CardLine current = new CardLine(theme, font)
+				.left(header ? "XP:" : skill.getName() + " XP:", theme.getXpLabel())
+				.right(number.format(xp), theme.getXpValue());
 			lines.add(current);
-			updates.add(x -> current.setRight(number.format(x)));
+			updates.add(x -> current.setRight(0, number.format(x)));
 			if (level < Experience.MAX_REAL_LEVEL)
 			{
 				int nextXp = Experience.getXpForLevel(level + 1);
-				lines.add(line(font, "Next level at:", number.format(nextXp)));
-				LineComponent remaining = line(font, "Remaining XP:", number.format(Math.max(0, nextXp - xp)));
+				lines.add(new CardLine(theme, font)
+					.left("Next level at:", theme.getNextLevelLabel())
+					.right(number.format(nextXp), theme.getNextLevelValue()));
+				CardLine remaining = new CardLine(theme, font)
+					.left("Remaining XP:", theme.getRemainingLabel())
+					.right(number.format(Math.max(0, nextXp - xp)), theme.getRemainingValue());
 				lines.add(remaining);
-				updates.add(x -> remaining.setRight(number.format(Math.max(0, nextXp - x))));
+				updates.add(x -> remaining.setRight(0, number.format(Math.max(0, nextXp - x))));
 			}
 		}
 		if (!iconsOnly)
 		{
-			LineComponent nextUnlock = LineComponent.builder()
-				.left("Next unlock: " + nextLevel)
-				.leftColor(palette.getNext())
-				.leftFont(font)
-				.right(number.format(xpToGo) + " xp")
-				.rightFont(font)
-				.build();
+			CardLine nextUnlock = new CardLine(theme, font)
+				.left("Next unlock: ", theme.getNextUnlockLabel())
+				.left(String.valueOf(nextLevel), theme.getNextUnlockLevel())
+				.right(number.format(xpToGo) + " xp", theme.getNextUnlockXp());
 			lines.add(nextUnlock);
 			int nextUnlockXp = Experience.getXpForLevel(nextLevel);
-			updates.add(x -> nextUnlock.setRight(number.format(Math.max(0, nextUnlockXp - x)) + " xp"));
+			updates.add(x -> nextUnlock.setRight(0, number.format(Math.max(0, nextUnlockXp - x)) + " xp"));
 		}
 		if (config.tooltipProgress())
 		{
-			ProgressBarComponent progress = new ProgressBarComponent();
-			progress.setMinimum(Experience.getXpForLevel(repository.previous(skill, level, snapshot.shown(skill))));
-			progress.setMaximum(Experience.getXpForLevel(nextLevel));
-			progress.setValue(xp);
-			progress.setForegroundColor(palette.getProgress());
-			progress.setBackgroundColor(palette.getProgressBackground());
+			PinBar progress = new PinBar(theme, Experience.getXpForLevel(repository.previous(skill, level, snapshot.shown(skill))),
+				Experience.getXpForLevel(nextLevel), xp, theme.getBarFill(), () -> levelUps.get(skill));
 			lines.add(progress);
 			updates.add(progress::setValue);
 		}
@@ -562,7 +736,7 @@ public class NextUnlocksPlugin extends Plugin
 			else if (!iconsOnly && !u.hasIcon() && texts < TOOLTIP_ENTRIES)
 			{
 				texts++;
-				lines.add(LineComponent.builder().left(u.getText()).leftColor(snapshot.locked(u) ? palette.getLocked() : Color.WHITE).leftFont(font).build());
+				lines.add(new CardLine(theme, font).left(u.getText(), snapshot.locked(u) ? theme.getLocked() : theme.getUnlock()));
 			}
 			else
 			{
@@ -580,27 +754,20 @@ public class NextUnlocksPlugin extends Plugin
 		}
 		if (hidden > 0 && !iconsOnly)
 		{
-			lines.add(LineComponent.builder().left("+" + hidden + " more").leftColor(Color.LIGHT_GRAY).leftFont(font).build());
+			lines.add(new CardLine(theme, font).left("+" + hidden + " more", theme.getMore()));
 		}
 		if (goal != null)
 		{
 			int goalXp = Experience.getXpForLevel(goal.getLevel());
-			LineComponent goalLine = LineComponent.builder()
-				.left("Goal: " + goal.getLevel())
-				.leftColor(Skills.color(skill))
-				.leftFont(font)
-				.right(number.format(Math.max(0, goalXp - xp)) + " xp")
-				.rightFont(font)
-				.build();
+			Color skillColor = Skills.color(skill);
+			CardLine goalLine = new CardLine(theme, font)
+				.left("Goal: ", theme.getGoalLabel() == null ? skillColor : theme.getGoalLabel())
+				.left(String.valueOf(goal.getLevel()), theme.getGoalLevel() == null ? skillColor : theme.getGoalLevel())
+				.right(number.format(Math.max(0, goalXp - xp)) + " xp", theme.getGoalXp());
 			lines.add(goalLine);
-			updates.add(x -> goalLine.setRight(number.format(Math.max(0, goalXp - x)) + " xp"));
-			// the whole way from 0 xp, as the start of a goal isn't kept
-			ProgressBarComponent goalBar = new ProgressBarComponent();
-			goalBar.setMinimum(0);
-			goalBar.setMaximum(goalXp);
-			goalBar.setValue(xp);
-			goalBar.setForegroundColor(Skills.color(skill));
-			goalBar.setBackgroundColor(palette.getProgressBackground());
+			updates.add(x -> goalLine.setRight(0, number.format(Math.max(0, goalXp - x)) + " xp"));
+			// the whole way from 0 xp, as the start of a goal isn't kept; no level-up effect, the bar above has it
+			PinBar goalBar = new PinBar(theme, 0, goalXp, xp, skillColor, null);
 			lines.add(goalBar);
 			updates.add(goalBar::setValue);
 		}
@@ -609,14 +776,14 @@ public class NextUnlocksPlugin extends Plugin
 		int width = columns * (UnlockTileComponent.size(UnlockTile.WIDTH, scale) + ICON_GAP) - ICON_GAP + PANEL_BORDER;
 		if (!iconsOnly || config.tooltipXp())
 		{
-			// room for the text, which grows with its size
-			width = Math.max(width, ComponentConstants.STANDARD_WIDTH * textSize / regular.getSize());
+			// room for the text, which grows with its size and with fonts wider than the game's
+			width = (int) (Math.max(width, ComponentConstants.STANDARD_WIDTH * textSize / regular.getSize()) * theme.widthScale(textSize));
 		}
+		// the same room inside, whatever the theme's padding
+		width += 2 * (theme.getPadding() - PANEL_PADDING);
 		tooltip.setPreferredSize(new Dimension(width, 0));
 
-		Color base = runeLiteConfig.overlayBackgroundColor();
-		Color background = new Color(base.getRed(), base.getGreen(), base.getBlue(), 255 * config.tooltipOpacity() / 100);
-		TooltipBox box = new TooltipBox(tooltip, background, config.tooltipOutline() ? palette.getOutline() : null, updates);
+		TooltipBox box = new TooltipBox(tooltip, theme, updates);
 		if (complete)
 		{
 			cache.put(skill, box);
@@ -624,9 +791,13 @@ public class NextUnlocksPlugin extends Plugin
 		return box;
 	}
 
-	private static LineComponent line(Font font, String left, String right)
+	/** The theme for a card: the look the plugin always had for hover tooltips, the player's pick for pinned cards. */
+	private CardTheme theme(Palette palette, boolean pinnedCard)
 	{
-		return LineComponent.builder().left(left).leftFont(font).right(right).rightFont(font).build();
+		Color base = runeLiteConfig.overlayBackgroundColor();
+		Color background = new Color(base.getRed(), base.getGreen(), base.getBlue(), 255 * config.tooltipOpacity() / 100);
+		CardTheme classic = CardTheme.classic(palette, background, config.tooltipOutline() ? palette.getOutline() : null);
+		return pinnedCard ? CardTheme.pinned(config, palette, classic, config.tooltipOpacity()) : classic;
 	}
 
 	@Subscribe
@@ -660,6 +831,16 @@ public class NextUnlocksPlugin extends Plugin
 			}
 			return;
 		}
+		if (EXAMINE.equals(entry.getOption()) && entry.getItemId() > 0)
+		{
+			// an item in the inventory, bank, equipment or a shop with a goal to pin
+			Task task = tasks.byItem(itemManager.canonicalize(entry.getItemId()));
+			if (task != null && !hasPinEntry())
+			{
+				addTaskPinEntry(task);
+			}
+			return;
+		}
 		Skill skill = Skills.forStatsWidget(entry.getParam1());
 		if (skill == null || hasPinEntry())
 		{
@@ -680,8 +861,137 @@ public class NextUnlocksPlugin extends Plugin
 		String task = pinnedOverlay.taskAt(mouse.getX(), mouse.getY());
 		if (task != null && !hasPinEntry())
 		{
-			addTaskPinEntry(tasks.get(task));
+			if (tallies.containsKey(task))
+			{
+				addTallyEntries(task);
+			}
+			else
+			{
+				addCheckOffEntry(task);
+				addTaskPinEntry(tasks.get(task));
+			}
 		}
+		Skill guideSkill = skillGuide.skill();
+		if (guideSkill == null || hasPinEntry())
+		{
+			return;
+		}
+		int item = skillGuide.itemAt(mouse.getX(), mouse.getY());
+		Task goal = item <= 0 ? null : tasks.byItem(item) != null ? tasks.byItem(item) : tasks.byItem(itemManager.canonicalize(item));
+		Unlock unlock = goal == null ? skillGuide.unlockAt(mouse.getX(), mouse.getY()) : null;
+		if (item > 0)
+		{
+			int counted = itemManager.canonicalize(item);
+			client.getMenu().createMenuEntry(1)
+				.setOption(SET_AMOUNT)
+				.setTarget(ColorUtil.wrapWithColorTag(itemManager.getItemComposition(counted).getName(), config.colorNext()))
+				.setType(MenuAction.RUNELITE)
+				.onClick(e -> askTally(guideSkill, counted));
+		}
+		if (goal != null)
+		{
+			addTaskPinEntry(goal);
+		}
+		else if (unlock != null)
+		{
+			// a quest or diary row pins the quest or diary itself
+			addTaskPinEntry(unlock.getType() == Unlock.Type.UNLOCK ? tasks.get(TaskRepository.unlockKey(guideSkill, unlock))
+				: tasks.get(unlock.getWiki()));
+		}
+	}
+
+	/** Unpin, Set amount goal and Reset count for an amount goal's card, just above Cancel. */
+	private void addTallyEntries(String key)
+	{
+		Tally tally = tallies.get(key);
+		String target = ColorUtil.wrapWithColorTag(tally.getName(), config.colorNext());
+		client.getMenu().createMenuEntry(1)
+			.setOption("Reset count")
+			.setTarget(target)
+			.setType(MenuAction.RUNELITE)
+			.onClick(e -> resetTally(key));
+		client.getMenu().createMenuEntry(1)
+			.setOption(SET_AMOUNT)
+			.setTarget(target)
+			.setType(MenuAction.RUNELITE)
+			.onClick(e -> askTally(tally.getSkill(), tally.getItem()));
+		client.getMenu().createMenuEntry(1)
+			.setOption(UNPIN)
+			.setTarget(target)
+			.setType(MenuAction.RUNELITE)
+			.onClick(e -> toggleTask(key));
+	}
+
+	/**
+	 * Check off, with each requirement the game doesn't count as met to tick by hand, like a quest done before this
+	 * plugin could see it, and the ones ticked to untick.
+	 */
+	private void addCheckOffEntry(String key)
+	{
+		Task task = tasks.get(key);
+		if (task == null)
+		{
+			return;
+		}
+		Set<String> checked = checkedFor(key);
+		List<Requirement> open = requirements(task, Collections.emptySet()).stream()
+			.filter(r -> !r.isMet())
+			.collect(Collectors.toList());
+		if (open.isEmpty())
+		{
+			return;
+		}
+		MenuEntry parent = client.getMenu().createMenuEntry(1)
+			.setOption("Check off")
+			.setTarget(ColorUtil.wrapWithColorTag(task.getName(), config.colorNext()))
+			.setType(MenuAction.RUNELITE);
+		Menu sub = parent.createSubMenu();
+		// each entry goes on top, so the list is built from the bottom up
+		for (int i = open.size() - 1; i >= 0; i--)
+		{
+			Requirement r = open.get(i);
+			boolean done = checked.contains(r.getLabel());
+			sub.createMenuEntry(-1)
+				.setOption(done ? "Uncheck" : "Check off")
+				.setTarget(ColorUtil.wrapWithColorTag(r.getLabel() + (r.getProgress().isEmpty() ? "" : " " + r.getProgress()),
+					done ? Color.GREEN : Color.RED))
+				.setType(MenuAction.RUNELITE)
+				.onClick(e -> toggleCheckedOff(key, r.getLabel()));
+		}
+	}
+
+	/** The labels of a card's requirements checked off by hand. Any thread. */
+	private Set<String> checkedFor(String key)
+	{
+		Set<String> labels = new HashSet<>();
+		String prefix = key + CHECK_SEPARATOR;
+		for (String entry : checkedOff)
+		{
+			if (entry.startsWith(prefix))
+			{
+				labels.add(entry.substring(prefix.length()));
+			}
+		}
+		return labels;
+	}
+
+	/** Ticks a card's requirement off by hand, or unticks it. Client thread. */
+	private void toggleCheckedOff(String key, String label)
+	{
+		Set<String> entries = new TreeSet<>(checkedOff);
+		String entry = key + CHECK_SEPARATOR + label;
+		if (!entries.remove(entry))
+		{
+			entries.add(entry);
+		}
+		setCheckedOff(entries);
+	}
+
+	private void setCheckedOff(Set<String> entries)
+	{
+		checkedOff = Collections.unmodifiableSet(entries);
+		taskCache.clear();
+		configManager.setConfiguration(NextUnlocksConfig.GROUP, "checkedOff", String.join("\n", entries));
 	}
 
 	private boolean hasPinEntry()
@@ -716,7 +1026,7 @@ public class NextUnlocksPlugin extends Plugin
 		return Text.removeTags(text).trim();
 	}
 
-	/** Pin or Unpin for a quest or diary card, just above Cancel. */
+	/** Pin or Unpin for a quest, diary or item card, just above Cancel. */
 	private void addTaskPinEntry(Task task)
 	{
 		if (task == null)
@@ -725,7 +1035,8 @@ public class NextUnlocksPlugin extends Plugin
 		}
 		client.getMenu().createMenuEntry(1)
 			.setOption(pinnedTasks.contains(task.getWiki()) ? UNPIN : PIN)
-			.setTarget(ColorUtil.wrapWithColorTag(task.getName() + " requirements", config.colorNext()))
+			.setTarget(ColorUtil.wrapWithColorTag(task.getName() + (task.isItem() ? " goal" : task.isUnlock() ? " unlock" : " requirements"),
+				config.colorNext()))
 			.setType(MenuAction.RUNELITE)
 			.onClick(e -> toggleTask(task.getWiki()));
 	}
@@ -738,14 +1049,88 @@ public class NextUnlocksPlugin extends Plugin
 			pinnedTasks.add(wiki);
 			questsDirty = true;
 		}
+		else
+		{
+			// an unpinned card forgets its amount goal and what was checked off on it
+			if (tallies.remove(wiki) != null)
+			{
+				saveTallies();
+			}
+			Set<String> entries = new TreeSet<>(checkedOff);
+			if (entries.removeIf(e -> e.startsWith(wiki + CHECK_SEPARATOR)))
+			{
+				setCheckedOff(entries);
+			}
+		}
 		saveTaskPins();
 		pushToPanel();
 	}
 
 	/** {@link #toggleTask} from the panel's thread. */
-	private void toggleTaskLater(String wiki)
+	void toggleTaskLater(String wiki)
 	{
 		clientThread.invokeLater(() -> toggleTask(wiki));
+	}
+
+	/** The goals set, in the order they were. Any thread. */
+	List<Goal> goals()
+	{
+		return goals;
+	}
+
+	/** The name of a pinned quest, diary or item goal. */
+	String taskName(String wiki)
+	{
+		Tally tally = tallies.get(wiki);
+		return tally != null ? tally.goalText() : tasks.name(wiki);
+	}
+
+	/**
+	 * The card for an {@link TaskRepository#UNLOCK} key, from the unlocks as loaded now: its level, and the quest it needs
+	 * by wiki title when the bundled quests know it, else by name. Null when no unlock matches. Any thread.
+	 */
+	private Task unlockTask(String key)
+	{
+		Skill skill = TaskRepository.unlockSkill(key);
+		int level = TaskRepository.unlockLevel(key);
+		String text = TaskRepository.unlockText(key);
+		if (skill == null)
+		{
+			return null;
+		}
+		for (Unlock u : repository.all(skill))
+		{
+			if (u.getLevel() == level && u.getType() == Unlock.Type.UNLOCK && u.getText().equals(text))
+			{
+				Quest quest = u.getQuest() == null ? null : QUESTS.get(u.getQuest());
+				Task questTask = quest == null ? null : tasks.byName(quest.getName());
+				return TaskRepository.unlockTask(skill, u, questTask != null ? questTask.getWiki() : quest == null ? null : quest.getName());
+			}
+		}
+		return null;
+	}
+
+	/** Asks in the chatbox for a quest, diary or item to pin, and pins the best match. Client thread. */
+	void askPinTask()
+	{
+		chatboxPanelManager.openTextInput("Pin a quest, diary or item:")
+			.onDone((String text) ->
+			{
+				Task task = tasks.find(text);
+				if (text.trim().isEmpty())
+				{
+					return;
+				}
+				if (task == null)
+				{
+					sendChat("", "Nothing found for", text.trim());
+				}
+				else if (!pinnedTasks.contains(task.getWiki()))
+				{
+					toggleTask(task.getWiki());
+				}
+			})
+			.build();
 	}
 
 	private void saveTaskPins()
@@ -763,19 +1148,8 @@ public class NextUnlocksPlugin extends Plugin
 			return;
 		}
 		List<Goal> current = goals.stream().filter(g -> g.getSkill() == skill).collect(Collectors.toList());
-		List<Goal> choices = new ArrayList<>();
-		repository.upcoming(skill, level, snapshot().upcoming(skill), GOAL_CHOICES).forEach((lvl, unlocks) ->
-			choices.add(Goal.of(skill, unlocks.get(0))));
-		if (level < Experience.MAX_REAL_LEVEL)
-		{
-			choices.add(Goal.level(skill, level + 1));
-		}
-		if (level + 1 < Experience.MAX_REAL_LEVEL)
-		{
-			choices.add(Goal.level(skill, Experience.MAX_REAL_LEVEL));
-		}
-		choices.removeAll(current);
-		if (choices.isEmpty() && current.isEmpty())
+		List<Goal> choices = goalChoices(skill);
+		if (choices.isEmpty() && current.isEmpty() && level >= Experience.MAX_REAL_LEVEL)
 		{
 			return;
 		}
@@ -791,12 +1165,77 @@ public class NextUnlocksPlugin extends Plugin
 			boolean levelOnly = goal.equals(Goal.level(skill, goal.getLevel()));
 			goalChoice(sub, REMOVE_GOAL, levelOnly ? goal.getText() : goal.getLevel() + " " + goal.getText(), goal);
 		}
+		if (level < Experience.MAX_REAL_LEVEL)
+		{
+			sub.createMenuEntry(-1)
+				.setOption("Choose level...")
+				.setTarget("")
+				.setType(MenuAction.RUNELITE)
+				.onClick(e -> askGoalLevel(skill, level));
+		}
 		for (int i = choices.size() - 1; i >= 0; i--)
 		{
 			Goal goal = choices.get(i);
 			boolean levelOnly = goal.equals(Goal.level(skill, goal.getLevel()));
 			goalChoice(sub, "Level " + goal.getLevel(), levelOnly ? "" : goal.getText(), goal);
 		}
+	}
+
+	/**
+	 * Goals to pick from for a skill, those already set left out: the next few unlocks, the next level and 99. Empty when
+	 * logged out. Client thread.
+	 */
+	List<Goal> goalChoices(Skill skill)
+	{
+		Integer level = levels.get(skill);
+		if (level == null)
+		{
+			return Collections.emptyList();
+		}
+		List<Goal> choices = new ArrayList<>();
+		repository.upcoming(skill, level, snapshot().upcoming(skill), GOAL_CHOICES).forEach((lvl, unlocks) ->
+			choices.add(Goal.of(skill, unlocks.get(0))));
+		if (level < Experience.MAX_REAL_LEVEL)
+		{
+			choices.add(Goal.level(skill, level + 1));
+		}
+		if (level + 1 < Experience.MAX_REAL_LEVEL)
+		{
+			choices.add(Goal.level(skill, Experience.MAX_REAL_LEVEL));
+		}
+		choices.removeAll(goals);
+		return choices;
+	}
+
+	/** The skill's real level, or null when logged out. Client thread. */
+	Integer level(Skill skill)
+	{
+		return levels.get(skill);
+	}
+
+	/** Asks in the chatbox for a level to aim for, above the current one. Client thread. */
+	void askGoalLevel(Skill skill, int level)
+	{
+		chatboxPanelManager.openTextInput(skill.getName() + " goal level (" + (level + 1) + "-" + Experience.MAX_REAL_LEVEL + "):")
+			.charValidator(Character::isDigit)
+			.onDone((String text) ->
+			{
+				int target;
+				try
+				{
+					target = Integer.parseInt(text.trim());
+				}
+				catch (NumberFormatException e)
+				{
+					return;
+				}
+				Goal goal = Goal.level(skill, target);
+				if (target > level && target <= Experience.MAX_REAL_LEVEL && !goals.contains(goal))
+				{
+					toggleGoal(goal);
+				}
+			})
+			.build();
 	}
 
 	private void goalChoice(Menu menu, String option, String text, Goal goal)
@@ -817,7 +1256,8 @@ public class NextUnlocksPlugin extends Plugin
 			.orElse(null);
 	}
 
-	private void togglePin(Skill skill)
+	/** Pins or unpins a skill's card. Client thread. */
+	void togglePin(Skill skill)
 	{
 		if (!pinned.remove(skill))
 		{
@@ -841,14 +1281,34 @@ public class NextUnlocksPlugin extends Plugin
 				// empty or a skill that no longer exists
 			}
 		}
+		Set<String> checked = new TreeSet<>();
+		for (String line : config.checkedOff().split("\n"))
+		{
+			if (!line.trim().isEmpty())
+			{
+				checked.add(line.trim());
+			}
+		}
+		checkedOff = Collections.unmodifiableSet(checked);
+		tallies.clear();
+		for (Tally tally : Tally.parse(config.tallies()))
+		{
+			tallies.put(tally.key(), tally);
+		}
 		pinnedTasks.clear();
 		for (String title : config.pinnedTasks().split(TASK_SEPARATOR))
 		{
-			if (tasks.get(title.trim()) != null)
+			// a skill guide item's goal only exists once the cache is read, after the pins load, and an unlock's may
+			// only match once the guide's unlocks replace the wiki's
+			String key = title.trim();
+			if (tasks.get(key) != null || key.startsWith(TaskRepository.GUIDE_ITEM) || key.startsWith(TaskRepository.UNLOCK)
+				|| tallies.containsKey(key))
 			{
-				pinnedTasks.add(title.trim());
+				pinnedTasks.add(key);
 			}
 		}
+		// an amount goal is always pinned
+		pinnedTasks.addAll(tallies.keySet());
 		pinnedTaskTitles = Collections.unmodifiableSet(new HashSet<>(pinnedTasks));
 	}
 
@@ -908,6 +1368,9 @@ public class NextUnlocksPlugin extends Plugin
 		try
 		{
 			repository.loadSkillGuide(client);
+			tasks.addGuide(repository.getGuideItems());
+			// unlock pins match the guide's unlocks now
+			tasks.setUnlocks(this::unlockTask);
 		}
 		catch (RuntimeException e)
 		{
@@ -967,8 +1430,21 @@ public class NextUnlocksPlugin extends Plugin
 		for (String title : pinnedTasks)
 		{
 			Task task = tasks.get(title);
+			if (task == null)
+			{
+				continue;
+			}
 			questState(task.getWiki(), states);
-			task.getQuests().forEach(q -> questState(q, states));
+			for (String quest : task.getQuests())
+			{
+				questState(quest, states);
+				// and the quests that quest needs, for the lines under it
+				Task needed = tasks.get(quest);
+				if (needed != null)
+				{
+					needed.getQuests().forEach(q -> questState(q, states));
+				}
+			}
 		}
 		if (states.equals(questStates))
 		{
@@ -1007,11 +1483,24 @@ public class NextUnlocksPlugin extends Plugin
 		}
 	}
 
-	/** Card for a pinned quest or diary: its hard requirements, unmet first. Client thread. */
+	/** A requirement's color, faded halfway to the card's "+N more" gray, for the material line under it. */
+	private static Color materialShade(Color color, CardTheme theme)
+	{
+		Color gray = theme.getMore();
+		return new Color((color.getRed() + gray.getRed()) / 2, (color.getGreen() + gray.getGreen()) / 2,
+			(color.getBlue() + gray.getBlue()) / 2, color.getAlpha());
+	}
+
+	/** Card for a pinned quest, diary or item: its hard requirements, unmet first. Client thread. */
 	LayoutableRenderableEntity taskCard(String wiki)
 	{
-		Task task = tasks.get(wiki);
-		if (task == null || levels.isEmpty())
+		if (levels.isEmpty())
+		{
+			return null;
+		}
+		Tally tally = tallies.get(wiki);
+		Task task = tally == null ? tasks.get(wiki) : null;
+		if (task == null && tally == null)
 		{
 			return null;
 		}
@@ -1022,54 +1511,133 @@ public class NextUnlocksPlugin extends Plugin
 		}
 		Snapshot snapshot = snapshot();
 		Palette palette = snapshot.getPalette();
+		CardTheme theme = theme(palette, true);
 		int textSize = config.tooltipTextSize();
 		Font regular = FontManager.getRunescapeFont();
-		Font font = textSize == regular.getSize() ? regular : regular.deriveFont((float) textSize);
+		Font font = theme.font(textSize);
+		Font small = theme.font(Math.max(MATERIAL_MIN_SIZE, Math.round(textSize * MATERIAL_SIZE)));
 
-		Player player = client.getLocalPlayer();
-		int combat = player == null ? 0 : player.getCombatLevel();
-		List<Requirement> requirements = Requirement.check(task, snapshot::effectiveLevel,
-			client.getVarpValue(VarPlayerID.QP), combat, q -> questStates.get(q) == QuestState.FINISHED, tasks::name);
+		if (tally != null)
+		{
+			return tallyCard(wiki, tally, theme, font, small, textSize, regular);
+		}
+		List<Requirement> requirements = requirements(task, checkedFor(wiki));
 		long met = requirements.stream().filter(Requirement::isMet).count();
 
 		PanelComponent card = new PanelComponent();
 		List<LayoutableRenderableEntity> lines = card.getChildren();
 		QuestState state = questStates.get(wiki);
-		String status = task.isDiary() ? "Diary" : state == QuestState.FINISHED ? "Completed"
+		boolean goal = task.isItem() || task.isUnlock();
+		String status = goal ? (met == requirements.size() ? "Ready" : task.isItem() ? "Item goal" : "Unlock") : task.isDiary() ? "Diary" : state == QuestState.FINISHED ? "Completed"
 			: state == QuestState.IN_PROGRESS ? "In progress" : state == QuestState.NOT_STARTED ? "Not started" : "";
-		Color statusColor = state == QuestState.FINISHED ? Color.GREEN : state == QuestState.IN_PROGRESS ? Color.YELLOW
-			: state == QuestState.NOT_STARTED ? Color.RED : Color.WHITE;
-		lines.add(LineComponent.builder().left(task.getName()).leftColor(palette.getNext()).leftFont(font).build());
-		lines.add(LineComponent.builder()
-			.left(status)
-			.leftColor(statusColor)
-			.leftFont(font)
-			.right(requirements.isEmpty() ? "No requirements" : met + "/" + requirements.size() + " met")
-			.rightColor(met == requirements.size() ? Color.GREEN : Color.WHITE)
-			.rightFont(font)
-			.build());
+		Color statusColor = goal ? (met == requirements.size() ? theme.getMet() : theme.getXpValue())
+			: state == QuestState.FINISHED ? theme.getMet() : state == QuestState.IN_PROGRESS ? Color.YELLOW
+			: state == QuestState.NOT_STARTED ? theme.getUnmet() : theme.getXpValue();
+		// the item's picture, drawn as it loads, or the quest or diary tab icon, which can be missing before the cache is
+		// ready; don't keep a card without it
+		BufferedImage icon = task.getItem() > 0 ? itemManager.getImage(task.getItem())
+			: task.isUnlock() ? (task.getSprite() > 0 ? spriteManager.getSprite(task.getSprite(), 0)
+				: skillIconManager.getSkillImage(task.getSkills().keySet().iterator().next(), true))
+			: spriteManager.getSprite(task.isDiary() ? SpriteID.SideIcons.ACHIEVEMENT_DIARIES : SpriteID.SideIcons.QUEST, 0);
+		lines.add(new CardHeader(icon, task.getName(), theme.getTaskTitle(), theme.titleFont(textSize, TASK_TITLE_GROWTH),
+			(double) textSize / regular.getSize(), theme));
+		lines.add(new CardLine(theme, font)
+			.left(status, statusColor)
+			.right(requirements.isEmpty() ? "No requirements" : met + "/" + requirements.size() + " met",
+				met == requirements.size() ? theme.getMet() : theme.getXpValue()));
 		for (Requirement r : requirements.subList(0, Math.min(TASK_LINES, requirements.size())))
 		{
-			Color color = r.isMet() ? Color.GREEN : Color.RED;
-			lines.add(LineComponent.builder()
-				.left(r.getLabel())
-				.leftColor(color)
-				.leftFont(font)
-				.right(r.getProgress())
-				.rightColor(color)
-				.rightFont(font)
-				.build());
+			Color color = r.isMet() ? theme.getMet() : theme.getUnmet();
+			lines.add(new CardLine(theme, font).left(r.getLabel(), color).right(r.getProgress(), color));
+			if (r.getMaterial() != null)
+			{
+				lines.add(new CardMaterial(theme, small, r.getMaterialItem() > 0 ? itemManager.getImage(r.getMaterialItem()) : null,
+					r.getMaterial(), materialShade(color, theme)));
+			}
+			if (!r.isMet() && r.getQuest() != null)
+			{
+				addQuestSubLines(lines, r, theme, small);
+			}
 		}
 		if (requirements.size() > TASK_LINES)
 		{
-			lines.add(LineComponent.builder().left("+" + (requirements.size() - TASK_LINES) + " more").leftColor(Color.LIGHT_GRAY).leftFont(font).build());
+			lines.add(new CardLine(theme, font).left("+" + (requirements.size() - TASK_LINES) + " more", theme.getMore()));
 		}
-		card.setPreferredSize(new Dimension(ComponentConstants.STANDARD_WIDTH * textSize / regular.getSize(), 0));
+		card.setPreferredSize(new Dimension((int) (ComponentConstants.STANDARD_WIDTH * textSize / regular.getSize() * theme.widthScale(textSize))
+			+ 2 * (theme.getPadding() - PANEL_PADDING), 0));
 
-		Color base = runeLiteConfig.overlayBackgroundColor();
-		Color background = new Color(base.getRed(), base.getGreen(), base.getBlue(), 255 * config.tooltipOpacity() / 100);
-		TooltipBox box = new TooltipBox(card, background, config.tooltipOutline() ? palette.getOutline() : null, Collections.emptyList());
-		taskCache.put(wiki, box);
+		TooltipBox box = new TooltipBox(card, theme, Collections.emptyList());
+		if (icon != null)
+		{
+			taskCache.put(wiki, box);
+		}
+		return box;
+	}
+
+	/** The task's requirements as the player stands, with the ones checked off by hand counted as met. Client thread. */
+	private List<Requirement> requirements(Task task, Set<String> checked)
+	{
+		Player player = client.getLocalPlayer();
+		int combat = player == null ? 0 : player.getCombatLevel();
+		return Requirement.checkOff(Requirement.check(task, snapshot()::effectiveLevel,
+			client.getVarpValue(VarPlayerID.QP), combat, q -> questStates.get(q) == QuestState.FINISHED, tasks::name,
+			config.itemMakingLevels() || !task.isItem()), checked);
+	}
+
+	/**
+	 * Under an unfinished quest the card needs, what that quest still needs in tiny text: its skill levels with the
+	 * skill's icon and its quests with the quest icon, at most {@link #QUEST_SUB_LINES} then "+N more".
+	 */
+	private void addQuestSubLines(List<LayoutableRenderableEntity> lines, Requirement quest, CardTheme theme, Font small)
+	{
+		Task task = tasks.get(quest.getQuest());
+		if (task == null)
+		{
+			task = tasks.byName(quest.getLabel());
+		}
+		if (task == null)
+		{
+			return;
+		}
+		List<Requirement> open = requirements(task, checkedFor(task.getWiki())).stream()
+			.filter(r -> !r.isMet())
+			.collect(Collectors.toList());
+		Color shade = materialShade(theme.getUnmet(), theme);
+		for (Requirement r : open.subList(0, Math.min(QUEST_SUB_LINES, open.size())))
+		{
+			BufferedImage icon = r.getSkill() != null ? skillIconManager.getSkillImage(r.getSkill(), true)
+				: r.getQuest() != null ? spriteManager.getSprite(SpriteID.SideIcons.QUEST, 0) : null;
+			lines.add(new CardMaterial(theme, small, icon, r.getLabel() + (r.getProgress().isEmpty() ? "" : " " + r.getProgress()), shade));
+		}
+		if (open.size() > QUEST_SUB_LINES)
+		{
+			lines.add(new CardMaterial(theme, small, null, "+" + (open.size() - QUEST_SUB_LINES) + " more", theme.getMore()));
+		}
+	}
+
+	/** Card for an amount goal: the item, what's done of the target, a bar in the skill's color and the skill. */
+	private LayoutableRenderableEntity tallyCard(String key, Tally tally, CardTheme theme, Font font, Font small, int textSize,
+		Font regular)
+	{
+		PanelComponent card = new PanelComponent();
+		List<LayoutableRenderableEntity> lines = card.getChildren();
+		BufferedImage icon = itemManager.getImage(tally.getItem());
+		lines.add(new CardHeader(icon, tally.getName(), theme.getTaskTitle(), theme.titleFont(textSize, TASK_TITLE_GROWTH),
+			(double) textSize / regular.getSize(), theme));
+		Color color = tally.isDone() ? theme.getMet() : theme.getXpValue();
+		lines.add(new CardLine(theme, font)
+			.left(tally.isDone() ? "Done!" : Tally.verb(tally.getSkill()) + " " + String.format(Locale.ROOT, "%,d", tally.getTarget()), color)
+			.right(String.format(Locale.ROOT, "%,d/%,d", tally.getCount(), tally.getTarget()), color));
+		lines.add(new PinBar(theme, 0, tally.getTarget(), Math.min(tally.getCount(), tally.getTarget()), Skills.color(tally.getSkill()), null));
+		lines.add(new CardMaterial(theme, small, skillIconManager.getSkillImage(tally.getSkill(), true), tally.getSkill().getName(),
+			materialShade(theme.getXpValue(), theme)));
+		card.setPreferredSize(new Dimension((int) (ComponentConstants.STANDARD_WIDTH * textSize / regular.getSize() * theme.widthScale(textSize))
+			+ 2 * (theme.getPadding() - PANEL_PADDING), 0));
+		TooltipBox box = new TooltipBox(card, theme, Collections.emptyList());
+		if (icon != null)
+		{
+			taskCache.put(key, box);
+		}
 		return box;
 	}
 
@@ -1097,7 +1665,7 @@ public class NextUnlocksPlugin extends Plugin
 	}
 
 	/** Sets a goal, or drops it when it is one. Any thread. */
-	private synchronized void toggleGoal(Goal goal)
+	synchronized void toggleGoal(Goal goal)
 	{
 		List<Goal> updated = new ArrayList<>(goals);
 		if (!updated.remove(goal))
@@ -1149,15 +1717,26 @@ public class NextUnlocksPlugin extends Plugin
 		}
 		for (Goal goal : goals)
 		{
-			GoalInfoBox box = new GoalInfoBox(goalImage(goal), this, goal, client::getSkillExperience, config.colorNext());
-			box.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, REMOVE_GOAL, "Goal"));
+			BufferedImage icon = goalImage(goal);
+			GoalInfoBox box = new GoalInfoBox(GoalInfoBox.withTextRoom(icon), this, goal, client::getSkillExperience, config.colorNext());
+			if (icon instanceof AsyncBufferedImage)
+			{
+				// item pictures load later; redraw the box's picture once this one has
+				((AsyncBufferedImage) icon).onLoaded(() ->
+				{
+					box.setImage(GoalInfoBox.withTextRoom(icon));
+					infoBoxManager.updateInfoBoxImage(box);
+				});
+			}
+			box.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, REMOVE_GOAL,
+				ColorUtil.wrapWithColorTag(goal.getText(), config.colorNext())));
 			goalBoxes.add(box);
 			infoBoxManager.addInfoBox(box);
 		}
 	}
 
 	/** The goal's item or spell picture, or its skill's icon. Client thread. */
-	private BufferedImage goalImage(Goal goal)
+	BufferedImage goalImage(Goal goal)
 	{
 		Unlock u = repository.all(goal.getSkill()).stream()
 			.filter(x -> goal.is(goal.getSkill(), x))
@@ -1176,24 +1755,18 @@ public class NextUnlocksPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onOverlayMenuClicked(OverlayMenuClicked event)
+	public void onInfoBoxMenuClicked(InfoBoxMenuClicked event)
 	{
-		if (!REMOVE_GOAL.equals(event.getEntry().getOption()))
+		if (!REMOVE_GOAL.equals(event.getEntry().getOption()) || !(event.getInfoBox() instanceof GoalInfoBox)
+			|| !goalBoxes.contains(event.getInfoBox()))
 		{
 			return;
 		}
-		for (GoalInfoBox box : goalBoxes)
+		synchronized (this)
 		{
-			if (box.getMenuEntries().contains(event.getEntry()))
-			{
-				synchronized (this)
-				{
-					List<Goal> remaining = new ArrayList<>(goals);
-					remaining.remove(box.getGoal());
-					saveGoals(remaining);
-				}
-				return;
-			}
+			List<Goal> remaining = new ArrayList<>(goals);
+			remaining.remove(((GoalInfoBox) event.getInfoBox()).getGoal());
+			saveGoals(remaining);
 		}
 	}
 

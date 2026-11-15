@@ -19,6 +19,7 @@ import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.components.LayoutableRenderableEntity;
 import net.runelite.client.ui.overlay.tooltip.Tooltip;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
+import net.runelite.client.util.Text;
 
 /**
  * Pinned skill tooltips and quest or diary cards, side by side on top of the chatbox. When the chatbox is collapsed they sit
@@ -91,13 +92,31 @@ class PinnedOverlay extends Overlay
 			}
 		}
 
+		Map<Object, Integer> heights = new HashMap<>();
+		int width = 0;
+		int tallest = 0;
+		for (Map.Entry<Object, LayoutableRenderableEntity> e : cards.entrySet())
+		{
+			Dimension size = size(graphics, e.getKey(), e.getValue());
+			int height = e.getKey() instanceof Skill ? skillHeight : size.height;
+			heights.put(e.getKey(), height);
+			width += size.width + GAP;
+			tallest = Math.max(tallest, height);
+		}
+		// split private chat shows just above the chatbox; go above its messages instead of over them
+		int bottom = chat.y - GAP;
+		Integer pmTop = privateChatTop(new Rectangle(chat.x, bottom - tallest, width, tallest));
+		if (pmTop != null)
+		{
+			bottom = Math.min(bottom, pmTop - GAP);
+		}
+
 		net.runelite.api.Point mouse = client.getMouseCanvasPosition();
 		int x = chat.x;
-		int bottom = chat.y - GAP;
 		for (Map.Entry<Object, LayoutableRenderableEntity> e : cards.entrySet())
 		{
 			LayoutableRenderableEntity card = e.getValue();
-			int height = e.getKey() instanceof Skill ? skillHeight : size(graphics, e.getKey(), card).height;
+			int height = heights.get(e.getKey());
 			Point location = new Point(x, bottom - height);
 			card.setPreferredLocation(location);
 			if (card instanceof TooltipBox)
@@ -115,6 +134,14 @@ class PinnedOverlay extends Overlay
 			}
 			drawn.put(e.getKey(), new Rectangle(location, rendered));
 			x += rendered.width + GAP;
+		}
+		// level-up bursts last, so the pixels fly over the cards beside them
+		for (LayoutableRenderableEntity card : cards.values())
+		{
+			if (card instanceof TooltipBox)
+			{
+				((TooltipBox) card).bars().forEach(bar -> bar.renderBurst(graphics));
+			}
 		}
 		return null;
 	}
@@ -160,6 +187,44 @@ class PinnedOverlay extends Overlay
 			}
 		}
 		return null;
+	}
+
+	/** The top of the split private messages that overlap the area, or null when none are showing there. */
+	private Integer privateChatTop(Rectangle area)
+	{
+		Widget container = client.getWidget(InterfaceID.PmChat.CONTAINER);
+		if (container == null || container.isHidden())
+		{
+			return null;
+		}
+		return top(container, area, null);
+	}
+
+	/** The lowest y of the message lines under the widget that overlap the area, or top when there are none. */
+	private static Integer top(Widget widget, Rectangle area, Integer top)
+	{
+		for (Widget[] children : new Widget[][]{widget.getStaticChildren(), widget.getDynamicChildren(), widget.getNestedChildren()})
+		{
+			if (children == null)
+			{
+				continue;
+			}
+			for (Widget child : children)
+			{
+				if (child == null || child.isHidden())
+				{
+					continue;
+				}
+				String text = child.getText();
+				Rectangle bounds = child.getBounds();
+				if (text != null && !Text.removeTags(text).trim().isEmpty() && bounds.intersects(area))
+				{
+					top = top == null ? bounds.y : Math.min(top, bounds.y);
+				}
+				top = top(child, area, top);
+			}
+		}
+		return top;
 	}
 
 	/** Bounds of the visible chat messages, or of the chat buttons when the chatbox is collapsed. */

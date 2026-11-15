@@ -16,13 +16,16 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -37,12 +40,16 @@ import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import net.runelite.api.Experience;
 import net.runelite.api.Skill;
+import net.runelite.api.gameval.SpriteID;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.game.SpriteManager;
@@ -53,18 +60,24 @@ import net.runelite.client.ui.components.IconTextField;
 import net.runelite.client.ui.components.ProgressBar;
 import net.runelite.client.util.AsyncBufferedImage;
 import net.runelite.client.util.ColorUtil;
+import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.LinkBrowser;
 
 class NextUnlocksPanel extends PluginPanel
 {
 	private static final String WIKI_URL = "https://oldschool.runescape.wiki/w/";
 	private static final int TEXT_WIDTH = PANEL_WIDTH - 40;
+	/** Text beside a card's icon: the panel less its padding, the card's and the icon's. */
+	private static final int CARD_TEXT_WIDTH = TEXT_WIDTH - 50;
+	private static final int ICON_WIDTH = 25;
 	private static final Color QUEST_COLOR = new Color(255, 152, 31);
 	private static final Color DIARY_COLOR = new Color(110, 200, 110);
 	private static final Color LEVEL_COLOR = new Color(255, 255, 0);
 	private static final int GRID_COLUMNS = 5;
 	private static final int PREVIEW_TILES = 4;
 	private static final int SEARCH_RESULTS = 60;
+	private static final int ITEM_RESULTS = 25;
+	private static final int ITEM_ICON = 18;
 	private static final Color LOCKED_COLOR = new Color(0xe05a5a);
 	private static final int ALMOST_THERE_ROWS = 5;
 
@@ -80,8 +93,13 @@ class NextUnlocksPanel extends PluginPanel
 	private final Consumer<Goal> goalToggle;
 	/** Whether a wiki title is a quest or diary that can be pinned. */
 	private final Predicate<String> pinnable;
+	/** Items with a goal to pin: the levels and quests to wield, wear or make them. */
+	/** Every item goal; the skill guide adds to them once the cache is read. */
+	private final Supplier<List<Task>> items;
 	/** Called with a quest or diary's wiki title to pin, or to unpin when it is pinned. */
 	private final Consumer<String> taskToggle;
+	/** Asks for an amount goal of a skill's item, like 500 lobsters. */
+	private final BiConsumer<Skill, Integer> amountGoal;
 	private final IconTextField search = new IconTextField();
 	private final JComboBox<Skill> skillBox = new JComboBox<>();
 	private final JPanel content = new JPanel();
@@ -89,11 +107,16 @@ class NextUnlocksPanel extends PluginPanel
 	private Snapshot snapshot = Snapshot.EMPTY;
 	private boolean stale = true;
 	private boolean sectionsOpen;
-	private boolean almostThereOpen = true;
+	/** Keys of the collapsed panel sections. */
+	private final Set<String> closed = new HashSet<>();
+	private boolean almostThereAll;
 
 	NextUnlocksPanel(UnlockRepository repository, SkillIconManager iconManager, ItemManager itemManager, SpriteManager spriteManager,
-		BiConsumer<String, Boolean> sectionToggle, Consumer<Goal> goalToggle, Predicate<String> pinnable, Consumer<String> taskToggle)
+		BiConsumer<String, Boolean> sectionToggle, Consumer<Goal> goalToggle, Predicate<String> pinnable, Consumer<String> taskToggle,
+		Supplier<List<Task>> items, BiConsumer<Skill, Integer> amountGoal)
 	{
+		this.items = items;
+		this.amountGoal = amountGoal;
 		this.repository = repository;
 		this.iconManager = iconManager;
 		this.itemManager = itemManager;
@@ -152,8 +175,13 @@ class NextUnlocksPanel extends PluginPanel
 
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
+		JLabel logo = new JLabel(new ImageIcon(ImageUtil.loadImageResource(NextUnlocksPanel.class, "panel_logo.png")));
+		logo.setHorizontalAlignment(SwingConstants.CENTER);
+		logo.setBorder(new EmptyBorder(0, 0, 4, 0));
+
 		JPanel top = new JPanel(new BorderLayout(0, 6));
-		top.add(search, BorderLayout.NORTH);
+		top.add(logo, BorderLayout.NORTH);
+		top.add(search, BorderLayout.CENTER);
 		top.add(skillBox, BorderLayout.SOUTH);
 		add(top, BorderLayout.NORTH);
 		add(content, BorderLayout.CENTER);
@@ -207,9 +235,11 @@ class NextUnlocksPanel extends PluginPanel
 			buildSkill(selected);
 		}
 
-		content.add(Box.createVerticalStrut(10));
+		content.add(Box.createVerticalStrut(6));
 		String wiki = "OSRS Wiki (CC BY-NC-SA 3.0)" + (repository.getFetched().isEmpty() ? "" : ", " + repository.getFetched());
-		content.add(note(repository.isSkillGuide() ? "Unlocks from the in-game skill guide; quests and diaries from the " + wiki : "Data from the " + wiki));
+		JLabel footer = note(repository.isSkillGuide() ? "Unlocks from the in-game skill guide; quests and diaries from the " + wiki : "Data from the " + wiki);
+		footer.setBorder(new CompoundBorder(new MatteBorder(1, 0, 0, 0, ColorScheme.MEDIUM_GRAY_COLOR), new EmptyBorder(6, 0, 0, 0)));
+		content.add(footer);
 		content.revalidate();
 		content.repaint();
 	}
@@ -246,9 +276,9 @@ class NextUnlocksPanel extends PluginPanel
 
 		buildGoals();
 		buildAlmostThere(null);
-		if (!snapshot.getGoals().isEmpty() || almostThereShown())
+		if (!section("next", "Next unlocks", rows.size()))
 		{
-			content.add(heading("Next unlocks"));
+			return;
 		}
 		for (Row row : rows)
 		{
@@ -320,7 +350,10 @@ class NextUnlocksPanel extends PluginPanel
 		{
 			return;
 		}
-		content.add(heading("Goals"));
+		if (!section("goals", "Goals", goals.size()))
+		{
+			return;
+		}
 		for (Goal goal : goals)
 		{
 			Skill skill = goal.getSkill();
@@ -364,12 +397,6 @@ class NextUnlocksPanel extends PluginPanel
 		content.add(Box.createVerticalStrut(6));
 	}
 
-	private boolean almostThereShown()
-	{
-		AlmostThere almost = AlmostThere.of(repository, snapshot);
-		return snapshot.isAlmostThere() && (!almost.getOneLevelShort().isEmpty() || !almost.getQuestWaits().isEmpty());
-	}
-
 	/** Quests and diaries one skill level away, and unlocks only waiting on a quest; of one skill, or of all when null. */
 	private void buildAlmostThere(Skill only)
 	{
@@ -382,51 +409,56 @@ class NextUnlocksPanel extends PluginPanel
 			.filter(o -> only == null || o.getSkill() == only)
 			.collect(Collectors.toList());
 		List<AlmostThere.QuestWait> waits = only != null ? new ArrayList<>() : almost.getQuestWaits();
-		if (shorts.isEmpty() && waits.isEmpty())
+		if (shorts.isEmpty() && waits.isEmpty() || !section("almost", "Almost there", shorts.size() + waits.size()))
 		{
 			return;
 		}
 
-		JLabel toggle = heading((almostThereOpen ? "\u25BE " : "\u25B8 ") + "Almost there (" + (shorts.size() + waits.size()) + ")");
-		clickable(toggle, () ->
+		int rows = almostThereAll ? Integer.MAX_VALUE : ALMOST_THERE_ROWS;
+		for (AlmostThere.OneLevelShort o : shorts.subList(0, Math.min(shorts.size(), rows)))
 		{
-			almostThereOpen = !almostThereOpen;
-			rebuild();
-		});
-		content.add(toggle);
-		if (!almostThereOpen)
-		{
-			content.add(Box.createVerticalStrut(4));
-			return;
+			boolean quest = o.getType() == Unlock.Type.QUEST;
+			JPanel card = card();
+			card.add(spriteIcon(quest ? SpriteID.SideIcons.QUEST : SpriteID.SideIcons.ACHIEVEMENT_DIARIES), BorderLayout.WEST);
+
+			JLabel needs = new JLabel("Needs " + o.getSkill().getName() + " " + o.getLevel()
+				+ (snapshot.isLoggedIn() ? " \u00B7 " + shortXp(o.getXpToGo()) + " xp" : ""));
+			needs.setIcon(new ImageIcon(iconManager.getSkillImage(o.getSkill(), true)));
+			needs.setIconTextGap(4);
+			needs.setFont(FontManager.getRunescapeSmallFont());
+			needs.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+
+			JPanel body = new JPanel(new BorderLayout(0, 3));
+			body.setOpaque(false);
+			body.add(html(colored(escape(displayTitle(o.getTitle())), quest ? QUEST_COLOR : DIARY_COLOR), CARD_TEXT_WIDTH), BorderLayout.NORTH);
+			body.add(needs, BorderLayout.CENTER);
+			if (snapshot.isLoggedIn())
+			{
+				body.add(progress(o.getSkill(), o.getLevel()), BorderLayout.SOUTH);
+			}
+			card.add(body, BorderLayout.CENTER);
+			card.setToolTipText("<html>" + escape(o.getTitle()) + "<br>Every other skill level for this " + (quest ? "quest" : "diary") + " is met"
+				+ (quest ? "" : "<br>Diary completion isn't checked")
+				+ "<br>Click to open it on the OSRS Wiki</html>");
+			clickable(card, () -> openWiki(o.getTitle()));
+			card.setComponentPopupMenu(taskMenu(o.getTitle()));
+			addCard(card);
 		}
 
-		for (AlmostThere.OneLevelShort o : shorts.subList(0, Math.min(shorts.size(), ALMOST_THERE_ROWS)))
-		{
-			Color color = o.getType() == Unlock.Type.QUEST ? QUEST_COLOR : DIARY_COLOR;
-			String xp = snapshot.isLoggedIn() ? " &middot; " + shortXp(o.getXpToGo()) + " xp" : "";
-			JLabel row = html(colored(escape(o.getTitle()), color) + "<br>"
-				+ colored("Needs " + o.getSkill().getName() + " " + o.getLevel() + xp, ColorScheme.LIGHT_GRAY_COLOR), TEXT_WIDTH - 20);
-			row.setIcon(new ImageIcon(iconManager.getSkillImage(o.getSkill(), true)));
-			row.setIconTextGap(6);
-			row.setToolTipText("<html>Every other skill level for this " + (o.getType() == Unlock.Type.QUEST ? "quest" : "diary") + " is met"
-				+ (o.getType() == Unlock.Type.DIARY ? "<br>Diary completion isn't checked" : "")
-				+ "<br>Open " + escape(o.getTitle()) + " on the OSRS Wiki</html>");
-			clickable(row, () -> openWiki(o.getTitle()));
-			row.setComponentPopupMenu(taskMenu(o.getTitle()));
-			content.add(row);
-			content.add(Box.createVerticalStrut(4));
-		}
-		if (shorts.size() > ALMOST_THERE_ROWS)
-		{
-			content.add(note("+" + (shorts.size() - ALMOST_THERE_ROWS) + " more one level short"));
-			content.add(Box.createVerticalStrut(4));
-		}
-
-		for (AlmostThere.QuestWait w : waits.subList(0, Math.min(waits.size(), ALMOST_THERE_ROWS)))
+		for (AlmostThere.QuestWait w : waits.subList(0, Math.min(waits.size(), rows)))
 		{
 			int n = w.getUnlocks().size();
-			JLabel row = html(colored(escape(w.getQuest()), QUEST_COLOR) + "<br>"
-				+ colored("Unlocks " + n + (n == 1 ? " thing" : " things") + " you have the level for", ColorScheme.LIGHT_GRAY_COLOR), TEXT_WIDTH - 20);
+			JPanel card = card();
+			card.add(spriteIcon(SpriteID.SideIcons.QUEST), BorderLayout.WEST);
+
+			JPanel body = new JPanel(new BorderLayout(0, 3));
+			body.setOpaque(false);
+			body.add(html(colored(escape(displayTitle(w.getQuest())), QUEST_COLOR), CARD_TEXT_WIDTH), BorderLayout.NORTH);
+			JLabel holds = html(colored("Holds back " + n + (n == 1 ? " unlock" : " unlocks") + " you have the level for", ColorScheme.LIGHT_GRAY_COLOR), CARD_TEXT_WIDTH);
+			holds.setFont(FontManager.getRunescapeSmallFont());
+			body.add(holds, BorderLayout.CENTER);
+			card.add(body, BorderLayout.CENTER);
+
 			StringBuilder tip = new StringBuilder("<html>");
 			for (int i = 0; i < n && i < 15; i++)
 			{
@@ -437,50 +469,137 @@ class NextUnlocksPanel extends PluginPanel
 			{
 				tip.append("+").append(n - 15).append(" more<br>");
 			}
-			tip.append("Open ").append(escape(w.getQuest())).append(" on the OSRS Wiki</html>");
-			row.setToolTipText(tip.toString());
-			clickable(row, () -> openWiki(w.getQuest()));
-			row.setComponentPopupMenu(taskMenu(w.getQuest()));
-			content.add(row);
-			content.add(Box.createVerticalStrut(4));
+			tip.append("Click to open ").append(escape(w.getQuest())).append(" on the OSRS Wiki</html>");
+			card.setToolTipText(tip.toString());
+			clickable(card, () -> openWiki(w.getQuest()));
+			card.setComponentPopupMenu(taskMenu(w.getQuest()));
+			addCard(card);
 		}
-		if (waits.size() > ALMOST_THERE_ROWS)
+
+		int hidden = Math.max(0, shorts.size() - ALMOST_THERE_ROWS) + Math.max(0, waits.size() - ALMOST_THERE_ROWS);
+		if (hidden > 0)
 		{
-			content.add(note("+" + (waits.size() - ALMOST_THERE_ROWS) + " more quests holding unlocks back"));
-			content.add(Box.createVerticalStrut(4));
+			JLabel more = new JLabel(almostThereAll ? "Show fewer" : "Show " + hidden + " more");
+			more.setFont(FontManager.getRunescapeSmallFont());
+			more.setForeground(LEVEL_COLOR);
+			more.setAlignmentX(LEFT_ALIGNMENT);
+			clickable(more, () ->
+			{
+				almostThereAll = !almostThereAll;
+				rebuild();
+			});
+			content.add(more);
 		}
-		content.add(Box.createVerticalStrut(6));
+		content.add(Box.createVerticalStrut(8));
 	}
 
-	private static JLabel heading(String text)
+	/**
+	 * A collapsible section header: an arrow, the title, a count on the right and a rule under them.
+	 * Returns whether the section is open.
+	 */
+	private boolean section(String key, String title, int count)
 	{
-		JLabel label = new JLabel(text);
-		label.setFont(FontManager.getRunescapeBoldFont());
-		label.setForeground(Color.WHITE);
-		label.setAlignmentX(LEFT_ALIGNMENT);
-		label.setBorder(new EmptyBorder(0, 0, 4, 0));
+		boolean open = !closed.contains(key);
+		JLabel name = new JLabel((open ? "\u25BE " : "\u25B8 ") + title);
+		name.setFont(FontManager.getRunescapeBoldFont());
+		name.setForeground(Color.WHITE);
+		JLabel number = new JLabel(String.valueOf(count));
+		number.setFont(FontManager.getRunescapeSmallFont());
+		number.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+
+		JPanel header = new JPanel(new BorderLayout());
+		header.setOpaque(false);
+		header.setAlignmentX(LEFT_ALIGNMENT);
+		header.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, ColorScheme.MEDIUM_GRAY_COLOR), new EmptyBorder(0, 0, 3, 0)));
+		header.add(name, BorderLayout.WEST);
+		header.add(number, BorderLayout.EAST);
+		header.setMaximumSize(new Dimension(Integer.MAX_VALUE, header.getPreferredSize().height));
+		header.setToolTipText(open ? "Click to collapse" : "Click to expand");
+		clickable(header, () ->
+		{
+			if (!closed.remove(key))
+			{
+				closed.add(key);
+			}
+			rebuild();
+		});
+		content.add(header);
+		content.add(Box.createVerticalStrut(open ? 6 : 8));
+		return open;
+	}
+
+	/** A wiki title as players know it: a subquest's or a page section's own name. */
+	static String displayTitle(String title)
+	{
+		int hash = title.indexOf('#');
+		if (hash >= 0 && hash < title.length() - 1)
+		{
+			return title.substring(hash + 1);
+		}
+		int slash = title.lastIndexOf('/');
+		return slash >= 0 && slash < title.length() - 1 ? title.substring(slash + 1) : title;
+	}
+
+	/** A game sprite in an icon-wide column, filled in once it loads. */
+	private JLabel spriteIcon(int id)
+	{
+		JLabel label = new JLabel();
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		label.setVerticalAlignment(SwingConstants.TOP);
+		label.setPreferredSize(new Dimension(ICON_WIDTH, ICON_WIDTH));
+		sprite(id, image -> label.setIcon(new ImageIcon(image)));
 		return label;
+	}
+
+	/** Hands the sprite to the consumer on the EDT, from the cache or once it loads. */
+	private void sprite(int id, Consumer<BufferedImage> consumer)
+	{
+		BufferedImage cached = sprites.get(id);
+		if (cached != null)
+		{
+			consumer.accept(cached);
+			return;
+		}
+		spriteManager.getSpriteAsync(id, 0, image -> SwingUtilities.invokeLater(() ->
+		{
+			sprites.put(id, image);
+			consumer.accept(image);
+		}));
 	}
 
 	private void buildSkill(Skill skill)
 	{
 		int level = snapshot.level(skill);
-		JLabel header = new JLabel(skill.getName() + " - level " + level, new ImageIcon(iconManager.getSkillImage(skill, false)), JLabel.LEFT);
-		header.setFont(FontManager.getRunescapeBoldFont());
-		header.setForeground(Color.WHITE);
-		header.setAlignmentX(LEFT_ALIGNMENT);
-		content.add(header);
-		content.add(Box.createVerticalStrut(6));
-		buildSections(skill);
-
 		NavigableMap<Integer, List<Unlock>> upcoming = repository.upcoming(skill, level, snapshot.upcoming(skill), snapshot.getLevelsAhead());
-		if (snapshot.isLoggedIn() && !upcoming.isEmpty())
+
+		// the skill, its level and the way to its next unlock, on a card of their own
+		JPanel card = card();
+		JLabel icon = new JLabel(new ImageIcon(iconManager.getSkillImage(skill, false)));
+		icon.setVerticalAlignment(SwingConstants.TOP);
+		card.add(icon, BorderLayout.WEST);
+		JPanel top = new JPanel(new BorderLayout());
+		top.setOpaque(false);
+		top.add(html("<b>" + skill.getName() + "</b>", TEXT_WIDTH - 110), BorderLayout.WEST);
+		JLabel levelLabel = new JLabel("Level " + level);
+		levelLabel.setFont(FontManager.getRunescapeBoldFont());
+		levelLabel.setForeground(snapshot.getPalette().getLevel());
+		top.add(levelLabel, BorderLayout.EAST);
+		JPanel body = new JPanel(new BorderLayout(0, 3));
+		body.setOpaque(false);
+		body.add(top, BorderLayout.NORTH);
+		if (!upcoming.isEmpty() && snapshot.isLoggedIn())
 		{
-			JComponent progress = progress(skill, upcoming.firstKey());
-			progress.setAlignmentX(LEFT_ALIGNMENT);
-			content.add(progress);
-			content.add(Box.createVerticalStrut(6));
+			int next = upcoming.firstKey();
+			JLabel toGo = new JLabel(shortXp(xpToGo(skill, next)) + " xp to level " + next);
+			toGo.setFont(FontManager.getRunescapeSmallFont());
+			toGo.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			body.add(toGo, BorderLayout.CENTER);
+			body.add(progress(skill, next), BorderLayout.SOUTH);
 		}
+		card.add(body, BorderLayout.CENTER);
+		addCard(card);
+		content.add(Box.createVerticalStrut(4));
+		buildSections(skill);
 		buildAlmostThere(skill);
 
 		List<Unlock> boosted = repository.all(skill).stream()
@@ -497,12 +616,17 @@ class NextUnlocksPanel extends PluginPanel
 			addUnlocks(skill, boosted);
 		}
 
-		if (upcoming.isEmpty())
+		List<Unlock> next = upcoming.values().stream().flatMap(List::stream).collect(Collectors.toList());
+		if (!section("upcoming", "Upcoming unlocks", next.size()))
+		{
+			return;
+		}
+		if (next.isEmpty())
 		{
 			content.add(note("Nothing left to unlock with these filters."));
 			return;
 		}
-		addUnlocks(skill, upcoming.values().stream().flatMap(List::stream).collect(Collectors.toList()));
+		addUnlocks(skill, next);
 	}
 
 	/** Checkboxes for the skill guide's sections, behind a toggle. */
@@ -583,10 +707,11 @@ class NextUnlocksPanel extends PluginPanel
 		}
 	}
 
-	/** Unlocks of every skill whose text or note contains the query, grouped by skill. */
+	/** Items to pin as goals, then unlocks of every skill whose text or note contains the query, grouped by skill. */
 	private void buildSearch(String query)
 	{
 		String needle = query.toLowerCase(Locale.ROOT);
+		int items = buildItemSearch(needle);
 		int found = 0;
 		for (Skill skill : Skills.STATS_TAB.keySet())
 		{
@@ -615,10 +740,58 @@ class NextUnlocksPanel extends PluginPanel
 			}
 			content.add(Box.createVerticalStrut(6));
 		}
-		if (found == 0)
+		if (found + items == 0)
 		{
-			content.add(note("No unlocks match \"" + query + "\" with these filters."));
+			content.add(note("No unlocks or items match \"" + query + "\" with these filters."));
 		}
+	}
+
+	/** Items whose name contains the query, to pin as goals; how many were shown. */
+	private int buildItemSearch(String needle)
+	{
+		List<Task> matches = items.get().stream()
+			.filter(t -> contains(t.getName(), needle))
+			.sorted(Comparator.comparing((Task t) -> !t.getName().toLowerCase(Locale.ROOT).startsWith(needle)).thenComparing(Task::getName))
+			.limit(ITEM_RESULTS)
+			.collect(Collectors.toList());
+		if (matches.isEmpty())
+		{
+			return 0;
+		}
+		JLabel header = new JLabel("Item goals");
+		header.setFont(FontManager.getRunescapeBoldFont());
+		header.setForeground(Color.WHITE);
+		header.setAlignmentX(LEFT_ALIGNMENT);
+		content.add(header);
+		content.add(Box.createVerticalStrut(3));
+		for (Task item : matches)
+		{
+			content.add(itemEntry(item));
+			content.add(Box.createVerticalStrut(3));
+		}
+		content.add(Box.createVerticalStrut(6));
+		return matches.size();
+	}
+
+	/** An item to pin: its picture and name, with what it needs in the tooltip. */
+	private JComponent itemEntry(Task item)
+	{
+		boolean pinned = snapshot.getPinnedTasks().contains(item.getWiki());
+		JLabel label = html(colored(escape(item.getName()), ColorScheme.LIGHT_GRAY_COLOR)
+			+ (pinned ? colored(" (pinned)", snapshot.getPalette().getLevel()) : ""), TEXT_WIDTH - ITEM_ICON);
+		AsyncBufferedImage image = itemManager.getImage(item.getItem());
+		image.onLoaded(() -> SwingUtilities.invokeLater(() -> label.setIcon(new ImageIcon(ImageUtil.resizeImage(image, ITEM_ICON, ITEM_ICON, true)))));
+		label.setIcon(new ImageIcon(ImageUtil.resizeImage(image, ITEM_ICON, ITEM_ICON, true)));
+		StringBuilder tip = new StringBuilder("<html>");
+		item.getSkills().forEach((skill, level) -> tip.append(skill.getName()).append(' ').append(level).append(" to wield or wear<br>"));
+		item.getMake().forEach((skill, level) -> tip.append(skill.getName()).append(' ').append(level).append(" to make ")
+			.append(escape(item.getMadeFor().getOrDefault(skill, item.getName()))).append("<br>"));
+		item.getQuests().forEach(q -> tip.append(escape(q)).append("<br>"));
+		tip.append(pinned ? "Click to unpin" : "Click to pin its requirements above the chatbox").append("</html>");
+		label.setToolTipText(tip.toString());
+		clickable(label, () -> taskToggle.accept(item.getWiki()));
+		label.setComponentPopupMenu(taskMenu(item.getWiki()));
+		return label;
 	}
 
 	private static boolean contains(String text, String needle)
@@ -664,20 +837,7 @@ class NextUnlocksPanel extends PluginPanel
 		}
 		else
 		{
-			int id = u.getSprite();
-			BufferedImage cached = sprites.get(id);
-			if (cached != null)
-			{
-				tile.setImage(cached);
-			}
-			else
-			{
-				spriteManager.getSpriteAsync(id, 0, image -> SwingUtilities.invokeLater(() ->
-				{
-					sprites.put(id, image);
-					tile.setImage(image);
-				}));
-			}
+			sprite(u.getSprite(), tile::setImage);
 		}
 		if (action != null)
 		{
@@ -754,7 +914,7 @@ class NextUnlocksPanel extends PluginPanel
 		return u.getNote() == null ? "" : "<br>" + colored(escape(u.getNote()).replace("\n", "<br>"), ColorScheme.LIGHT_GRAY_COLOR);
 	}
 
-	/** Right-click menu of an unlock: set or drop it as a goal, open its wiki page. */
+	/** Right-click menu of an unlock: set or drop it as a goal, pin it, set an amount goal, open its wiki page. */
 	private JPopupMenu unlockMenu(Skill skill, Unlock u)
 	{
 		JPopupMenu menu = new JPopupMenu();
@@ -767,6 +927,14 @@ class NextUnlocksPanel extends PluginPanel
 		if (u.getType() != Unlock.Type.UNLOCK && pinnable.test(u.getWiki()))
 		{
 			menu.add(pinItem(u.getWiki()));
+		}
+		else if (u.getType() == Unlock.Type.UNLOCK && pinnable.test(TaskRepository.unlockKey(skill, u)))
+		{
+			menu.add(pinItem(TaskRepository.unlockKey(skill, u)));
+		}
+		if (u.getType() == Unlock.Type.UNLOCK && u.getItem() != null)
+		{
+			menu.add(menuItem("Set amount goal...", () -> amountGoal.accept(skill, u.getItem())));
 		}
 		if (u.getWiki() != null)
 		{

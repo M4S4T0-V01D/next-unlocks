@@ -67,6 +67,9 @@ public class UnlockRepository
 	private volatile boolean skillGuide;
 	/** Skill guide section headers per skill, in guide order. */
 	private volatile Map<Skill, List<String>> sections = Collections.emptyMap();
+	/** The items the game's skill guide lists, by item ID, with the levels it says they need; empty until it's read. */
+	@Getter
+	private volatile Map<Integer, GuideItem> guideItems = Collections.emptyMap();
 
 	public void load(Gson gson) throws IOException
 	{
@@ -120,6 +123,7 @@ public class UnlockRepository
 		Map<Integer, String> questNames = new HashMap<>();
 		Map<Skill, TreeMap<Integer, String>> ordered = new EnumMap<>(Skill.class);
 		Map<Long, String> headers = new HashMap<>();
+		Map<Integer, GuideItem> items = new HashMap<>();
 		for (int row : client.getDBTableRows(DBTableID.SkillGuideSubsections.ID))
 		{
 			Integer skillId = integer(client, row, DBTableID.SkillGuideSubsections.COL_SKILL);
@@ -166,6 +170,8 @@ public class UnlockRepository
 				item = null;
 			}
 			boolean members = bool(field(client, row, DBTableID.SkillFeatures.COL_MEMBERSONLY, 0));
+			GuideItem needs = item == null ? null : items.computeIfAbsent(item, k -> new GuideItem(text.startsWith("Members: ")
+				? text.substring("Members: ".length()).trim() : text));
 
 			// the skill column lists (skill, level, subsection) tuples; each read returns one position across all of them
 			Object[] skillIds = field(client, row, DBTableID.SkillFeatures.COL_SKILL, 0);
@@ -180,6 +186,11 @@ public class UnlockRepository
 				}
 				int skillId = ((Number) skillIds[i]).intValue();
 				int subsection = ((Number) subsections[i]).intValue();
+				if (needs != null && skillId > 0 && skillId < GUIDE_SKILLS.length && GUIDE_SKILLS[skillId] != null)
+				{
+					// hidden tuples (subsection -1) count too: they're the entry's requirements in other skills
+					needs.add(GUIDE_SKILLS[skillId], ((Number) levels[i]).intValue(), subsection < 0 ? null : headers.get(sectionKey(skillId, subsection)));
+				}
 				Unlock unlock = guideUnlock(skillId, ((Number) levels[i]).intValue(), subsection, headers.get(sectionKey(skillId, subsection)),
 					text, notes.isEmpty() ? null : String.join("\n", notes), members, item, sprite, quest);
 				if (unlock != null)
@@ -191,6 +202,8 @@ public class UnlockRepository
 		Map<Skill, List<String>> sections = new EnumMap<>(Skill.class);
 		ordered.forEach((skill, byOrder) -> sections.put(skill, Collections.unmodifiableList(new ArrayList<>(new LinkedHashSet<>(byOrder.values())))));
 		this.sections = sections;
+		items.values().removeIf(GuideItem::isEmpty);
+		guideItems = Collections.unmodifiableMap(items);
 		setSkillGuide(guide);
 	}
 

@@ -142,7 +142,7 @@ public interface NextUnlocksConfig extends Config
 	)
 	default boolean tooltipIconsOnly()
 	{
-		return false;
+		return true;
 	}
 
 	@ConfigItem(
@@ -245,6 +245,566 @@ public interface NextUnlocksConfig extends Config
 	default boolean pinnedGoal()
 	{
 		return true;
+	}
+
+	/** Looks for the pinned cards, from the RuneLite default through the 90s to modern. */
+	enum CardStyle
+	{
+		CLASSIC("Classic RuneLite"),
+		ARCADE("90s arcade"),
+		NEON("Neon synthwave"),
+		TERMINAL("CRT terminal"),
+		HANDHELD("Handheld (4 greens)"),
+		WIN95("Windows 95"),
+		MODERN("Modern"),
+		MINIMAL("Minimal");
+
+		private final String name;
+
+		CardStyle(String name)
+		{
+			this.name = name;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
+	enum CardFont
+	{
+		STYLE("Style default"),
+		RUNESCAPE("RuneScape"),
+		RUNESCAPE_BOLD("RuneScape bold"),
+		RUNESCAPE_SMALL("RuneScape small"),
+		SANS("Sans"),
+		SANS_BOLD("Sans bold"),
+		MONO("Monospaced");
+
+		private final String name;
+
+		CardFont(String name)
+		{
+			this.name = name;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
+	enum BarStyle
+	{
+		STYLE("Style default"),
+		CLASSIC("Classic"),
+		ARCADE("Arcade (shakes near 100%)"),
+		SEGMENTED("Segmented blocks"),
+		MODERN("Modern rounded");
+
+		private final String name;
+
+		BarStyle(String name)
+		{
+			this.name = name;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
+	enum GlowMode
+	{
+		STYLE("Style default"),
+		OFF("Off"),
+		BORDER("Border"),
+		TEXT("Text"),
+		BOTH("Border and text");
+
+		private final String name;
+
+		GlowMode(String name)
+		{
+			this.name = name;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
+	/** A setting the style decides unless it is turned on or off here. */
+	enum StyleToggle
+	{
+		STYLE("Style default"),
+		ON("On"),
+		OFF("Off");
+
+		private final String name;
+
+		StyleToggle(String name)
+		{
+			this.name = name;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+
+		boolean on(boolean style)
+		{
+			return this == STYLE ? style : this == ON;
+		}
+	}
+
+	@ConfigSection(
+		name = "Pinned card style",
+		description = "How the cards pinned above the chatbox look",
+		position = 21
+	)
+	String pinStyleSection = "pinStyle";
+
+	@ConfigItem(
+		keyName = "pinStyle",
+		name = "Style",
+		description = "The look of pinned cards. The settings below can change parts of it",
+		position = 100,
+		section = pinStyleSection
+	)
+	default CardStyle pinStyle()
+	{
+		return CardStyle.CLASSIC;
+	}
+
+	@ConfigItem(
+		keyName = "pinFont",
+		name = "Font",
+		description = "The font on pinned cards",
+		position = 101,
+		section = pinStyleSection
+	)
+	default CardFont pinFont()
+	{
+		return CardFont.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinBar",
+		name = "Progress bar",
+		description = "The unlock progress bar on pinned cards. Arcade shakes and shifts color as it nears 100%",
+		position = 102,
+		section = pinStyleSection
+	)
+	default BarStyle pinBar()
+	{
+		return BarStyle.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinLevelUp",
+		name = "Level-up effect",
+		description = "On a level-up the bar bursts into pixels; reaching the unlock first holds it at a flashing 100%",
+		position = 103,
+		section = pinStyleSection
+	)
+	default StyleToggle pinLevelUp()
+	{
+		return StyleToggle.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinGlow",
+		name = "Glow",
+		description = "A soft glow around the card's border, its text, or both. Neon and CRT terminal glow by default",
+		position = 104,
+		section = pinStyleSection
+	)
+	default GlowMode pinGlow()
+	{
+		return GlowMode.STYLE;
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "pinGlowColor",
+		name = "Glow color",
+		description = "The color of the glow, when Glow is set to something other than the style default",
+		position = 105,
+		section = pinStyleSection
+	)
+	default Color pinGlowColor()
+	{
+		return new Color(64, 224, 255, 220);
+	}
+
+	@Range(min = 1, max = 8)
+	@ConfigItem(
+		keyName = "pinGlowSize",
+		name = "Glow size",
+		description = "How far the glow spreads, in pixels",
+		position = 106,
+		section = pinStyleSection
+	)
+	default int pinGlowSize()
+	{
+		return 3;
+	}
+
+	@ConfigItem(
+		keyName = "pinTextShadow",
+		name = "Text shadow",
+		description = "A dark shadow under the text",
+		position = 107,
+		section = pinStyleSection
+	)
+	default StyleToggle pinTextShadow()
+	{
+		return StyleToggle.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinScanlines",
+		name = "Scanlines",
+		description = "Faint lines across the card, like an old CRT screen",
+		position = 108,
+		section = pinStyleSection
+	)
+	default StyleToggle pinScanlines()
+	{
+		return StyleToggle.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinCustomColors",
+		name = "Use my colors",
+		description = "Color every word and number on pinned cards with the colors in 'Pinned card colors' instead of the style's",
+		position = 109,
+		section = pinStyleSection
+	)
+	default boolean pinCustomColors()
+	{
+		return false;
+	}
+
+	@ConfigSection(
+		name = "Pinned card colors",
+		description = "Each word and number on pinned cards; used when 'Use my colors' is on",
+		position = 22,
+		closedByDefault = true
+	)
+	String pinColorSection = "pinColors";
+
+	@Alpha
+	@ConfigItem(
+		keyName = "pinColorBackground",
+		name = "Background",
+		description = "The card's background; its alpha sets how see-through it is",
+		position = 200,
+		section = pinColorSection
+	)
+	default Color pinColorBackground()
+	{
+		return new Color(70, 61, 50, 156);
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "pinColorBorder",
+		name = "Border",
+		description = "The card's border",
+		position = 201,
+		section = pinColorSection
+	)
+	default Color pinColorBorder()
+	{
+		return Palette.DEFAULT.getOutline();
+	}
+
+	@ConfigItem(
+		keyName = "pinColorSkillName",
+		name = "Skill name",
+		description = "The skill's name at the top",
+		position = 202,
+		section = pinColorSection
+	)
+	default Color pinColorSkillName()
+	{
+		return Palette.DEFAULT.getNext();
+	}
+
+	@ConfigItem(
+		keyName = "pinColorLevelLabel",
+		name = "'Level' word",
+		description = "The word 'Level' at the top",
+		position = 203,
+		section = pinColorSection
+	)
+	default Color pinColorLevelLabel()
+	{
+		return Color.WHITE;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorLevelValue",
+		name = "Level number",
+		description = "Your level at the top (boosted levels stay green or red)",
+		position = 204,
+		section = pinColorSection
+	)
+	default Color pinColorLevelValue()
+	{
+		return Color.WHITE;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorXpLabel",
+		name = "'XP:' word",
+		description = "The 'XP:' label",
+		position = 205,
+		section = pinColorSection
+	)
+	default Color pinColorXpLabel()
+	{
+		return Color.WHITE;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorXpValue",
+		name = "XP number",
+		description = "Your XP",
+		position = 206,
+		section = pinColorSection
+	)
+	default Color pinColorXpValue()
+	{
+		return Color.WHITE;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorNextLevelLabel",
+		name = "'Next level at:' words",
+		description = "The 'Next level at:' label",
+		position = 207,
+		section = pinColorSection
+	)
+	default Color pinColorNextLevelLabel()
+	{
+		return Color.WHITE;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorNextLevelValue",
+		name = "Next level XP number",
+		description = "The XP of the next level",
+		position = 208,
+		section = pinColorSection
+	)
+	default Color pinColorNextLevelValue()
+	{
+		return Color.WHITE;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorRemainingLabel",
+		name = "'Remaining XP:' words",
+		description = "The 'Remaining XP:' label",
+		position = 209,
+		section = pinColorSection
+	)
+	default Color pinColorRemainingLabel()
+	{
+		return Color.WHITE;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorRemainingValue",
+		name = "Remaining XP number",
+		description = "The XP left to the next level",
+		position = 210,
+		section = pinColorSection
+	)
+	default Color pinColorRemainingValue()
+	{
+		return Color.WHITE;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorNextUnlockLabel",
+		name = "'Next unlock:' words",
+		description = "The 'Next unlock:' label",
+		position = 211,
+		section = pinColorSection
+	)
+	default Color pinColorNextUnlockLabel()
+	{
+		return Palette.DEFAULT.getNext();
+	}
+
+	@ConfigItem(
+		keyName = "pinColorNextUnlockLevel",
+		name = "Next unlock level",
+		description = "The level of the next unlock",
+		position = 212,
+		section = pinColorSection
+	)
+	default Color pinColorNextUnlockLevel()
+	{
+		return Palette.DEFAULT.getNext();
+	}
+
+	@ConfigItem(
+		keyName = "pinColorNextUnlockXp",
+		name = "Next unlock XP number",
+		description = "The XP left to the next unlock",
+		position = 213,
+		section = pinColorSection
+	)
+	default Color pinColorNextUnlockXp()
+	{
+		return Color.WHITE;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorUnlock",
+		name = "Unlocks",
+		description = "The unlocks listed as text",
+		position = 214,
+		section = pinColorSection
+	)
+	default Color pinColorUnlock()
+	{
+		return Color.WHITE;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorMore",
+		name = "'+N more'",
+		description = "The count of unlocks that don't fit",
+		position = 215,
+		section = pinColorSection
+	)
+	default Color pinColorMore()
+	{
+		return Color.LIGHT_GRAY;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorGoalLabel",
+		name = "'Goal:' word",
+		description = "The 'Goal:' label",
+		position = 216,
+		section = pinColorSection
+	)
+	default Color pinColorGoalLabel()
+	{
+		return Palette.DEFAULT.getNext();
+	}
+
+	@ConfigItem(
+		keyName = "pinColorGoalLevel",
+		name = "Goal level",
+		description = "The goal's level",
+		position = 217,
+		section = pinColorSection
+	)
+	default Color pinColorGoalLevel()
+	{
+		return Palette.DEFAULT.getNext();
+	}
+
+	@ConfigItem(
+		keyName = "pinColorGoalXp",
+		name = "Goal XP number",
+		description = "The XP left to the goal",
+		position = 218,
+		section = pinColorSection
+	)
+	default Color pinColorGoalXp()
+	{
+		return Color.WHITE;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorTaskTitle",
+		name = "Quest/diary name",
+		description = "The name on quest and diary cards",
+		position = 219,
+		section = pinColorSection
+	)
+	default Color pinColorTaskTitle()
+	{
+		return Palette.DEFAULT.getNext();
+	}
+
+	@ConfigItem(
+		keyName = "pinColorMet",
+		name = "Requirement met",
+		description = "Quest and diary requirements you have",
+		position = 220,
+		section = pinColorSection
+	)
+	default Color pinColorMet()
+	{
+		return Color.GREEN;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorUnmet",
+		name = "Requirement not met",
+		description = "Quest and diary requirements you don't have",
+		position = 221,
+		section = pinColorSection
+	)
+	default Color pinColorUnmet()
+	{
+		return Color.RED;
+	}
+
+	@ConfigItem(
+		keyName = "pinColorBarFill",
+		name = "Bar fill",
+		description = "The filled part of the progress bar",
+		position = 222,
+		section = pinColorSection
+	)
+	default Color pinColorBarFill()
+	{
+		return Palette.DEFAULT.getProgress();
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "pinColorBarBackground",
+		name = "Bar background",
+		description = "The empty part of the progress bar",
+		position = 223,
+		section = pinColorSection
+	)
+	default Color pinColorBarBackground()
+	{
+		return Palette.DEFAULT.getProgressBackground();
+	}
+
+	@ConfigItem(
+		keyName = "pinColorBarText",
+		name = "Bar text",
+		description = "The percentage on the progress bar",
+		position = 224,
+		section = pinColorSection
+	)
+	default Color pinColorBarText()
+	{
+		return Color.WHITE;
 	}
 
 	@ConfigSection(
@@ -381,6 +941,18 @@ public interface NextUnlocksConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "itemMakingLevels",
+		name = "Item goals: making levels",
+		description = "Item cards also need the levels to make the item from scratch, as an ironman would, not just the ones to wield or wear it",
+		position = 30,
+		section = goalSection
+	)
+	default boolean itemMakingLevels()
+	{
+		return true;
+	}
+
 	@ConfigSection(
 		name = "Colors",
 		description = "Colors in the tooltip and the skill guide",
@@ -510,6 +1082,39 @@ public interface NextUnlocksConfig extends Config
 		return true;
 	}
 
+	@ConfigSection(
+		name = "In-game menu",
+		description = "A button on the minimap's rim that opens a menu of these settings, goals and pins in the game",
+		position = 41
+	)
+	String menuSection = "menu";
+
+	@ConfigItem(
+		keyName = "minimapButton",
+		name = "Minimap button",
+		description = "Show the Next Unlocks button on the minimap's rim, which opens the in-game menu",
+		position = 41,
+		section = menuSection
+	)
+	default boolean minimapButton()
+	{
+		return true;
+	}
+
+	@Range(max = 359)
+	@ConfigItem(
+		keyName = "minimapButtonPosition",
+		name = "Button position",
+		description = "Where on the minimap's rim the button sits, in degrees clockwise from the right; 324 is just below "
+			+ "VisionHD's menu button",
+		position = 42,
+		section = menuSection
+	)
+	default int minimapButtonAngle()
+	{
+		return 324;
+	}
+
 	@ConfigItem(
 		keyName = "goals",
 		name = "",
@@ -550,6 +1155,28 @@ public interface NextUnlocksConfig extends Config
 		hidden = true
 	)
 	default String hiddenSections()
+	{
+		return "";
+	}
+
+	@ConfigItem(
+		keyName = "checkedOff",
+		name = "",
+		description = "Requirements of pinned cards checked off by hand, as key, tab, requirement, one per line",
+		hidden = true
+	)
+	default String checkedOff()
+	{
+		return "";
+	}
+
+	@ConfigItem(
+		keyName = "tallies",
+		name = "",
+		description = "Amount goals, as SKILL|item|target|count|name, one per line",
+		hidden = true
+	)
+	default String tallies()
 	{
 		return "";
 	}

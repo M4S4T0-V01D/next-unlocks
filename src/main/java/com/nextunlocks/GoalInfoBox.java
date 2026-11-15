@@ -1,6 +1,8 @@
 package com.nextunlocks;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
 import java.util.function.ToIntFunction;
@@ -24,6 +26,31 @@ class GoalInfoBox extends InfoBox
 		this.goal = goal;
 		this.xp = xp;
 		this.color = color;
+	}
+
+	/** Room for the box's text under the icon, so the xp isn't drawn over it. */
+	private static final int SIZE = 32;
+	private static final int ICON_HEIGHT = 21;
+
+	/**
+	 * The icon shrunk into the top of a square, with the bottom left empty: infoboxes draw their text at the
+	 * bottom, so it sits under the icon instead of on it.
+	 */
+	static BufferedImage withTextRoom(BufferedImage icon)
+	{
+		BufferedImage out = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
+		if (icon == null || icon.getWidth() <= 0 || icon.getHeight() <= 0)
+		{
+			return out;
+		}
+		double scale = Math.min(1, Math.min((double) SIZE / icon.getWidth(), (double) ICON_HEIGHT / icon.getHeight()));
+		int w = Math.max(1, (int) Math.round(icon.getWidth() * scale));
+		int h = Math.max(1, (int) Math.round(icon.getHeight() * scale));
+		Graphics2D g = out.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.drawImage(icon, (SIZE - w) / 2, (ICON_HEIGHT - h) / 2, w, h, null);
+		g.dispose();
+		return out;
 	}
 
 	private long xpToGo()

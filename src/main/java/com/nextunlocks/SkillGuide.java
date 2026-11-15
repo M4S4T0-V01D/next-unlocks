@@ -1,5 +1,6 @@
 package com.nextunlocks;
 
+import java.awt.Rectangle;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -181,6 +182,103 @@ class SkillGuide
 	{
 		Widget list = client.getWidget(InterfaceID.SkillGuideV2.LIST);
 		return list != null && !list.isHidden();
+	}
+
+	/**
+	 * The item on the skill guide row under this canvas point, on the game's tabs and ours, or -1: the row is the
+	 * smallest rectangle there, and its item the item icon inside it.
+	 */
+	int itemAt(int x, int y)
+	{
+		Widget list = client.getWidget(InterfaceID.SkillGuideV2.LIST);
+		Widget[] children = list == null || list.isHidden() || !list.getBounds().contains(x, y) ? null : list.getDynamicChildren();
+		if (children == null)
+		{
+			return -1;
+		}
+		Rectangle row = null;
+		for (Widget w : children)
+		{
+			Rectangle r = w == null || w.isHidden() || w.getType() != WidgetType.RECTANGLE ? null : w.getBounds();
+			if (r != null && r.contains(x, y) && (row == null || r.height < row.height))
+			{
+				row = r;
+			}
+		}
+		for (Widget w : children)
+		{
+			if (row != null && w != null && !w.isHidden() && w.getItemId() > 0 && row.contains(w.getBounds().getCenterX(), w.getBounds().getCenterY()))
+			{
+				return w.getItemId();
+			}
+		}
+		return -1;
+	}
+
+	/** The skill the guide is showing, or null when it isn't open. */
+	Skill skill()
+	{
+		return isOpen() ? UnlockRepository.guideSkill(client.getVarcIntValue(VarClientID.SKILL_GUIDE_V2_CURRENT_SKILL)) : null;
+	}
+
+	/**
+	 * The unlock on the skill guide row under this canvas point, on the game's tabs and ours, or null: the row's level
+	 * and text are the text widgets inside its rectangle.
+	 */
+	Unlock unlockAt(int x, int y)
+	{
+		Skill skill = skill();
+		Widget list = client.getWidget(InterfaceID.SkillGuideV2.LIST);
+		Widget[] children = skill == null || !list.getBounds().contains(x, y) ? null : list.getDynamicChildren();
+		if (children == null)
+		{
+			return null;
+		}
+		Rectangle row = null;
+		for (Widget w : children)
+		{
+			Rectangle r = w == null || w.isHidden() || w.getType() != WidgetType.RECTANGLE ? null : w.getBounds();
+			if (r != null && r.contains(x, y) && (row == null || r.height < row.height))
+			{
+				row = r;
+			}
+		}
+		if (row == null)
+		{
+			return null;
+		}
+		int level = 0;
+		String text = null;
+		for (Widget w : children)
+		{
+			if (w == null || w.isHidden() || w.getType() != WidgetType.TEXT || w.getText() == null
+				|| !row.contains(w.getBounds().getCenterX(), w.getBounds().getCenterY()))
+			{
+				continue;
+			}
+			String t = Text.removeTags(w.getText()).trim();
+			if (t.matches("\\d{1,3}"))
+			{
+				level = Integer.parseInt(t);
+			}
+			else if (text == null && !t.isEmpty())
+			{
+				text = w.getText();
+			}
+		}
+		if (level <= 0)
+		{
+			return null;
+		}
+		List<Unlock> candidates = new ArrayList<>();
+		for (Unlock u : repository.all(skill))
+		{
+			if (u.getLevel() == level)
+			{
+				candidates.add(u);
+			}
+		}
+		return match(candidates, text);
 	}
 
 	private int currentTab()
