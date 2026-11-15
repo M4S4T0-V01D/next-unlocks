@@ -199,6 +199,25 @@ public class LooksTest
 	}
 
 	@Test
+	public void titleLineHasRoomForBothSides()
+	{
+		CardTheme theme = pinned(Skill.HITPOINTS);
+		java.awt.Font font = theme.font(16);
+		BufferedImage icon = new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
+		CardLine longName = new CardLine(theme, font, true).icon(icon).left("Hitpoints", Color.RED)
+			.right("Level ", Color.WHITE).right("45/48", Color.RED);
+		CardLine shortName = new CardLine(theme, font, true).left("Magic", Color.RED).right("Level ", Color.WHITE).right("45", Color.RED);
+		assertTrue(longName.minWidth() > shortName.minWidth());
+		BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = image.createGraphics();
+		g.setFont(font);
+		java.awt.FontMetrics metrics = g.getFontMetrics();
+		assertTrue(longName.minWidth() > metrics.stringWidth("HitpointsLevel 45/48") + 4);
+		g.dispose();
+		assertEquals(0, new CardLine(theme, font).left("A long line that can wrap", Color.WHITE).minWidth());
+	}
+
+	@Test
 	public void closeGainsAddUp()
 	{
 		XpEffects.Gain gain = new XpEffects.Gain(1000, 50);

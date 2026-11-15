@@ -7,6 +7,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineMetrics;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -91,6 +93,32 @@ class CardLine implements LayoutableRenderableEntity
 	void setRight(int index, String text)
 	{
 		right.get(index).text = text;
+	}
+
+	/** The width both sides need on one line, icon included; 0 when there is nothing on the right, as the left can wrap. */
+	int minWidth()
+	{
+		if (right.isEmpty())
+		{
+			return 0;
+		}
+		FontRenderContext context = new FontRenderContext(null, theme.smooth(), false);
+		int width = GAP + 2;
+		for (Part part : left)
+		{
+			width += (int) Math.ceil(font.getStringBounds(part.text, context).getWidth());
+		}
+		for (Part part : right)
+		{
+			width += (int) Math.ceil(font.getStringBounds(part.text, context).getWidth());
+		}
+		if (icon != null && icon.getHeight() > 0)
+		{
+			LineMetrics metrics = font.getLineMetrics("A", context);
+			int iconHeight = Math.round(metrics.getAscent() - metrics.getDescent()) + 2;
+			width += Math.round(icon.getWidth() * iconHeight / (float) icon.getHeight()) + 3;
+		}
+		return width;
 	}
 
 	@Override

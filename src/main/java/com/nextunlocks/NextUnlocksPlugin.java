@@ -273,6 +273,19 @@ public class NextUnlocksPlugin extends Plugin
 		return configManager.getConfig(NextUnlocksConfig.class);
 	}
 
+	/**
+	 * Each skill's own card became the default style in 1.5.0; a style saved before then is cleared once so it shows,
+	 * after which whatever style is picked stays.
+	 */
+	private void useSkillLooksOnce()
+	{
+		if (configManager.getConfiguration(NextUnlocksConfig.GROUP, "skillLooksDefault") == null)
+		{
+			configManager.unsetConfiguration(NextUnlocksConfig.GROUP, "pinStyle");
+			configManager.setConfiguration(NextUnlocksConfig.GROUP, "skillLooksDefault", "1");
+		}
+	}
+
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -280,6 +293,7 @@ public class NextUnlocksPlugin extends Plugin
 		tasks.load(gson, repository.diaries());
 		tasks.setUnlocks(this::unlockTask);
 
+		useSkillLooksOnce();
 		loadHiddenSections();
 		goals = Goal.parse(config.goals());
 		panel = new NextUnlocksPanel(repository, skillIconManager, itemManager, spriteManager, this::setSectionHidden, this::toggleGoal,
@@ -800,6 +814,14 @@ public class NextUnlocksPlugin extends Plugin
 		}
 		// the same room inside, whatever the theme's padding
 		width += 2 * (theme.getPadding() - PANEL_PADDING);
+		// wide enough that no line's two sides run into each other, like a long skill name and its level up top
+		for (LayoutableRenderableEntity line : lines)
+		{
+			if (line instanceof CardLine)
+			{
+				width = Math.max(width, ((CardLine) line).minWidth() + 2 * theme.getPadding());
+			}
+		}
 		tooltip.setPreferredSize(new Dimension(width, 0));
 
 		TooltipBox box = new TooltipBox(tooltip, theme, updates);
