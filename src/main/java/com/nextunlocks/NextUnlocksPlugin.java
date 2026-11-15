@@ -17,6 +17,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -219,6 +220,9 @@ public class NextUnlocksPlugin extends Plugin
 	private final Map<Skill, TooltipBox> pinnedCache = new ConcurrentHashMap<>();
 	/** Each skill's latest level-up, for the arcade bar's show; client thread. */
 	private final Map<Skill, PinBar.LevelUp> levelUps = new EnumMap<>(Skill.class);
+	/** Each skill's xp as last seen, and what it just gained, for the pinned cards' xp effects; client thread. */
+	private final Map<Skill, Integer> xpSeen = new EnumMap<>(Skill.class);
+	private final Map<Skill, XpEffects.Gain> xpGains = new EnumMap<>(Skill.class);
 
 	/** Skills whose tooltip is pinned above the chatbox, in pin order. Client thread. */
 	@Getter
@@ -339,6 +343,8 @@ public class NextUnlocksPlugin extends Plugin
 		levels.clear();
 		boosts.clear();
 		levelUps.clear();
+		xpSeen.clear();
+		xpGains.clear();
 		clearTooltips();
 		unfinishedQuests = Collections.emptySet();
 		questsToDo = Collections.emptySet();
@@ -361,6 +367,8 @@ public class NextUnlocksPlugin extends Plugin
 				lastXp.clear();
 				boosts.clear();
 				levelUps.clear();
+				xpSeen.clear();
+				xpGains.clear();
 				clearTooltips();
 				unfinishedQuests = Collections.emptySet();
 				questsToDo = Collections.emptySet();
@@ -385,6 +393,15 @@ public class NextUnlocksPlugin extends Plugin
 		if (!Skills.STATS_TAB.containsKey(skill))
 		{
 			return;
+		}
+
+		Integer seen = xpSeen.put(skill, event.getXp());
+		if (seen != null && event.getXp() > seen)
+		{
+			long now = System.currentTimeMillis();
+			XpEffects.Gain gain = xpGains.get(skill);
+			int gained = event.getXp() - seen;
+			xpGains.put(skill, gain == null ? new XpEffects.Gain(now, gained) : gain.plus(gained, now));
 		}
 
 		int level = event.getLevel();
@@ -568,7 +585,7 @@ public class NextUnlocksPlugin extends Plugin
 	{
 		if (NextUnlocksConfig.GROUP.equals(event.getGroup()))
 		{
-			if ("tallies".equals(event.getKey()) || "checkedOff".equals(event.getKey()))
+			if ("tallies".equals(event.getKey()) || "checkedOff".equals(event.getKey()) || "lookPresets".equals(event.getKey()))
 			{
 				// saved by the plugin itself, which already updated its cards
 				return;
@@ -653,7 +670,7 @@ public class NextUnlocksPlugin extends Plugin
 		int xp = client.getSkillExperience(skill);
 		int xpToGo = Math.max(0, Experience.getXpForLevel(nextLevel) - xp);
 
-		CardTheme theme = theme(palette, pinnedCard);
+		CardTheme theme = theme(palette, pinnedCard, skill);
 		int textSize = config.tooltipTextSize();
 		Font regular = FontManager.getRunescapeFont();
 		Font font = theme.font(textSize);
@@ -709,7 +726,8 @@ public class NextUnlocksPlugin extends Plugin
 		if (config.tooltipProgress())
 		{
 			PinBar progress = new PinBar(theme, Experience.getXpForLevel(repository.previous(skill, level, snapshot.shown(skill))),
-				Experience.getXpForLevel(nextLevel), xp, theme.getBarFill(), () -> levelUps.get(skill));
+				Experience.getXpForLevel(nextLevel), xp, theme.getBarFill(), theme.getBarFill2(), theme.getBarBackground(),
+				() -> levelUps.get(skill));
 			lines.add(progress);
 			updates.add(progress::setValue);
 		}
@@ -767,7 +785,7 @@ public class NextUnlocksPlugin extends Plugin
 			lines.add(goalLine);
 			updates.add(x -> goalLine.setRight(0, number.format(Math.max(0, goalXp - x)) + " xp"));
 			// the whole way from 0 xp, as the start of a goal isn't kept; no level-up effect, the bar above has it
-			PinBar goalBar = new PinBar(theme, 0, goalXp, xp, skillColor, null);
+			PinBar goalBar = goalBar(theme, 0, goalXp, xp, skillColor);
 			lines.add(goalBar);
 			updates.add(goalBar::setValue);
 		}
@@ -791,13 +809,158 @@ public class NextUnlocksPlugin extends Plugin
 		return box;
 	}
 
-	/** The theme for a card: the look the plugin always had for hover tooltips, the player's pick for pinned cards. */
-	private CardTheme theme(Palette palette, boolean pinnedCard)
+	/** A goal bar: the card's goal colors, or the skill's color when it has none. */
+	private static PinBar goalBar(CardTheme theme, double min, double max, double value, Color skillColor)
+	{
+		return new PinBar(theme, min, max, value, theme.getGoalBar() == null ? skillColor : theme.getGoalBar(), theme.getGoalBar2(),
+			theme.getGoalBarBackground() == null ? theme.getBarBackground() : theme.getGoalBarBackground(), null);
+	}
+
+	/**
+	 * The theme for a card: the look the plugin always had for hover tooltips, the player's pick for pinned cards, with
+	 * the skill's own changes. The skill is null for quests, diaries and items.
+	 */
+	private CardTheme theme(Palette palette, boolean pinnedCard, Skill skill)
 	{
 		Color base = runeLiteConfig.overlayBackgroundColor();
 		Color background = new Color(base.getRed(), base.getGreen(), base.getBlue(), 255 * config.tooltipOpacity() / 100);
 		CardTheme classic = CardTheme.classic(palette, background, config.tooltipOutline() ? palette.getOutline() : null);
-		return pinnedCard ? CardTheme.pinned(config, palette, classic, config.tooltipOpacity()) : classic;
+		return pinnedCard ? CardTheme.pinned(look(skill), palette, classic, skill) : classic;
+	}
+
+	/** The pinned card look a skill's cards have: the config with the skill's own changes, or just the config for null. */
+	Look look(Skill skill)
+	{
+		return new Look(config, skill == null ? null : Look.readList(config.skillLooks()).get(skill.name()));
+	}
+
+	/** Whether the skill's cards look different from the rest. */
+	boolean hasOwnLook(Skill skill)
+	{
+		Map<String, String> own = Look.readList(config.skillLooks()).get(skill.name());
+		return own != null && !own.isEmpty();
+	}
+
+	/** Change a look setting for every card when the skill is null, or only for the skill's cards. */
+	synchronized void setLook(Skill skill, String key, String value)
+	{
+		if (skill == null)
+		{
+			configManager.setConfiguration(NextUnlocksConfig.GROUP, key, value);
+			return;
+		}
+		Map<String, Map<String, String>> list = Look.readList(config.skillLooks());
+		list.computeIfAbsent(skill.name(), k -> new LinkedHashMap<>()).put(key, Look.clean(value));
+		configManager.setConfiguration(NextUnlocksConfig.GROUP, "skillLooks", Look.writeList(list));
+	}
+
+	/** Put the skill's cards back to the look the rest have. */
+	synchronized void resetLook(Skill skill)
+	{
+		Map<String, Map<String, String>> list = Look.readList(config.skillLooks());
+		if (list.remove(skill.name()) != null)
+		{
+			configManager.setConfiguration(NextUnlocksConfig.GROUP, "skillLooks", Look.writeList(list));
+		}
+	}
+
+	/** The saved looks' names, in the order they were saved. */
+	List<String> presets()
+	{
+		return new ArrayList<>(Look.readList(config.lookPresets()).keySet());
+	}
+
+	/** Save the look of every card, or of the skill's cards, under a name; one of the same name is replaced. */
+	synchronized void savePreset(String name, Skill skill)
+	{
+		String clean = Look.clean(name);
+		if (clean.isEmpty())
+		{
+			return;
+		}
+		Map<String, String> values = look(skill).values();
+		if (skill != null && NextUnlocksConfig.CardStyle.SKILL.name().equals(values.get("pinStyle")) && values.get("pinBase").isEmpty())
+		{
+			// keep the skill's built-in look when this is loaded onto another skill
+			values.put("pinBase", skill.name());
+		}
+		Map<String, Map<String, String>> list = Look.readList(config.lookPresets());
+		list.put(clean, values);
+		configManager.setConfiguration(NextUnlocksConfig.GROUP, "lookPresets", Look.writeList(list));
+	}
+
+	/** Give every card, or the skill's cards, a saved look. */
+	synchronized void loadPreset(String name, Skill skill)
+	{
+		Map<String, String> values = Look.readList(config.lookPresets()).get(name);
+		if (values == null)
+		{
+			return;
+		}
+		if (skill != null)
+		{
+			Map<String, Map<String, String>> list = Look.readList(config.skillLooks());
+			list.put(skill.name(), values);
+			configManager.setConfiguration(NextUnlocksConfig.GROUP, "skillLooks", Look.writeList(list));
+			return;
+		}
+		for (Map.Entry<String, String> e : values.entrySet())
+		{
+			configManager.setConfiguration(NextUnlocksConfig.GROUP, e.getKey(), e.getValue());
+		}
+	}
+
+	synchronized void deletePreset(String name)
+	{
+		Map<String, Map<String, String>> list = Look.readList(config.lookPresets());
+		if (list.remove(name) != null)
+		{
+			configManager.setConfiguration(NextUnlocksConfig.GROUP, "lookPresets", Look.writeList(list));
+		}
+	}
+
+	synchronized void renamePreset(String name, String to)
+	{
+		String clean = Look.clean(to);
+		Map<String, Map<String, String>> list = Look.readList(config.lookPresets());
+		if (clean.isEmpty() || !list.containsKey(name) || clean.equals(name))
+		{
+			return;
+		}
+		// in the same place in the list
+		Map<String, Map<String, String>> renamed = new LinkedHashMap<>();
+		list.forEach((k, v) ->
+		{
+			if (!k.equals(clean))
+			{
+				renamed.put(k.equals(name) ? clean : k, v);
+			}
+		});
+		configManager.setConfiguration(NextUnlocksConfig.GROUP, "lookPresets", Look.writeList(renamed));
+	}
+
+	/** Asks in the chatbox for a name to save the look under. Client thread. */
+	void askSavePreset(Skill skill)
+	{
+		chatboxPanelManager.openTextInput("Save " + (skill == null ? "the cards'" : skill.getName() + "'s") + " look as:")
+			.onDone((String text) -> savePreset(text, skill))
+			.build();
+	}
+
+	/** Asks in the chatbox for a saved look's new name. Client thread. */
+	void askRenamePreset(String name)
+	{
+		chatboxPanelManager.openTextInput("Rename " + name + " to:")
+			.value(name)
+			.onDone((String text) -> renamePreset(name, text))
+			.build();
+	}
+
+	/** What the skill just gained, while its show is going; client thread. */
+	XpEffects.Gain xpGain(Skill skill)
+	{
+		XpEffects.Gain gain = xpGains.get(skill);
+		return gain == null || System.currentTimeMillis() - gain.getAt() >= XpEffects.MS ? null : gain;
 	}
 
 	@Subscribe
@@ -1511,7 +1674,7 @@ public class NextUnlocksPlugin extends Plugin
 		}
 		Snapshot snapshot = snapshot();
 		Palette palette = snapshot.getPalette();
-		CardTheme theme = theme(palette, true);
+		CardTheme theme = theme(palette, true, tally == null ? null : tally.getSkill());
 		int textSize = config.tooltipTextSize();
 		Font regular = FontManager.getRunescapeFont();
 		Font font = theme.font(textSize);
@@ -1628,7 +1791,7 @@ public class NextUnlocksPlugin extends Plugin
 		lines.add(new CardLine(theme, font)
 			.left(tally.isDone() ? "Done!" : Tally.verb(tally.getSkill()) + " " + String.format(Locale.ROOT, "%,d", tally.getTarget()), color)
 			.right(String.format(Locale.ROOT, "%,d/%,d", tally.getCount(), tally.getTarget()), color));
-		lines.add(new PinBar(theme, 0, tally.getTarget(), Math.min(tally.getCount(), tally.getTarget()), Skills.color(tally.getSkill()), null));
+		lines.add(goalBar(theme, 0, tally.getTarget(), Math.min(tally.getCount(), tally.getTarget()), Skills.color(tally.getSkill())));
 		lines.add(new CardMaterial(theme, small, skillIconManager.getSkillImage(tally.getSkill(), true), tally.getSkill().getName(),
 			materialShade(theme.getXpValue(), theme)));
 		card.setPreferredSize(new Dimension((int) (ComponentConstants.STANDARD_WIDTH * textSize / regular.getSize() * theme.widthScale(textSize))

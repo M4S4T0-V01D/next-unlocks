@@ -3,12 +3,16 @@ package com.nextunlocks;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.geom.Path2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -28,6 +32,7 @@ import net.runelite.client.ui.overlay.components.PanelComponent;
 class TooltipBox implements LayoutableRenderableEntity
 {
 	private final PanelComponent panel;
+	@Getter
 	private final CardTheme theme;
 	/** The blurred border behind the frame, kept until the size changes. */
 	private BufferedImage glow;
@@ -143,9 +148,19 @@ class TooltipBox implements LayoutableRenderableEntity
 			graphics.drawImage(glow, box.x - pad, box.y - pad, null);
 		}
 
+		Paint fill = theme.getBackground2() == null ? theme.getBackground()
+			: new GradientPaint(0, box.y, theme.getBackground(), 0, box.y + box.height, theme.getBackground2());
+		Paint paint = graphics.getPaint();
 		switch (theme.getFrame())
 		{
 			case CLASSIC:
+				if (theme.getBackground2() != null)
+				{
+					// RuneLite's box can't take a gradient
+					graphics.setPaint(fill);
+					graphics.fillRect(box.x, box.y, box.width, box.height);
+					break;
+				}
 				BackgroundComponent back = new BackgroundComponent();
 				back.setRectangle(box);
 				back.setBackgroundColor(theme.getBackground());
@@ -153,25 +168,28 @@ class TooltipBox implements LayoutableRenderableEntity
 				break;
 			case ROUNDED:
 				graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				graphics.setColor(theme.getBackground());
+				graphics.setPaint(fill);
 				graphics.fill(new RoundRectangle2D.Double(box.x, box.y, box.width, box.height, corner(), corner()));
 				break;
 			default:
-				graphics.setColor(theme.getBackground());
+				graphics.setPaint(fill);
 				graphics.fillRect(box.x, box.y, box.width, box.height);
 				break;
 		}
+		graphics.setPaint(paint);
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, aa);
 
 		Rectangle header = header();
 		if (theme.getHeaderBand() != null && header != null)
 		{
-			int top = box.y + 2;
+			// inside the border, however thick
+			int inset = theme.getFrame() == CardTheme.Frame.BEVEL ? 2 : Math.max(2, theme.getBorderWidth() + 1);
+			int top = box.y + inset;
 			int bottom = header.y + header.height + 1;
 			if (bottom > top)
 			{
 				graphics.setColor(theme.getHeaderBand());
-				graphics.fillRect(box.x + 2, top, box.width - 4, bottom - top);
+				graphics.fillRect(box.x + inset, top, box.width - inset * 2, bottom - top);
 			}
 		}
 		graphics.setColor(color);
@@ -197,6 +215,10 @@ class TooltipBox implements LayoutableRenderableEntity
 			}
 			graphics.setClip(clip);
 		}
+		if (theme.isShimmer())
+		{
+			shimmer(graphics, box);
+		}
 
 		Color border = theme.getBorder();
 		int right = box.x + box.width - 1;
@@ -221,27 +243,63 @@ class TooltipBox implements LayoutableRenderableEntity
 			case ROUNDED:
 				if (border != null)
 				{
+					int w = theme.getBorderWidth();
 					graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 					graphics.setColor(border);
-					graphics.draw(new RoundRectangle2D.Double(box.x + 0.5, box.y + 0.5, box.width - 1, box.height - 1, corner(), corner()));
+					graphics.setStroke(new BasicStroke(w));
+					graphics.draw(new RoundRectangle2D.Double(box.x + w / 2.0, box.y + w / 2.0, box.width - w, box.height - w, corner(), corner()));
 				}
 				break;
 			default:
+				int w = theme.getBorderWidth();
 				if (border != null)
 				{
 					graphics.setColor(border);
-					graphics.drawRect(box.x, box.y, box.width - 1, box.height - 1);
+					for (int i = 0; i < w; i++)
+					{
+						graphics.drawRect(box.x + i, box.y + i, box.width - 1 - i * 2, box.height - 1 - i * 2);
+					}
 				}
 				if (theme.getFrame() == CardTheme.Frame.DOUBLE && theme.getInnerBorder() != null)
 				{
+					int in = Math.max(1, w) + 1;
 					graphics.setColor(theme.getInnerBorder());
-					graphics.drawRect(box.x + 2, box.y + 2, box.width - 5, box.height - 5);
+					graphics.drawRect(box.x + in, box.y + in, box.width - 1 - in * 2, box.height - 1 - in * 2);
 				}
 				break;
 		}
 		graphics.setStroke(stroke);
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, aa);
 		graphics.setColor(color);
+	}
+
+	/** A slanted band of light sweeping across now and then; cards further right catch it a little later. */
+	private void shimmer(Graphics2D graphics, Rectangle box)
+	{
+		long period = 4200;
+		double t = ((System.currentTimeMillis() - box.x * 2L) % period + period) % period / 1300.0;
+		if (t >= 1)
+		{
+			return;
+		}
+		int band = 22;
+		float x = (float) (box.x - band - box.height + t * (box.width + band * 2 + box.height));
+		Path2D.Float shape = new Path2D.Float();
+		shape.moveTo(x + box.height, box.y);
+		shape.lineTo(x + box.height + band, box.y);
+		shape.lineTo(x + band, box.y + box.height);
+		shape.lineTo(x, box.y + box.height);
+		shape.closePath();
+		Shape clip = graphics.getClip();
+		Paint paint = graphics.getPaint();
+		graphics.clip(outline(box));
+		Color clear = new Color(255, 255, 255, 0);
+		float mid = x + box.height / 2f;
+		graphics.setPaint(new LinearGradientPaint(mid, 0, mid + band, 0, new float[]{0, 0.5f, 1},
+			new Color[]{clear, new Color(255, 255, 255, 70), clear}));
+		graphics.fill(shape);
+		graphics.setPaint(paint);
+		graphics.setClip(clip);
 	}
 
 	private int corner()

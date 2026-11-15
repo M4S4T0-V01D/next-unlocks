@@ -91,11 +91,18 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		new Color(255, 255, 255, 220),
 	};
 
-	/** the pinned cards' look, which the Looks tab's reset puts back */
-	static final String[] LOOK_KEYS = {
-		"pinStyle", "pinFont", "pinBar", "pinLevelUp", "pinGlow", "pinGlowColor", "pinGlowSize", "pinTextShadow",
-		"pinScanlines", "pinCustomColors", "tooltipIconSize", "tooltipTextSize", "tooltipOpacity", "tooltipOutline",
-	};
+	/** the pinned cards' look, which the Looks tab's reset puts back, with every skill's own */
+	static final String[] LOOK_KEYS;
+
+	static
+	{
+		List<String> keys = new ArrayList<>(Look.KEYS.keySet());
+		keys.add("tooltipIconSize");
+		keys.add("tooltipTextSize");
+		keys.add("tooltipOutline");
+		keys.add("skillLooks");
+		LOOK_KEYS = keys.toArray(new String[0]);
+	}
 
 	enum Tab
 	{
@@ -107,6 +114,22 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		final String label;
 
 		Tab(String label)
+		{
+			this.label = label;
+		}
+	}
+
+	/** the parts of the Looks tab */
+	enum LookTab
+	{
+		STYLE("Style"),
+		FRAME("Frame"),
+		EFFECTS("Effects"),
+		PRESETS("Presets");
+
+		final String label;
+
+		LookTab(String label)
 		{
 			this.label = label;
 		}
@@ -188,7 +211,11 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 
 	private final List<Choice> looks = new ArrayList<>();
 	private final List<Slider> lookSliders = new ArrayList<>();
+	private final List<Slider> sizeSliders = new ArrayList<>();
 	private final List<Toggle> lookToggles = new ArrayList<>();
+	private final List<Choice> frames = new ArrayList<>();
+	private final Slider opacity;
+	private final List<Choice> effects = new ArrayList<>();
 	private final List<Toggle> goalToggles = new ArrayList<>();
 	private final List<Toggle> pinToggles = new ArrayList<>();
 	private final List<Toggle> options = new ArrayList<>();
@@ -201,6 +228,10 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 	private volatile Tab tab = Tab.LOOKS;
 	/** the skill picked on the Goals tab to add a goal for, or null */
 	private volatile Skill picking;
+	/** the skill whose cards the Looks tab changes, or null for every card */
+	private volatile Skill target;
+	private volatile boolean choosingTarget;
+	private volatile LookTab lookTab = LookTab.STYLE;
 	/** each tab's height as last drawn, the window's size before it is drawn again */
 	private final int[] heights = new int[Tab.values().length];
 	// the reset asks for a second click within a few seconds
@@ -241,19 +272,32 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		setLayer(OverlayLayer.ABOVE_WIDGETS);
 		setPriority(PRIORITY_HIGHEST);
 
-		looks.add(new Choice("Style", "pinStyle", NextUnlocksConfig.CardStyle.values(), config::pinStyle));
-		looks.add(new Choice("Font", "pinFont", NextUnlocksConfig.CardFont.values(), config::pinFont));
-		looks.add(new Choice("Progress bar", "pinBar", NextUnlocksConfig.BarStyle.values(), config::pinBar));
-		looks.add(new Choice("Glow", "pinGlow", NextUnlocksConfig.GlowMode.values(), config::pinGlow));
-		looks.add(new Choice("Level-up flash", "pinLevelUp", NextUnlocksConfig.StyleToggle.values(), config::pinLevelUp));
-		looks.add(new Choice("Text shadow", "pinTextShadow", NextUnlocksConfig.StyleToggle.values(), config::pinTextShadow));
-		looks.add(new Choice("Scanlines", "pinScanlines", NextUnlocksConfig.StyleToggle.values(), config::pinScanlines));
-		lookSliders.add(new Slider("Glow size", "pinGlowSize", 1, 8, config::pinGlowSize));
-		lookSliders.add(new Slider("Text size", "tooltipTextSize", 10, 32, config::tooltipTextSize));
-		lookSliders.add(new Slider("Icon size", "tooltipIconSize", 50, 200, config::tooltipIconSize));
-		lookSliders.add(new Slider("Opacity", "tooltipOpacity", 0, 100, config::tooltipOpacity));
-		lookToggles.add(new Toggle("Own colours", "pinCustomColors", config::pinCustomColors));
+		NextUnlocksConfig.StyleToggle[] toggle = NextUnlocksConfig.StyleToggle.values();
+		looks.add(lookChoice("Style", "pinStyle", NextUnlocksConfig.CardStyle.values()));
+		looks.add(lookChoice("Font", "pinFont", NextUnlocksConfig.CardFont.values()));
+		looks.add(lookChoice("Progress bar", "pinBar", NextUnlocksConfig.BarStyle.values()));
+		looks.add(lookChoice("Glow", "pinGlow", NextUnlocksConfig.GlowMode.values()));
+		looks.add(lookChoice("Text shadow", "pinTextShadow", toggle));
+		looks.add(lookChoice("Scanlines", "pinScanlines", toggle));
+		lookSliders.add(new Slider("Glow size", "pinGlowSize", 1, 8, () -> plugin.look(target).<Integer>get("pinGlowSize")));
+		sizeSliders.add(new Slider("Text size", "tooltipTextSize", 10, 32, config::tooltipTextSize));
+		sizeSliders.add(new Slider("Icon size", "tooltipIconSize", 50, 200, config::tooltipIconSize));
+		lookToggles.add(new Toggle("Own colours", "pinCustomColors", () -> plugin.look(target).<Boolean>get("pinCustomColors")));
 		lookToggles.add(new Toggle("Outline", "tooltipOutline", config::tooltipOutline));
+
+		frames.add(lookChoice("Background fade", "pinBackgroundGradient", toggle));
+		frames.add(lookChoice("Bar fade", "pinBarGradient", toggle));
+		frames.add(lookChoice("Title band", "pinHeaderBand", toggle));
+		frames.add(lookChoice("Shimmer", "pinShimmer", toggle));
+		frames.add(lookChoice("Border", "pinBorderWidth", NextUnlocksConfig.BorderWidth.values()));
+		frames.add(lookChoice("Corners", "pinCorner", NextUnlocksConfig.Corner.values()));
+		frames.add(lookChoice("Padding", "pinPadding", NextUnlocksConfig.Padding.values()));
+		opacity = new Slider("Opacity", "tooltipOpacity", 0, 100, () -> plugin.look(target).<Integer>get("tooltipOpacity"));
+
+		effects.add(lookChoice("XP effect", "pinXpEffect", NextUnlocksConfig.XpEffect.values()));
+		effects.add(lookChoice("XP popup", "pinXpPopup", toggle));
+		effects.add(lookChoice("Bar pulse", "pinXpPulse", toggle));
+		effects.add(lookChoice("Level-up flash", "pinLevelUp", toggle));
 
 		goalToggles.add(new Toggle("Infoboxes", "goalInfoboxes", config::goalInfoboxes));
 		goalToggles.add(new Toggle("Almost there", "almostThere", config::almostThere));
@@ -286,8 +330,21 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		buttonAngle = new Slider("Button position", "minimapButtonPosition", 0, 359, config::minimapButtonAngle);
 	}
 
+	/** a pinned card look setting, read from the cards being changed */
+	private Choice lookChoice(String name, String key, Enum<?>[] values)
+	{
+		return new Choice(name, key, values, () -> plugin.look(target).<Enum<?>>get(key));
+	}
+
+	/** look settings go to the picked skill's own look when there is one, the rest to the config */
 	private void set(String key, Object value)
 	{
+		Skill skill = target;
+		if (skill != null && Look.KEYS.containsKey(key))
+		{
+			plugin.setLook(skill, key, Look.format(value));
+			return;
+		}
 		configManager.setConfiguration(NextUnlocksConfig.GROUP, key, value);
 	}
 
@@ -479,38 +536,87 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 
 	private int drawLooks(Graphics2D g, Point mouse, List<Hit> out, int left, int cy, int inner)
 	{
-		cy = heading(g, "Pinned cards", left, cy);
-		for (Choice c : looks)
+		Skill skill = target;
+		cy = heading(g, "Cards to change", left, cy);
+		String who = skill == null ? "All skills" : skill.getName() + (plugin.hasOwnLook(skill) ? " (own look)" : "");
+		button(g, mouse, out, new Rectangle(left, cy, inner, 18), choosingTarget ? "Pick below" : who, choosingTarget,
+			() -> choosingTarget = !choosingTarget);
+		cy += 22;
+		if (choosingTarget)
 		{
-			choice(g, mouse, out, c, left, cy, inner);
-			cy += 20;
-		}
-		text(g, "Glow colour", left, cy + 13, ORANGE);
-		int sw = (inner - LABEL - (GLOWS.length - 1) * 3) / GLOWS.length;
-		Color current = config.pinGlowColor();
-		for (int i = 0; i < GLOWS.length; i++)
-		{
-			Color c = GLOWS[i];
-			Rectangle r = new Rectangle(left + LABEL + i * (sw + 3), cy + 2, sw, 14);
-			boolean picked = current != null && current.getRGB() == c.getRGB();
-			bevel(g, r, new Color(c.getRGB() & 0xffffff), picked ? WHITE : LIGHT, picked ? WHITE : DARK);
-			if (picked || contains(r, mouse))
+			button(g, mouse, out, new Rectangle(left, cy, inner, 18), "All skills", skill == null, () ->
 			{
-				g.setColor(WHITE);
-				g.drawRect(r.x - 1, r.y - 1, r.width + 1, r.height + 1);
-			}
-			out.add(new Hit(r, () -> set("pinGlowColor", c), null));
+				target = null;
+				choosingTarget = false;
+			});
+			cy += 22;
+			cy = skillGrid(g, mouse, out, left, cy, s -> s == target, s ->
+			{
+				target = s;
+				choosingTarget = false;
+			});
 		}
-		cy += 20;
-		for (Slider s : lookSliders)
+
+		LookTab[] tabs = LookTab.values();
+		LookTab part = lookTab;
+		int tw = (inner - (tabs.length - 1) * 4) / tabs.length;
+		for (int i = 0; i < tabs.length; i++)
 		{
-			slider(g, mouse, out, s, left, cy, inner);
-			cy += 20;
+			LookTab t = tabs[i];
+			button(g, mouse, out, new Rectangle(left + i * (tw + 4), cy, tw, 18), t.label, t == part, () -> lookTab = t);
 		}
-		cy = toggles(g, mouse, out, lookToggles, left, cy, inner, 2);
+		cy += 24;
+
+		switch (part)
+		{
+			case STYLE:
+				cy = choices(g, mouse, out, looks, left, cy, inner);
+				cy = glowColours(g, mouse, out, left, cy, inner);
+				for (Slider s : lookSliders)
+				{
+					slider(g, mouse, out, s, left, cy, inner);
+					cy += 20;
+				}
+				if (skill == null)
+				{
+					// sizes and the outline are for every card
+					for (Slider s : sizeSliders)
+					{
+						slider(g, mouse, out, s, left, cy, inner);
+						cy += 20;
+					}
+					cy = toggles(g, mouse, out, lookToggles, left, cy, inner, 2);
+				}
+				else
+				{
+					cy = toggles(g, mouse, out, lookToggles.subList(0, 1), left, cy, inner, 2);
+				}
+				break;
+			case FRAME:
+				cy = choices(g, mouse, out, frames, left, cy, inner);
+				slider(g, mouse, out, opacity, left, cy, inner);
+				cy += 20;
+				break;
+			case EFFECTS:
+				cy = choices(g, mouse, out, effects, left, cy, inner);
+				g.setFont(FontManager.getRunescapeSmallFont());
+				text(g, "Skill's own picks sparks, leaves, bubbles and more to suit", left, cy + 10, GREY);
+				g.setFont(FontManager.getRunescapeFont());
+				cy += 16;
+				break;
+			default:
+				return drawPresets(g, mouse, out, left, cy, inner, skill);
+		}
+
 		cy += 2;
+		if (skill != null)
+		{
+			button(g, mouse, out, new Rectangle(left, cy, inner, 18), "Give " + skill.getName() + " the same look as the rest",
+				false, () -> plugin.resetLook(skill));
+			return cy + 22;
+		}
 		boolean armed = System.currentTimeMillis() < resetArmedUntil;
-		button(g, mouse, out, new Rectangle(left, cy, inner, 18), armed ? "Click again to reset the looks" : "Reset looks",
+		button(g, mouse, out, new Rectangle(left, cy, inner, 18), armed ? "Click again to reset every look" : "Reset looks",
 			armed, () ->
 			{
 				if (System.currentTimeMillis() < resetArmedUntil)
@@ -527,6 +633,73 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 				}
 			});
 		return cy + 22;
+	}
+
+	private int choices(Graphics2D g, Point mouse, List<Hit> out, List<Choice> list, int left, int cy, int inner)
+	{
+		for (Choice c : list)
+		{
+			choice(g, mouse, out, c, left, cy, inner);
+			cy += 20;
+		}
+		return cy;
+	}
+
+	private int glowColours(Graphics2D g, Point mouse, List<Hit> out, int left, int cy, int inner)
+	{
+		text(g, "Glow colour", left, cy + 13, ORANGE);
+		int sw = (inner - LABEL - (GLOWS.length - 1) * 3) / GLOWS.length;
+		Color current = plugin.look(target).get("pinGlowColor");
+		for (int i = 0; i < GLOWS.length; i++)
+		{
+			Color c = GLOWS[i];
+			Rectangle r = new Rectangle(left + LABEL + i * (sw + 3), cy + 2, sw, 14);
+			boolean picked = current != null && current.getRGB() == c.getRGB();
+			bevel(g, r, new Color(c.getRGB() & 0xffffff), picked ? WHITE : LIGHT, picked ? WHITE : DARK);
+			if (picked || contains(r, mouse))
+			{
+				g.setColor(WHITE);
+				g.drawRect(r.x - 1, r.y - 1, r.width + 1, r.height + 1);
+			}
+			out.add(new Hit(r, () -> set("pinGlowColor", c), null));
+		}
+		return cy + 20;
+	}
+
+	/** saved looks: load one onto the cards being changed, rename or delete it, or save the current one */
+	private int drawPresets(Graphics2D g, Point mouse, List<Hit> out, int left, int cy, int inner, Skill skill)
+	{
+		List<String> presets = plugin.presets();
+		if (presets.isEmpty())
+		{
+			text(g, "None yet. Save a look to use it again.", left, cy + 13, GREY);
+			cy += 18;
+		}
+		for (int i = 0; i < presets.size() && i < MAX_ROWS; i++)
+		{
+			String name = presets.get(i);
+			int load = 40;
+			int rename = 54;
+			int end = left + inner - 17 - rename - load - 9;
+			text(g, fit(g, name, end - left), left, cy + 13, ORANGE);
+			button(g, mouse, out, new Rectangle(end + 3, cy + 1, load, 16), "Load", false, () -> plugin.loadPreset(name, skill));
+			button(g, mouse, out, new Rectangle(end + 6 + load, cy + 1, rename, 16), "Rename", false,
+				() -> plugin.askRenamePreset(name));
+			button(g, mouse, out, new Rectangle(left + inner - 17, cy + 1, 17, 16), "X", false, () -> plugin.deletePreset(name));
+			cy += 20;
+		}
+		if (presets.size() > MAX_ROWS)
+		{
+			text(g, "and " + (presets.size() - MAX_ROWS) + " more, in the RuneLite config", left, cy + 13, GREY);
+			cy += 18;
+		}
+		String save = skill == null ? "Save the cards' look..." : "Save " + skill.getName() + "'s look...";
+		button(g, mouse, out, new Rectangle(left, cy + 2, inner, 18), save, false, () -> plugin.askSavePreset(skill));
+		cy += 24;
+		g.setFont(FontManager.getRunescapeSmallFont());
+		text(g, skill == null ? "Load sets every card's look" : "Load sets " + skill.getName() + "'s own look", left, cy + 10, GREY);
+		g.setFont(FontManager.getRunescapeFont());
+		return cy + 16;
 	}
 
 	private int drawGoals(Graphics2D g, Point mouse, List<Hit> out, int left, int cy, int inner)

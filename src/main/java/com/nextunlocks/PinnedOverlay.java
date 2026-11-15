@@ -5,8 +5,10 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import net.runelite.api.Client;
@@ -28,6 +30,14 @@ import net.runelite.client.util.Text;
 class PinnedOverlay extends Overlay
 {
 	private static final int GAP = 2;
+	/** Where the game opens windows like the bank, in the fixed, resizable and other layouts. */
+	private static final int[] WINDOW_CONTAINERS = {
+		InterfaceID.Toplevel.MAINMODAL, InterfaceID.Toplevel.SIDEMODAL,
+		InterfaceID.ToplevelOsrsStretch.MAINMODAL, InterfaceID.ToplevelOsrsStretch.SIDEMODAL,
+		InterfaceID.ToplevelPreEoc.MAINMODAL, InterfaceID.ToplevelPreEoc.SIDEMODAL,
+		InterfaceID.ToplevelOsm.MAINMODAL, InterfaceID.ToplevelOsm.SIDEMODAL,
+		InterfaceID.ToplevelDisplay.MAINMODAL, InterfaceID.ToplevelDisplay.SIDEMODAL,
+	};
 
 	private final Client client;
 	private final NextUnlocksPlugin plugin;
@@ -112,12 +122,22 @@ class PinnedOverlay extends Overlay
 		}
 
 		net.runelite.api.Point mouse = client.getMouseCanvasPosition();
+		List<Rectangle> windows = openWindows();
+		Map<Object, LayoutableRenderableEntity> shown = new LinkedHashMap<>();
 		int x = chat.x;
 		for (Map.Entry<Object, LayoutableRenderableEntity> e : cards.entrySet())
 		{
 			LayoutableRenderableEntity card = e.getValue();
 			int height = heights.get(e.getKey());
 			Point location = new Point(x, bottom - height);
+			// a window like the bank goes in front of the cards: leave out any card it would overlap
+			Rectangle area = new Rectangle(location, new Dimension(size(graphics, e.getKey(), card).width, height));
+			if (windows.stream().anyMatch(area::intersects))
+			{
+				x += area.width + GAP;
+				continue;
+			}
+			shown.put(e.getKey(), card);
 			card.setPreferredLocation(location);
 			if (card instanceof TooltipBox)
 			{
@@ -135,12 +155,18 @@ class PinnedOverlay extends Overlay
 			drawn.put(e.getKey(), new Rectangle(location, rendered));
 			x += rendered.width + GAP;
 		}
-		// level-up bursts last, so the pixels fly over the cards beside them
-		for (LayoutableRenderableEntity card : cards.values())
+		// level-up bursts and xp effects last, so they fly over the cards beside them
+		for (Map.Entry<Object, LayoutableRenderableEntity> e : shown.entrySet())
 		{
-			if (card instanceof TooltipBox)
+			if (!(e.getValue() instanceof TooltipBox))
 			{
-				((TooltipBox) card).bars().forEach(bar -> bar.renderBurst(graphics));
+				continue;
+			}
+			TooltipBox box = (TooltipBox) e.getValue();
+			box.bars().forEach(bar -> bar.renderBurst(graphics));
+			if (e.getKey() instanceof Skill && !box.bars().isEmpty())
+			{
+				XpEffects.render(graphics, box.getTheme(), box.bars().get(0), plugin.xpGain((Skill) e.getKey()));
 			}
 		}
 		return null;
@@ -187,6 +213,28 @@ class PinnedOverlay extends Overlay
 			}
 		}
 		return null;
+	}
+
+	/** Where the open windows are, like the bank, a shop or the Grand Exchange, in every screen layout. */
+	private List<Rectangle> openWindows()
+	{
+		List<Rectangle> windows = new ArrayList<>();
+		for (int id : WINDOW_CONTAINERS)
+		{
+			Widget container = client.getWidget(id);
+			if (container == null || container.isHidden() || container.getNestedChildren() == null)
+			{
+				continue;
+			}
+			for (Widget window : container.getNestedChildren())
+			{
+				if (window != null && !window.isHidden())
+				{
+					windows.add(window.getBounds());
+				}
+			}
+		}
+		return windows;
 	}
 
 	/** The top of the split private messages that overlap the area, or null when none are showing there. */

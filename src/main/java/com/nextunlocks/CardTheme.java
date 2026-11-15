@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import lombok.Builder;
 import lombok.Value;
+import net.runelite.api.Skill;
 import net.runelite.client.ui.FontManager;
 
 /**
@@ -36,8 +37,12 @@ class CardTheme
 
 	Frame frame;
 	Color background;
+	/** The bottom of a top-to-bottom gradient behind the card; null for a flat background. */
+	Color background2;
 	/** Null for none. */
 	Color border;
+	/** In pixels. */
+	int borderWidth;
 	/** Inside the border on a double frame; null for none. */
 	Color innerBorder;
 	/** A title bar behind the card's first line, null for none. */
@@ -60,6 +65,14 @@ class CardTheme
 	boolean glowBorder;
 	boolean glowText;
 	int glowSize;
+	/** A light that sweeps across the card now and then. */
+	boolean shimmer;
+	/** What flies off the bar as the skill gains xp; AUTO for the skill's own, null or OFF for nothing. */
+	NextUnlocksConfig.XpEffect xpEffect;
+	/** The xp just gained floats up off the card. */
+	boolean xpPopup;
+	/** The bar lights up as xp comes in. */
+	boolean xpPulse;
 
 	Color skillName;
 	Color levelLabel;
@@ -85,8 +98,16 @@ class CardTheme
 	Color met;
 	Color unmet;
 	Color barFill;
+	/** The bar's far end, for a gradient along it; null for one color. */
+	Color barFill2;
 	Color barBackground;
 	Color barText;
+	/** Null for the skill's own color. */
+	Color goalBar;
+	/** The goal bar's far end, for a gradient; null for one color. */
+	Color goalBar2;
+	/** Null for the progress bar's background. */
+	Color goalBarBackground;
 
 	/** The look the plugin always had. */
 	static CardTheme classic(Palette palette, Color background, Color outline)
@@ -103,72 +124,195 @@ class CardTheme
 			.build();
 	}
 
-	/** The theme for pinned cards from the config: the picked style, then the player's own changes. */
-	static CardTheme pinned(NextUnlocksConfig config, Palette palette, CardTheme classic, int opacity)
+	/**
+	 * The theme for a pinned card: the picked style, then the player's own changes. The skill is the card's, null for
+	 * quests, diaries and items, and picks the look of Each skill's own and the effect of Skill's own.
+	 */
+	static CardTheme pinned(Look look, Palette palette, CardTheme classic, Skill skill)
 	{
-		CardTheme style = preset(config.pinStyle(), palette, classic);
+		int opacity = look.get("tooltipOpacity");
+		CardTheme style = preset(look.get("pinStyle"), palette, classic, base(look.get("pinBase"), skill));
 		CardTheme.CardThemeBuilder theme = style.toBuilder();
 		if (style != classic && !style.opaque)
 		{
-			Color b = style.background;
-			theme.background(new Color(b.getRed(), b.getGreen(), b.getBlue(), b.getAlpha() * opacity / 100));
+			theme.background(fade(style.background, opacity));
+			theme.background2(style.background2 == null ? null : fade(style.background2, opacity));
 		}
-		if (config.pinFont() != NextUnlocksConfig.CardFont.STYLE)
+		NextUnlocksConfig.CardFont font = look.get("pinFont");
+		if (font != NextUnlocksConfig.CardFont.STYLE)
 		{
-			theme.font(config.pinFont());
+			theme.font(font);
 		}
-		if (config.pinBar() != NextUnlocksConfig.BarStyle.STYLE)
+		NextUnlocksConfig.BarStyle bar = look.get("pinBar");
+		if (bar != NextUnlocksConfig.BarStyle.STYLE)
 		{
-			theme.bar(config.pinBar());
+			theme.bar(bar);
 		}
-		theme.levelUp(config.pinLevelUp().on(style.levelUp));
-		theme.shadow(config.pinTextShadow().on(style.shadow));
-		theme.scanlines(config.pinScanlines().on(style.scanlines));
-		if (config.pinGlow() != NextUnlocksConfig.GlowMode.STYLE)
+		theme.levelUp(look.<NextUnlocksConfig.StyleToggle>get("pinLevelUp").on(style.levelUp));
+		theme.shadow(look.<NextUnlocksConfig.StyleToggle>get("pinTextShadow").on(style.shadow));
+		theme.scanlines(look.<NextUnlocksConfig.StyleToggle>get("pinScanlines").on(style.scanlines));
+		NextUnlocksConfig.GlowMode mode = look.get("pinGlow");
+		if (mode != NextUnlocksConfig.GlowMode.STYLE)
 		{
-			NextUnlocksConfig.GlowMode mode = config.pinGlow();
-			theme.glow(mode == NextUnlocksConfig.GlowMode.OFF ? null : config.pinGlowColor())
+			theme.glow(mode == NextUnlocksConfig.GlowMode.OFF ? null : look.get("pinGlowColor"))
 				.glowBorder(mode == NextUnlocksConfig.GlowMode.BORDER || mode == NextUnlocksConfig.GlowMode.BOTH)
 				.glowText(mode == NextUnlocksConfig.GlowMode.TEXT || mode == NextUnlocksConfig.GlowMode.BOTH);
 		}
-		theme.glowSize(config.pinGlowSize());
-		if (config.pinCustomColors())
+		theme.glowSize(look.get("pinGlowSize"));
+		boolean custom = look.get("pinCustomColors");
+		if (custom)
 		{
-			Color border = config.pinColorBorder();
-			theme.background(config.pinColorBackground())
+			Color border = look.get("pinColorBorder");
+			theme.background(look.get("pinColorBackground"))
 				.border(border.getAlpha() == 0 ? null : border)
 				.innerBorder(style.innerBorder == null ? null : border)
-				.skillName(config.pinColorSkillName())
-				.levelLabel(config.pinColorLevelLabel())
-				.levelValue(config.pinColorLevelValue())
-				.xpLabel(config.pinColorXpLabel())
-				.xpValue(config.pinColorXpValue())
-				.nextLevelLabel(config.pinColorNextLevelLabel())
-				.nextLevelValue(config.pinColorNextLevelValue())
-				.remainingLabel(config.pinColorRemainingLabel())
-				.remainingValue(config.pinColorRemainingValue())
-				.nextUnlockLabel(config.pinColorNextUnlockLabel())
-				.nextUnlockLevel(config.pinColorNextUnlockLevel())
-				.nextUnlockXp(config.pinColorNextUnlockXp())
-				.unlock(config.pinColorUnlock())
-				.more(config.pinColorMore())
-				.goalLabel(config.pinColorGoalLabel())
-				.goalLevel(config.pinColorGoalLevel())
-				.goalXp(config.pinColorGoalXp())
-				.taskTitle(config.pinColorTaskTitle())
-				.met(config.pinColorMet())
-				.unmet(config.pinColorUnmet())
-				.barFill(config.pinColorBarFill())
-				.barBackground(config.pinColorBarBackground())
-				.barText(config.pinColorBarText());
+				.skillName(look.get("pinColorSkillName"))
+				.levelLabel(look.get("pinColorLevelLabel"))
+				.levelValue(look.get("pinColorLevelValue"))
+				.xpLabel(look.get("pinColorXpLabel"))
+				.xpValue(look.get("pinColorXpValue"))
+				.nextLevelLabel(look.get("pinColorNextLevelLabel"))
+				.nextLevelValue(look.get("pinColorNextLevelValue"))
+				.remainingLabel(look.get("pinColorRemainingLabel"))
+				.remainingValue(look.get("pinColorRemainingValue"))
+				.nextUnlockLabel(look.get("pinColorNextUnlockLabel"))
+				.nextUnlockLevel(look.get("pinColorNextUnlockLevel"))
+				.nextUnlockXp(look.get("pinColorNextUnlockXp"))
+				.unlock(look.get("pinColorUnlock"))
+				.more(look.get("pinColorMore"))
+				.goalLabel(look.get("pinColorGoalLabel"))
+				.goalLevel(look.get("pinColorGoalLevel"))
+				.goalXp(look.get("pinColorGoalXp"))
+				.taskTitle(look.get("pinColorTaskTitle"))
+				.met(look.get("pinColorMet"))
+				.unmet(look.get("pinColorUnmet"))
+				.barFill(look.get("pinColorBarFill"))
+				.barBackground(look.get("pinColorBarBackground"))
+				.barText(look.get("pinColorBarText"));
+			Color goal = look.get("pinColorGoalBar");
+			Color goal2 = look.get("pinColorGoalBar2");
+			if (goal.getAlpha() > 0)
+			{
+				theme.goalBar(goal);
+			}
+			if (goal2.getAlpha() > 0)
+			{
+				theme.goalBar2(goal2);
+			}
+		}
+		CardTheme colored = theme.build();
+
+		// the switches that build on the final colors
+		if (look.<NextUnlocksConfig.StyleToggle>get("pinBackgroundGradient").on(style.background2 != null))
+		{
+			Color own = custom ? look.<Color>get("pinColorBackground2") : null;
+			theme.background2(own != null && own.getAlpha() > 0 ? own
+				: colored.background2 != null && !custom ? colored.background2 : shade(colored.background, Color.BLACK, 0.5));
+		}
+		else
+		{
+			theme.background2(null);
+		}
+		if (look.<NextUnlocksConfig.StyleToggle>get("pinBarGradient").on(style.barFill2 != null))
+		{
+			Color own = custom ? look.<Color>get("pinColorBarFill2") : null;
+			theme.barFill2(own != null && own.getAlpha() > 0 ? own
+				: colored.barFill2 != null && !custom ? colored.barFill2 : shade(colored.barFill, Color.WHITE, 0.5));
+		}
+		else
+		{
+			theme.barFill2(null);
+		}
+		if (look.<NextUnlocksConfig.StyleToggle>get("pinHeaderBand").on(style.headerBand != null))
+		{
+			Color fallback = colored.border != null ? colored.border : colored.barFill;
+			theme.headerBand(custom ? look.get("pinColorHeaderBand")
+				: colored.headerBand != null ? colored.headerBand : shade(fallback, Color.BLACK, 0.4));
+		}
+		else
+		{
+			theme.headerBand(null);
+		}
+		theme.shimmer(look.<NextUnlocksConfig.StyleToggle>get("pinShimmer").on(style.shimmer));
+		theme.xpPopup(look.<NextUnlocksConfig.StyleToggle>get("pinXpPopup").on(style.xpPopup));
+		theme.xpPulse(look.<NextUnlocksConfig.StyleToggle>get("pinXpPulse").on(style.xpPulse));
+		NextUnlocksConfig.XpEffect effect = look.get("pinXpEffect");
+		if (effect == NextUnlocksConfig.XpEffect.STYLE)
+		{
+			effect = style.xpEffect;
+		}
+		if (effect == NextUnlocksConfig.XpEffect.AUTO)
+		{
+			effect = skill == null ? null : SkillLooks.effect(skill);
+		}
+		theme.xpEffect(effect == NextUnlocksConfig.XpEffect.OFF ? null : effect);
+
+		NextUnlocksConfig.BorderWidth width = look.get("pinBorderWidth");
+		if (width == NextUnlocksConfig.BorderWidth.NONE)
+		{
+			theme.border(null).innerBorder(null);
+		}
+		else if (width != NextUnlocksConfig.BorderWidth.STYLE)
+		{
+			theme.borderWidth(width.pixels);
+		}
+		NextUnlocksConfig.Corner corner = look.get("pinCorner");
+		if (corner != NextUnlocksConfig.Corner.STYLE)
+		{
+			theme.corner(corner.radius);
+			if (corner.radius > 0 && colored.frame != Frame.BEVEL)
+			{
+				theme.frame(Frame.ROUNDED);
+			}
+			else if (corner.radius == 0 && colored.frame == Frame.ROUNDED)
+			{
+				theme.frame(Frame.FLAT);
+			}
+		}
+		NextUnlocksConfig.Padding padding = look.get("pinPadding");
+		if (padding != NextUnlocksConfig.Padding.STYLE)
+		{
+			theme.padding(padding.pixels);
 		}
 		return theme.build();
 	}
 
-	static CardTheme preset(NextUnlocksConfig.CardStyle style, Palette palette, CardTheme classic)
+	/** The skill whose look Each skill's own shows: the one picked for every card, or the card's own. */
+	static Skill base(String picked, Skill skill)
+	{
+		if (picked != null && !picked.isEmpty())
+		{
+			try
+			{
+				return Skill.valueOf(picked);
+			}
+			catch (IllegalArgumentException e)
+			{
+				// a skill from a newer or older client; the card's own then
+			}
+		}
+		return skill;
+	}
+
+	private static Color fade(Color c, int opacity)
+	{
+		return new Color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha() * opacity / 100);
+	}
+
+	/** Mixed toward another color, keeping the first one's see-through. */
+	static Color shade(Color c, Color toward, double amount)
+	{
+		Color mixed = PinBar.mix(c, toward, amount);
+		return new Color(mixed.getRed(), mixed.getGreen(), mixed.getBlue(), c.getAlpha());
+	}
+
+	/** A style's own look; Each skill's own needs the skill, and is classic without one. */
+	static CardTheme preset(NextUnlocksConfig.CardStyle style, Palette palette, CardTheme classic, Skill skill)
 	{
 		switch (style)
 		{
+			case SKILL:
+				return skill == null ? classic : SkillLooks.theme(skill, palette, classic);
 			case ARCADE:
 				return colors(new Color(64, 224, 255), Color.WHITE, new Color(255, 236, 64), palette)
 					.frame(Frame.DOUBLE)
@@ -187,6 +331,9 @@ class CardTheme
 					.unmet(new Color(255, 70, 110))
 					.barFill(new Color(255, 120, 40))
 					.barBackground(new Color(34, 22, 66))
+					.xpEffect(NextUnlocksConfig.XpEffect.PIXELS)
+					.xpPopup(true)
+					.xpPulse(true)
 					.glowSize(3)
 					.build();
 			case NEON:
@@ -206,6 +353,9 @@ class CardTheme
 					.unmet(new Color(255, 90, 120))
 					.barFill(pink)
 					.barBackground(new Color(70, 24, 96))
+					.xpEffect(NextUnlocksConfig.XpEffect.STARS)
+					.xpPopup(true)
+					.xpPulse(true)
 					.glow(new Color(255, 60, 200, 200))
 					.glowBorder(true)
 					.glowText(true)
@@ -230,6 +380,8 @@ class CardTheme
 					.barFill(phosphor)
 					.barBackground(new Color(0, 44, 14))
 					.barText(new Color(210, 255, 210))
+					.xpEffect(NextUnlocksConfig.XpEffect.PIXELS)
+					.xpPopup(true)
 					.glow(new Color(51, 255, 102, 110))
 					.glowText(true)
 					.glowSize(2)
@@ -255,6 +407,8 @@ class CardTheme
 					.barFill(HANDHELD[0])
 					.barBackground(HANDHELD[2])
 					.barText(HANDHELD[3])
+					.xpEffect(NextUnlocksConfig.XpEffect.PIXELS)
+					.xpPopup(true)
 					.glowSize(3)
 					.build();
 			case WIN95:
@@ -308,15 +462,105 @@ class CardTheme
 					.bar(NextUnlocksConfig.BarStyle.MODERN)
 					.glowSize(3)
 					.build();
+			case PARCHMENT:
+				Color ink = new Color(43, 26, 10);
+				return colors(new Color(110, 74, 34), ink, new Color(139, 26, 26), palette)
+					.frame(Frame.DOUBLE)
+					.background(new Color(232, 213, 166))
+					.background2(new Color(206, 182, 128))
+					.border(new Color(107, 74, 35))
+					.innerBorder(new Color(165, 129, 78))
+					.padding(6)
+					.opaque(true)
+					.font(NextUnlocksConfig.CardFont.RUNESCAPE)
+					.bar(NextUnlocksConfig.BarStyle.CLASSIC)
+					.locked(new Color(150, 132, 100))
+					.more(new Color(120, 96, 64))
+					.met(new Color(46, 107, 31))
+					.unmet(new Color(160, 16, 16))
+					.goalXp(ink)
+					.barFill(new Color(139, 90, 43))
+					.barBackground(new Color(196, 172, 120))
+					.xpEffect(NextUnlocksConfig.XpEffect.AUTO)
+					.xpPopup(true)
+					.glowSize(3)
+					.build();
+			case STONE:
+				Color orange = new Color(255, 152, 31);
+				return colors(orange, Color.WHITE, new Color(255, 255, 0), palette)
+					.frame(Frame.DOUBLE)
+					.background(new Color(62, 53, 41, 245))
+					.background2(new Color(40, 34, 26, 245))
+					.border(new Color(20, 17, 13))
+					.borderWidth(2)
+					.innerBorder(new Color(94, 84, 66))
+					.padding(6)
+					.shadow(true)
+					.font(NextUnlocksConfig.CardFont.RUNESCAPE_BOLD)
+					.bar(NextUnlocksConfig.BarStyle.CLASSIC)
+					.more(new Color(180, 168, 140))
+					.barFill(new Color(0, 160, 0))
+					.barBackground(new Color(140, 20, 20))
+					.xpEffect(NextUnlocksConfig.XpEffect.AUTO)
+					.xpPopup(true)
+					.xpPulse(true)
+					.glowSize(3)
+					.build();
+			case GILDED:
+				Color gold = new Color(212, 175, 55);
+				return colors(new Color(201, 168, 106), new Color(255, 243, 196), new Color(255, 215, 0), palette)
+					.frame(Frame.DOUBLE)
+					.background(new Color(30, 20, 6, 245))
+					.background2(new Color(52, 36, 8, 245))
+					.border(gold)
+					.borderWidth(2)
+					.innerBorder(new Color(138, 109, 31))
+					.padding(6)
+					.shadow(true)
+					.font(NextUnlocksConfig.CardFont.RUNESCAPE_BOLD)
+					.bar(NextUnlocksConfig.BarStyle.MODERN)
+					.more(new Color(160, 136, 90))
+					.barFill(gold)
+					.barFill2(new Color(255, 240, 160))
+					.barBackground(new Color(58, 42, 8))
+					.shimmer(true)
+					.xpEffect(NextUnlocksConfig.XpEffect.STARS)
+					.xpPopup(true)
+					.xpPulse(true)
+					.glow(new Color(255, 215, 0, 90))
+					.glowBorder(true)
+					.glowSize(2)
+					.build();
+			case GLASS:
+				return colors(new Color(220, 230, 245), Color.WHITE, new Color(160, 210, 255), palette)
+					.frame(Frame.ROUNDED)
+					.background(new Color(190, 215, 255, 80))
+					.background2(new Color(90, 120, 170, 60))
+					.border(new Color(255, 255, 255, 110))
+					.corner(8)
+					.padding(7)
+					.shadow(true)
+					.font(NextUnlocksConfig.CardFont.SANS)
+					.bar(NextUnlocksConfig.BarStyle.MODERN)
+					.more(new Color(200, 210, 225))
+					.barFill(new Color(140, 200, 255))
+					.barFill2(new Color(230, 245, 255))
+					.barBackground(new Color(255, 255, 255, 40))
+					.shimmer(true)
+					.xpEffect(NextUnlocksConfig.XpEffect.AUTO)
+					.xpPulse(true)
+					.glowSize(3)
+					.build();
 			default:
 				return classic;
 		}
 	}
 
 	/** Every text color from three: labels, values, and the accent for names and the next unlock. */
-	private static CardThemeBuilder colors(Color label, Color value, Color accent, Palette palette)
+	static CardThemeBuilder colors(Color label, Color value, Color accent, Palette palette)
 	{
 		return builder()
+			.borderWidth(1)
 			.skillName(accent)
 			.levelLabel(value)
 			.levelValue(value)

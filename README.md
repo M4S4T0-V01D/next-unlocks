@@ -29,10 +29,13 @@ It can take over the game's XP tooltip so the two don't overlap, and its icon si
 
 Right-click a skill and choose **Pin** to keep its tooltip on screen above the chatbox. Right-click it again to unpin. With split private chat on, pinned cards move up above your private messages so they never cover them.
 Pinned cards sit side by side at the same height and show the skill and your level, and their XP and progress update as you train.
-Cards come in several styles (Classic RuneLite, 90s arcade, Neon synthwave, CRT terminal, Handheld, Windows 95, Modern, Minimal), with a choice of font, progress bar, level-up effect, glow and text shadow, and every color can be set by hand.
+By default every skill gets its own card, tuned to the skill's colour and feel: a parchment scroll for Cooking, frosted glass for Fishing, a gilded frame for Prayer, a dusky rose window for Magic, and so on for all 24 skills including Sailing.
+Cards also come in shared styles (Classic RuneLite, 90s arcade, Neon synthwave, CRT terminal, Handheld, Windows 95, Modern, Minimal, Parchment scroll, RuneScape stone, Gilded, Frosted glass), with a choice of font, progress bar, level-up effect, glow and text shadow, background and bar gradients, a shimmer, border width, rounded corners, padding and a title band, and every color can be set by hand.
+Each skill's card can have its own look on top of the shared one, and any look can be saved as a named preset to load, rename or delete later.
+As you gain XP, the card can throw off an effect from the end of its bar (sparks, embers, bubbles, leaves, stars, pixels or runes, or Auto to match the skill), float the XP gained up off the bar, and flash the bar.
 
 <p align="center">
-  <img src="screenshots/card-themes.png" alt="The eight pinned card styles: Classic RuneLite, 90s arcade, Neon synthwave, CRT terminal, Handheld, Windows 95, Modern and Minimal">
+  <img src="screenshots/card-themes.png" alt="Pinned cards in their skills' own looks: Magic, Fishing, Cooking, Smithing, Prayer, Firemaking, Runecraft, Herblore and Agility, with XP effects on some, and Attack in Classic RuneLite">
 </p>
 **Set goal** on the same menu picks one of the next few unlocks, the next level or 99, or **Choose level...** to type any level; the nearest goal shows as a bar in the skill's color on its card.
 
@@ -84,7 +87,7 @@ A pinned quest unpins itself with a chat message once you finish it.
 - **Quest-locked unlocks**: unlocks that need a quest you haven't finished are greyed out.
 - **Filters**: members content (always, never, or match the world), quest and diary requirements, how many levels to list.
 - **In-game menu**: a small button on the minimap's rim opens a menu in the game's own window style, so everything can be done without the side panel. It has four tabs:
-  - **Looks**: the pinned cards' style, font, bar, glow mode, colour and size, text and icon size, and opacity. A reset button needs a second click.
+  - **Looks**: pick which cards to change (all skills, or one skill for its own look), then four sub-tabs: **Style** (style, font, bar, glow, text shadow, scanlines, text and icon size), **Frame** (gradients, title band, shimmer, border, corners, padding, opacity), **Effects** (XP effect, XP popup, bar pulse, level-up flash) and **Presets** (save, load, rename and delete looks). A reset for all skills needs a second click; a skill's own look can be dropped to match the rest.
   - **Goals**: your goals with the XP left to each one. Pick a skill to add its next unlocks, the next level, 99 or a level you type.
   - **Pins**: pin skills from a grid, and remove pinned quests, diaries and items. You can also pin one by typing its name.
   - **Options**: the remaining switches.
@@ -97,7 +100,7 @@ A pinned quest unpins itself with a chat message once you finish it.
 
 - **General**: members unlocks, quest and diary requirements, levels to show, level-up message, boosts, greying out quest-locked unlocks.
 - **Skills tab tooltip**: on/off, icons only (on by default), including the game's XP tooltip, progress bar, icon and text size, background opacity, outline, the level and goal bar on pinned cards.
-- **Pinned card style** and **Pinned card colors**: the card style, font, bar, level-up effect, glow, text shadow, scanlines and each color.
+- **Pinned card style** and **Pinned card colors**: the card style, font, bar, level-up effect, XP effect, XP popup and bar pulse, glow, text shadow, scanlines, gradients, shimmer, border, corners, padding, title band and each color.
 - **Goals**: goal infoboxes, the goal-reached notification, the Almost there list, whether item goals count making levels.
 - **Skill guide**: the Next Unlocks tab, highlighting, fading, markings, progress bar, scrolling, dimming hidden sections.
 - **In-game menu**: the minimap button on/off and its place on the rim.

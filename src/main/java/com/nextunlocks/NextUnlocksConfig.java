@@ -250,6 +250,8 @@ public interface NextUnlocksConfig extends Config
 	/** Looks for the pinned cards, from the RuneLite default through the 90s to modern. */
 	enum CardStyle
 	{
+		/** A look of its own for every skill, in the skill's colors; quest, diary and item cards stay classic. */
+		SKILL("Each skill's own"),
 		CLASSIC("Classic RuneLite"),
 		ARCADE("90s arcade"),
 		NEON("Neon synthwave"),
@@ -257,7 +259,11 @@ public interface NextUnlocksConfig extends Config
 		HANDHELD("Handheld (4 greens)"),
 		WIN95("Windows 95"),
 		MODERN("Modern"),
-		MINIMAL("Minimal");
+		MINIMAL("Minimal"),
+		PARCHMENT("Parchment scroll"),
+		STONE("RuneScape stone"),
+		GILDED("Gilded"),
+		GLASS("Frosted glass");
 
 		private final String name;
 
@@ -367,6 +373,108 @@ public interface NextUnlocksConfig extends Config
 		}
 	}
 
+	/** What flies off the bar while the skill gains xp. */
+	enum XpEffect
+	{
+		STYLE("Style default"),
+		AUTO("Skill's own"),
+		OFF("Off"),
+		SPARKS("Sparks"),
+		EMBERS("Embers"),
+		BUBBLES("Bubbles"),
+		LEAVES("Leaves"),
+		STARS("Stars"),
+		PIXELS("Pixels"),
+		RUNES("Runes");
+
+		private final String name;
+
+		XpEffect(String name)
+		{
+			this.name = name;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
+	/** How thick a card's border is, in pixels; none leaves it off. */
+	enum BorderWidth
+	{
+		STYLE("Style default", -1),
+		NONE("None", 0),
+		THIN("Thin", 1),
+		THICK("Thick", 2),
+		HEAVY("Heavy", 3);
+
+		private final String name;
+		final int pixels;
+
+		BorderWidth(String name, int pixels)
+		{
+			this.name = name;
+			this.pixels = pixels;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
+	/** How round a card's corners are, in pixels. */
+	enum Corner
+	{
+		STYLE("Style default", -1),
+		SQUARE("Square", 0),
+		SMALL("Small", 3),
+		ROUND("Round", 6),
+		ROUNDER("Rounder", 10);
+
+		private final String name;
+		final int radius;
+
+		Corner(String name, int radius)
+		{
+			this.name = name;
+			this.radius = radius;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
+	/** Space between a card's edge and its text, in pixels. */
+	enum Padding
+	{
+		STYLE("Style default", -1),
+		TIGHT("Tight", 2),
+		NORMAL("Normal", 5),
+		ROOMY("Roomy", 8);
+
+		private final String name;
+		final int pixels;
+
+		Padding(String name, int pixels)
+		{
+			this.name = name;
+			this.pixels = pixels;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
 	@ConfigSection(
 		name = "Pinned card style",
 		description = "How the cards pinned above the chatbox look",
@@ -383,7 +491,7 @@ public interface NextUnlocksConfig extends Config
 	)
 	default CardStyle pinStyle()
 	{
-		return CardStyle.CLASSIC;
+		return CardStyle.SKILL;
 	}
 
 	@ConfigItem(
@@ -494,6 +602,126 @@ public interface NextUnlocksConfig extends Config
 	default boolean pinCustomColors()
 	{
 		return false;
+	}
+
+	@ConfigItem(
+		keyName = "pinXpEffect",
+		name = "XP effect",
+		description = "What flies off the bar as you gain xp. Skill's own picks one for each skill, like embers for Firemaking and bubbles for Fishing",
+		position = 110,
+		section = pinStyleSection
+	)
+	default XpEffect pinXpEffect()
+	{
+		return XpEffect.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinXpPopup",
+		name = "XP popup",
+		description = "The xp you just gained floats up off the card",
+		position = 111,
+		section = pinStyleSection
+	)
+	default StyleToggle pinXpPopup()
+	{
+		return StyleToggle.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinXpPulse",
+		name = "Bar pulse",
+		description = "The bar lights up for a moment as you gain xp",
+		position = 112,
+		section = pinStyleSection
+	)
+	default StyleToggle pinXpPulse()
+	{
+		return StyleToggle.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinBackgroundGradient",
+		name = "Background gradient",
+		description = "Shade the background from top to bottom, down to Background 2 under Pinned card colors when Use my colors is on",
+		position = 113,
+		section = pinStyleSection
+	)
+	default StyleToggle pinBackgroundGradient()
+	{
+		return StyleToggle.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinBarGradient",
+		name = "Bar gradient",
+		description = "Run the bar from its fill color to Bar fill 2",
+		position = 114,
+		section = pinStyleSection
+	)
+	default StyleToggle pinBarGradient()
+	{
+		return StyleToggle.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinShimmer",
+		name = "Shimmer",
+		description = "A light that sweeps across the card now and then",
+		position = 115,
+		section = pinStyleSection
+	)
+	default StyleToggle pinShimmer()
+	{
+		return StyleToggle.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinHeaderBand",
+		name = "Title band",
+		description = "A band of color behind the card's first line, like a window's title bar",
+		position = 116,
+		section = pinStyleSection
+	)
+	default StyleToggle pinHeaderBand()
+	{
+		return StyleToggle.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinBorderWidth",
+		name = "Border width",
+		description = "How thick the card's border is",
+		position = 117,
+		section = pinStyleSection
+	)
+	default BorderWidth pinBorderWidth()
+	{
+		return BorderWidth.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinCorner",
+		name = "Corners",
+		description = "How round the card's corners are",
+		position = 118,
+		section = pinStyleSection
+	)
+	default Corner pinCorner()
+	{
+		return Corner.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinPadding",
+		name = "Padding",
+		description = "Space between the card's edge and its text",
+		position = 119,
+		section = pinStyleSection
+	)
+	default Padding pinPadding()
+	{
+		return Padding.STYLE;
 	}
 
 	@ConfigSection(
@@ -805,6 +1033,71 @@ public interface NextUnlocksConfig extends Config
 	default Color pinColorBarText()
 	{
 		return Color.WHITE;
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "pinColorBackground2",
+		name = "Background 2",
+		description = "The bottom of the background with Background gradient on; fully see-through for a darker shade of Background",
+		position = 225,
+		section = pinColorSection
+	)
+	default Color pinColorBackground2()
+	{
+		return new Color(0, 0, 0, 0);
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "pinColorBarFill2",
+		name = "Bar fill 2",
+		description = "The far end of the bar with Bar gradient on; fully see-through for a lighter shade of Bar fill",
+		position = 226,
+		section = pinColorSection
+	)
+	default Color pinColorBarFill2()
+	{
+		return new Color(0, 0, 0, 0);
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "pinColorGoalBar",
+		name = "Goal bar",
+		description = "The goal bar; fully see-through for the skill's color",
+		position = 227,
+		section = pinColorSection
+	)
+	default Color pinColorGoalBar()
+	{
+		return new Color(0, 0, 0, 0);
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "pinColorGoalBar2",
+		name = "Goal bar 2",
+		description = "The goal bar's far end, for a gradient; fully see-through for none",
+		position = 228,
+		section = pinColorSection
+	)
+	default Color pinColorGoalBar2()
+	{
+		return new Color(0, 0, 0, 0);
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "pinColorHeaderBand",
+		name = "Title band",
+		description = "The band behind the first line with Title band on",
+		position = 229,
+		section = pinColorSection
+	)
+	default Color pinColorHeaderBand()
+	{
+		return new Color(0, 0, 128);
 	}
 
 	@ConfigSection(
@@ -1177,6 +1470,39 @@ public interface NextUnlocksConfig extends Config
 		hidden = true
 	)
 	default String tallies()
+	{
+		return "";
+	}
+
+	@ConfigItem(
+		keyName = "skillLooks",
+		name = "",
+		description = "Each skill's own changes to the pinned card look, as SKILL|key=value;key=value, one per line",
+		hidden = true
+	)
+	default String skillLooks()
+	{
+		return "";
+	}
+
+	@ConfigItem(
+		keyName = "lookPresets",
+		name = "",
+		description = "Saved pinned card looks, as name|key=value;key=value, one per line",
+		hidden = true
+	)
+	default String lookPresets()
+	{
+		return "";
+	}
+
+	@ConfigItem(
+		keyName = "pinBase",
+		name = "",
+		description = "Whose built-in look Each skill's own uses: a skill's name, or empty for each card's own skill",
+		hidden = true
+	)
+	default String pinBase()
 	{
 		return "";
 	}

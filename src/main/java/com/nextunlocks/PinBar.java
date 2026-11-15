@@ -57,6 +57,8 @@ class PinBar implements LayoutableRenderableEntity
 	@Setter
 	private double value;
 	private final Color color;
+	/** The far end of a gradient along the bar; null for one color. */
+	private final Color color2;
 	private final Color background;
 	private final Color textColor;
 	private final Color[] pixels;
@@ -71,13 +73,27 @@ class PinBar implements LayoutableRenderableEntity
 	/** A bar in a theme's style and colors; the level-up goes unused when the theme has the effect off. */
 	PinBar(CardTheme theme, double minimum, double maximum, double value, Color color, Supplier<LevelUp> levelUp)
 	{
-		this(theme.getBar(), minimum, maximum, value, color, theme.getBarBackground(), theme.getBarText(), theme.getBurst(),
+		this(theme, minimum, maximum, value, color, null, theme.getBarBackground(), levelUp);
+	}
+
+	/** A bar in a theme's style, in its own colors: a gradient from color to color2 when that is set. */
+	PinBar(CardTheme theme, double minimum, double maximum, double value, Color color, Color color2, Color background,
+		Supplier<LevelUp> levelUp)
+	{
+		this(theme.getBar(), minimum, maximum, value, color, color2, background, theme.getBarText(), theme.getBurst(),
 			theme.isLevelUp() ? levelUp : null);
 	}
 
 	PinBar(NextUnlocksConfig.BarStyle style, double minimum, double maximum, double value, Color color, Color background,
 		Color textColor, Color[] pixels, Supplier<LevelUp> levelUp)
 	{
+		this(style, minimum, maximum, value, color, null, background, textColor, pixels, levelUp);
+	}
+
+	private PinBar(NextUnlocksConfig.BarStyle style, double minimum, double maximum, double value, Color color, Color color2,
+		Color background, Color textColor, Color[] pixels, Supplier<LevelUp> levelUp)
+	{
+		this.color2 = color2;
 		this.style = style;
 		this.textColor = textColor;
 		this.pixels = pixels == null ? PIXELS : pixels;
@@ -155,7 +171,8 @@ class PinBar implements LayoutableRenderableEntity
 		int y = location.y;
 		graphics.setColor(background);
 		graphics.fillRect(x, y, width, HEIGHT);
-		graphics.setColor(full ? mix(color, Color.WHITE, pulse(now, 300) * 0.6) : color);
+		Color c = full ? mix(color, Color.WHITE, pulse(now, 300) * 0.6) : color;
+		graphics.setPaint(color2 == null || full ? c : new GradientPaint(x, 0, c, x + width, 0, color2));
 		graphics.fillRect(x, y, (int) (width * progress), HEIGHT);
 		String text = PERCENT.format(progress * 100) + "%";
 		FontMetrics metrics = graphics.getFontMetrics();
@@ -179,7 +196,7 @@ class PinBar implements LayoutableRenderableEntity
 		int lit = (int) Math.round(progress * blocks);
 		for (int i = 0; i < lit; i++)
 		{
-			Color c = color;
+			Color c = color2 == null ? color : mix(color, color2, blocks == 1 ? 0 : i / (double) (blocks - 1));
 			if (full)
 			{
 				c = pixels == PIXELS
@@ -188,7 +205,7 @@ class PinBar implements LayoutableRenderableEntity
 			}
 			else if (i == lit - 1 && progress > 0.75 && (step / 4) % 2 == 0)
 			{
-				c = mix(color, Color.WHITE, 0.6);
+				c = mix(c, Color.WHITE, 0.6);
 			}
 			int bx = start + i * (BLOCK + 1);
 			graphics.setColor(c);
@@ -213,7 +230,9 @@ class PinBar implements LayoutableRenderableEntity
 		if (fill > 0)
 		{
 			Color c = full ? mix(color, Color.WHITE, pulse(now, 420) * 0.5) : color;
-			graphics.setPaint(new GradientPaint(x, 0, mix(c, Color.BLACK, 0.15), x + Math.max(1, fill), 0, mix(c, Color.WHITE, 0.3)));
+			graphics.setPaint(color2 == null || full
+				? new GradientPaint(x, 0, mix(c, Color.BLACK, 0.15), x + Math.max(1, fill), 0, mix(c, Color.WHITE, 0.3))
+				: new GradientPaint(x, 0, c, x + width, 0, color2));
 			graphics.fill(new RoundRectangle2D.Double(x, y + 1, Math.max(fill, height), height, height, height));
 			graphics.setPaint(new Color(255, 255, 255, 46));
 			graphics.fill(new RoundRectangle2D.Double(x + 2, y + 2, Math.max(fill, height) - 4, height / 2.0 - 1, height / 2.0, height / 2.0));
@@ -278,7 +297,7 @@ class PinBar implements LayoutableRenderableEntity
 			}
 			else
 			{
-				c = color;
+				c = color2 == null ? color : mix(color, color2, col / (double) width);
 			}
 			int cx = x + 1 + col;
 			graphics.setColor(c);
@@ -443,7 +462,7 @@ class PinBar implements LayoutableRenderableEntity
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antialias);
 	}
 
-	private static Color mix(Color a, Color b, double amount)
+	static Color mix(Color a, Color b, double amount)
 	{
 		return new Color(
 			(int) (a.getRed() + (b.getRed() - a.getRed()) * amount),
