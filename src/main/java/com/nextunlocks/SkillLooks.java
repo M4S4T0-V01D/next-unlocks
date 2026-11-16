@@ -42,6 +42,9 @@ final class SkillLooks
 	}
 
 	private static final Map<Skill, Row> ROWS = new EnumMap<>(Skill.class);
+	/** The combat level card's own: dark iron in a gold frame, with a blood-red bar. */
+	private static final Row COMBAT = new Row(NextUnlocksConfig.CardStyle.STONE, rgb(0x1c1414), rgb(0xb8892e), null, rgb(0xffd257),
+		rgb(0xc0281e), NextUnlocksConfig.XpEffect.SPARKS);
 
 	static
 	{
@@ -108,6 +111,9 @@ final class SkillLooks
 		fx(Skill.HUNTER, brackets, fireflies, null);
 		fx(Skill.CONSTRUCTION, riveted, dust, null);
 		fx(Skill.SAILING, null, bubbles, pulse);
+		COMBAT.frame = notched;
+		COMBAT.ambient = embers;
+		COMBAT.motion = pulse;
 	}
 
 	private SkillLooks()
@@ -186,6 +192,22 @@ final class SkillLooks
 			row = new Row(NextUnlocksConfig.CardStyle.STONE, null, null, null, CardTheme.shade(color, Color.WHITE, 0.3), color,
 				NextUnlocksConfig.XpEffect.SPARKS);
 		}
+		return theme(row, palette, classic);
+	}
+
+	/** The combat level card's own. */
+	static CardTheme combat(Palette palette, CardTheme classic)
+	{
+		return theme(COMBAT, palette, classic);
+	}
+
+	static NextUnlocksConfig.Ambient combatAmbient()
+	{
+		return COMBAT.ambient;
+	}
+
+	private static CardTheme theme(Row row, Palette palette, CardTheme classic)
+	{
 		CardTheme base = CardTheme.preset(row.base, palette, classic, null);
 		CardTheme.CardThemeBuilder theme = base.toBuilder()
 			.skillName(row.accent)

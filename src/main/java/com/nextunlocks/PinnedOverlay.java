@@ -63,7 +63,7 @@ class PinnedOverlay extends Overlay
 	public Dimension render(Graphics2D graphics)
 	{
 		drawn.clear();
-		if (plugin.getPinned().isEmpty() && plugin.getPinnedTasks().isEmpty())
+		if (plugin.getPinned().isEmpty() && plugin.getPinnedTasks().isEmpty() && !plugin.isCombatPinned())
 		{
 			return null;
 		}
@@ -73,8 +73,16 @@ class PinnedOverlay extends Overlay
 			return null;
 		}
 
-		// skill cards first, then quests and diaries
+		// combat level first, then skill cards, then quests and diaries
 		Map<Object, LayoutableRenderableEntity> cards = new LinkedHashMap<>();
+		if (plugin.isCombatPinned())
+		{
+			LayoutableRenderableEntity card = plugin.combatCard();
+			if (card != null)
+			{
+				cards.put(CombatLevel.PIN, card);
+			}
+		}
 		for (Skill skill : plugin.getPinned())
 		{
 			LayoutableRenderableEntity card = plugin.pinnedTooltip(skill);
@@ -197,6 +205,12 @@ class PinnedOverlay extends Overlay
 	}
 
 	/** The wiki title of the pinned quest or diary drawn under a canvas point, or null. Client thread. */
+	/** Whether the combat level card is under the mouse. */
+	boolean combatAt(int x, int y)
+	{
+		return pinAt(x, y) == CombatLevel.PIN;
+	}
+
 	String taskAt(int x, int y)
 	{
 		Object pin = pinAt(x, y);

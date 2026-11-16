@@ -42,6 +42,8 @@ As you gain XP, the card can throw off an effect from the end of its bar (sparks
 </p>
 **Set goal** on the same menu picks one of the next few unlocks, the next level or 99, or **Choose level...** to type any level; the nearest goal shows as a bar in the skill's color on its card.
 
+**Combat level**: right-click any combat skill (Attack, Strength, Defence, Hitpoints, Ranged, Magic or Prayer) and choose **Pin** on *Combat level*. The card shows your combat level and its exact value, a bar to the next level, and how many levels of each combat skill on its own would get you there. **Set goal** on *Combat level* picks the next level, 126 or any level you type; the card then lists the levels each skill needs for the goal too, with a bar from 3 to it. Right-click the card to change the goal or unpin it. It has its own look by default, dark stone with notched corners and drifting embers, and you can change it apart from the skill cards by picking **Combat level** under Cards to change in the Looks tab.
+
 Quests and achievement diaries can be pinned too: right-click a quest in the quest list, or a quest or diary in the side panel, and choose **Pin**. The card shows the quest or diary icon and its name in large text.
 The card lists the hard requirements (skill levels, quest points, combat level and the quests needed first), unmet in red first, then met in green. Diary cards list skill levels only.
 A pinned quest unpins itself with a chat message once you finish it.

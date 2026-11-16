@@ -147,8 +147,17 @@ class CardTheme
 	 */
 	static CardTheme pinned(Look look, Palette palette, CardTheme classic, Skill skill)
 	{
+		return pinned(look, palette, classic, skill, false);
+	}
+
+	/** {@link #pinned}, for the combat level card when {@code combat}, whose Each skill's own is a look of its own. */
+	static CardTheme pinned(Look look, Palette palette, CardTheme classic, Skill skill, boolean combat)
+	{
 		int opacity = look.get("tooltipOpacity");
-		CardTheme style = preset(look.get("pinStyle"), palette, classic, base(look.get("pinBase"), skill));
+		NextUnlocksConfig.CardStyle picked = look.get("pinStyle");
+		Skill base = base(look.get("pinBase"), skill);
+		CardTheme style = combat && base == null && picked == NextUnlocksConfig.CardStyle.SKILL ? SkillLooks.combat(palette, classic)
+			: preset(picked, palette, classic, base);
 		CardTheme.CardThemeBuilder theme = style.toBuilder();
 		if (style != classic && !style.opaque)
 		{
@@ -271,7 +280,7 @@ class CardTheme
 		}
 		if (ambient == NextUnlocksConfig.Ambient.AUTO)
 		{
-			ambient = skill == null ? null : SkillLooks.ambient(skill);
+			ambient = skill != null ? SkillLooks.ambient(skill) : combat ? SkillLooks.combatAmbient() : null;
 		}
 		theme.ambient(ambient == NextUnlocksConfig.Ambient.OFF ? null : ambient);
 		NextUnlocksConfig.BorderMotion motion = look.get("pinBorderMotion");

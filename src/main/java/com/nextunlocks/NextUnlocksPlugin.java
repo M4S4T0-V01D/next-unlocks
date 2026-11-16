@@ -118,6 +118,7 @@ public class NextUnlocksPlugin extends Plugin
 	private static final String EXAMINE = "Examine";
 	private static final String REMOVE_GOAL = "Remove goal";
 	private static final String SET_GOAL = "Set goal";
+	private static final String COMBAT_LEVEL = "Combat level";
 	/** Upcoming unlock levels offered in the Set goal menu. */
 	private static final int GOAL_CHOICES = 3;
 	private static final int MESSAGE_ENTRIES = 3;
@@ -232,6 +233,7 @@ public class NextUnlocksPlugin extends Plugin
 	private final Set<String> pinnedTasks = new LinkedHashSet<>();
 	private final TaskRepository tasks = new TaskRepository();
 	private final Map<String, TooltipBox> taskCache = new ConcurrentHashMap<>();
+	private volatile TooltipBox combatCache;
 	/** States of the pinned quests and the quests they need, by wiki title; client thread. */
 	private Map<String, QuestState> questStates = Collections.emptyMap();
 	/** Replaced whole, for the panel's menus. */
@@ -425,6 +427,7 @@ public class NextUnlocksPlugin extends Plugin
 		{
 			// levels and combat level are on the quest and diary cards
 			taskCache.clear();
+			combatCache = null;
 		}
 		for (Map<Skill, TooltipBox> cache : Arrays.asList(tooltipCache, pinnedCache))
 		{
@@ -655,6 +658,7 @@ public class NextUnlocksPlugin extends Plugin
 		tooltipCache.clear();
 		pinnedCache.clear();
 		taskCache.clear();
+		combatCache = null;
 	}
 
 	private LayoutableRenderableEntity tooltip(Skill skill, boolean pinnedCard)
@@ -848,40 +852,43 @@ public class NextUnlocksPlugin extends Plugin
 		Color base = runeLiteConfig.overlayBackgroundColor();
 		Color background = new Color(base.getRed(), base.getGreen(), base.getBlue(), 255 * config.tooltipOpacity() / 100);
 		CardTheme classic = CardTheme.classic(palette, background, config.tooltipOutline() ? palette.getOutline() : null);
-		return pinnedCard ? CardTheme.pinned(look(skill), palette, classic, skill) : classic;
+		return pinnedCard ? CardTheme.pinned(look(skill == null ? null : skill.name()), palette, classic, skill) : classic;
 	}
 
-	/** The pinned card look a skill's cards have: the config with the skill's own changes, or just the config for null. */
-	Look look(Skill skill)
+	/**
+	 * The pinned card look some cards have: the config with their own changes, or just the config for null. Cards are named
+	 * by skill, or {@link CombatLevel#LOOK} for the combat level card.
+	 */
+	Look look(String cards)
 	{
-		return new Look(config, skill == null ? null : Look.readList(config.skillLooks()).get(skill.name()));
+		return new Look(config, cards == null ? null : Look.readList(config.skillLooks()).get(cards));
 	}
 
-	/** Whether the skill's cards look different from the rest. */
-	boolean hasOwnLook(Skill skill)
+	/** Whether the cards look different from the rest. */
+	boolean hasOwnLook(String cards)
 	{
-		Map<String, String> own = Look.readList(config.skillLooks()).get(skill.name());
+		Map<String, String> own = Look.readList(config.skillLooks()).get(cards);
 		return own != null && !own.isEmpty();
 	}
 
-	/** Change a look setting for every card when the skill is null, or only for the skill's cards. */
-	synchronized void setLook(Skill skill, String key, String value)
+	/** Change a look setting for every card when the cards are null, or only for those cards. */
+	synchronized void setLook(String cards, String key, String value)
 	{
-		if (skill == null)
+		if (cards == null)
 		{
 			configManager.setConfiguration(NextUnlocksConfig.GROUP, key, value);
 			return;
 		}
 		Map<String, Map<String, String>> list = Look.readList(config.skillLooks());
-		list.computeIfAbsent(skill.name(), k -> new LinkedHashMap<>()).put(key, Look.clean(value));
+		list.computeIfAbsent(cards, k -> new LinkedHashMap<>()).put(key, Look.clean(value));
 		configManager.setConfiguration(NextUnlocksConfig.GROUP, "skillLooks", Look.writeList(list));
 	}
 
-	/** Put the skill's cards back to the look the rest have. */
-	synchronized void resetLook(Skill skill)
+	/** Put the cards back to the look the rest have. */
+	synchronized void resetLook(String cards)
 	{
 		Map<String, Map<String, String>> list = Look.readList(config.skillLooks());
-		if (list.remove(skill.name()) != null)
+		if (list.remove(cards) != null)
 		{
 			configManager.setConfiguration(NextUnlocksConfig.GROUP, "skillLooks", Look.writeList(list));
 		}
@@ -893,37 +900,38 @@ public class NextUnlocksPlugin extends Plugin
 		return new ArrayList<>(Look.readList(config.lookPresets()).keySet());
 	}
 
-	/** Save the look of every card, or of the skill's cards, under a name; one of the same name is replaced. */
-	synchronized void savePreset(String name, Skill skill)
+	/** Save the look of every card, or of some cards, under a name; one of the same name is replaced. */
+	synchronized void savePreset(String name, String cards)
 	{
 		String clean = Look.clean(name);
 		if (clean.isEmpty())
 		{
 			return;
 		}
-		Map<String, String> values = look(skill).values();
-		if (skill != null && NextUnlocksConfig.CardStyle.SKILL.name().equals(values.get("pinStyle")) && values.get("pinBase").isEmpty())
+		Map<String, String> values = look(cards).values();
+		if (cards != null && !CombatLevel.LOOK.equals(cards) && NextUnlocksConfig.CardStyle.SKILL.name().equals(values.get("pinStyle"))
+			&& values.get("pinBase").isEmpty())
 		{
 			// keep the skill's built-in look when this is loaded onto another skill
-			values.put("pinBase", skill.name());
+			values.put("pinBase", cards);
 		}
 		Map<String, Map<String, String>> list = Look.readList(config.lookPresets());
 		list.put(clean, values);
 		configManager.setConfiguration(NextUnlocksConfig.GROUP, "lookPresets", Look.writeList(list));
 	}
 
-	/** Give every card, or the skill's cards, a saved look. */
-	synchronized void loadPreset(String name, Skill skill)
+	/** Give every card, or some cards, a saved look. */
+	synchronized void loadPreset(String name, String cards)
 	{
 		Map<String, String> values = Look.readList(config.lookPresets()).get(name);
 		if (values == null)
 		{
 			return;
 		}
-		if (skill != null)
+		if (cards != null)
 		{
 			Map<String, Map<String, String>> list = Look.readList(config.skillLooks());
-			list.put(skill.name(), values);
+			list.put(cards, values);
 			configManager.setConfiguration(NextUnlocksConfig.GROUP, "skillLooks", Look.writeList(list));
 			return;
 		}
@@ -963,10 +971,10 @@ public class NextUnlocksPlugin extends Plugin
 	}
 
 	/** Asks in the chatbox for a name to save the look under. Client thread. */
-	void askSavePreset(Skill skill)
+	void askSavePreset(String cards, String name)
 	{
-		chatboxPanelManager.openTextInput("Save " + (skill == null ? "the cards'" : skill.getName() + "'s") + " look as:")
-			.onDone((String text) -> savePreset(text, skill))
+		chatboxPanelManager.openTextInput("Save " + (cards == null ? "the cards'" : name + "'s") + " look as:")
+			.onDone((String text) -> savePreset(text, cards))
 			.build();
 	}
 
@@ -1032,6 +1040,10 @@ public class NextUnlocksPlugin extends Plugin
 		{
 			return;
 		}
+		if (CombatLevel.isCombat(skill))
+		{
+			addCombatEntries();
+		}
 		addPinEntry(skill);
 	}
 
@@ -1043,6 +1055,10 @@ public class NextUnlocksPlugin extends Plugin
 		if (skill != null && !hasPinEntry())
 		{
 			addPinEntry(skill);
+		}
+		if (pinnedOverlay.combatAt(mouse.getX(), mouse.getY()) && !hasPinEntry())
+		{
+			addCombatEntries();
 		}
 		String task = pinnedOverlay.taskAt(mouse.getX(), mouse.getY());
 		if (task != null && !hasPinEntry())
@@ -1201,6 +1217,116 @@ public class NextUnlocksPlugin extends Plugin
 			.setTarget(ColorUtil.wrapWithColorTag(skill.getName() + " unlocks", config.colorNext()))
 			.setType(MenuAction.RUNELITE)
 			.onClick(e -> togglePin(skill));
+	}
+
+	/** Set goal and Pin or Unpin for the combat level card, just above Cancel. Client thread. */
+	private void addCombatEntries()
+	{
+		String target = ColorUtil.wrapWithColorTag(COMBAT_LEVEL, config.colorNext());
+		addCombatGoalEntry(target);
+		client.getMenu().createMenuEntry(1)
+			.setOption(config.pinnedCombat() ? UNPIN : PIN)
+			.setTarget(target)
+			.setType(MenuAction.RUNELITE)
+			.onClick(e -> setCombatPinned(!config.pinnedCombat()));
+	}
+
+	/** Set goal for the combat level, with the next level and 126 to pick from, and the goal to remove. */
+	private void addCombatGoalEntry(String target)
+	{
+		if (levels.isEmpty())
+		{
+			return;
+		}
+		int level = CombatLevel.level(levels);
+		int goal = config.combatGoal();
+		if (level >= Experience.MAX_COMBAT_LEVEL && goal == 0)
+		{
+			return;
+		}
+		Menu sub = client.getMenu().createMenuEntry(1)
+			.setOption(SET_GOAL)
+			.setTarget(target)
+			.setType(MenuAction.RUNELITE)
+			.createSubMenu();
+		// each entry goes on top, so the list is built from the bottom up
+		if (goal > 0)
+		{
+			sub.createMenuEntry(-1)
+				.setOption(REMOVE_GOAL)
+				.setTarget(ColorUtil.wrapWithColorTag("Level " + goal, config.colorNext()))
+				.setType(MenuAction.RUNELITE)
+				.onClick(e -> setCombatGoal(0));
+		}
+		if (level >= Experience.MAX_COMBAT_LEVEL)
+		{
+			return;
+		}
+		sub.createMenuEntry(-1)
+			.setOption("Choose level...")
+			.setTarget("")
+			.setType(MenuAction.RUNELITE)
+			.onClick(e -> askCombatGoal(level));
+		for (int choice : level + 1 < Experience.MAX_COMBAT_LEVEL ? new int[]{Experience.MAX_COMBAT_LEVEL, level + 1}
+			: new int[]{Experience.MAX_COMBAT_LEVEL})
+		{
+			if (choice != goal)
+			{
+				sub.createMenuEntry(-1)
+					.setOption("Level " + choice)
+					.setTarget("")
+					.setType(MenuAction.RUNELITE)
+					.onClick(e -> setCombatGoal(choice));
+			}
+		}
+	}
+
+	/** Asks in the chatbox for a combat level to aim for, above the current one. Client thread. */
+	private void askCombatGoal(int level)
+	{
+		chatboxPanelManager.openTextInput("Combat level goal (" + (level + 1) + "-" + Experience.MAX_COMBAT_LEVEL + "):")
+			.charValidator(Character::isDigit)
+			.onDone((String text) ->
+			{
+				int target;
+				try
+				{
+					target = Integer.parseInt(text.trim());
+				}
+				catch (NumberFormatException e)
+				{
+					return;
+				}
+				if (target > level && target <= Experience.MAX_COMBAT_LEVEL)
+				{
+					setCombatGoal(target);
+				}
+			})
+			.build();
+	}
+
+	/** Aims the combat level card at a level, 0 for none; a goal pins the card, where it shows. */
+	void setCombatGoal(int level)
+	{
+		if (level > 0)
+		{
+			configManager.setConfiguration(NextUnlocksConfig.GROUP, "combatGoal", level);
+			setCombatPinned(true);
+		}
+		else
+		{
+			configManager.unsetConfiguration(NextUnlocksConfig.GROUP, "combatGoal");
+		}
+	}
+
+	void setCombatPinned(boolean pin)
+	{
+		configManager.setConfiguration(NextUnlocksConfig.GROUP, "pinnedCombat", pin);
+	}
+
+	boolean isCombatPinned()
+	{
+		return config.pinnedCombat();
 	}
 
 	/** The quest a quest list entry is for, from the list's text since the entry's target can be empty. */
@@ -1758,6 +1884,110 @@ public class NextUnlocksPlugin extends Plugin
 			taskCache.put(wiki, box);
 		}
 		return box;
+	}
+
+	/**
+	 * Card for the combat level: the exact level, the way to the next one, and the levels each combat skill needs on its own
+	 * to reach it and the goal. Client thread.
+	 */
+	LayoutableRenderableEntity combatCard()
+	{
+		if (levels.isEmpty())
+		{
+			return null;
+		}
+		TooltipBox cached = combatCache;
+		if (cached != null)
+		{
+			return cached;
+		}
+		Palette palette = snapshot().getPalette();
+		CardTheme theme = CardTheme.pinned(look(CombatLevel.LOOK), palette, theme(palette, false, null), null, true);
+		int textSize = config.tooltipTextSize();
+		Font regular = FontManager.getRunescapeFont();
+		Font font = theme.font(textSize);
+		int level = CombatLevel.level(levels);
+		double precise = CombatLevel.precise(levels);
+		int goal = config.combatGoal();
+		boolean aiming = goal > level;
+
+		PanelComponent card = new PanelComponent();
+		List<LayoutableRenderableEntity> lines = card.getChildren();
+		// the combat tab icon can be missing before the cache is ready; don't keep a card without it
+		BufferedImage icon = theme.isSkillIcon() ? spriteManager.getSprite(SpriteID.SideIcons.COMBAT, 0) : null;
+		lines.add(new CardLine(theme, font, true)
+			.icon(icon)
+			.left(COMBAT_LEVEL, theme.getSkillName())
+			.right("Level ", theme.getLevelLabel())
+			.right(String.valueOf(level), theme.getLevelValue()));
+		lines.add(new CardLine(theme, font)
+			.left("Exact:", theme.getXpLabel())
+			.right(String.format(Locale.ROOT, "%.2f", precise), theme.getXpValue()));
+		if (level >= Experience.MAX_COMBAT_LEVEL)
+		{
+			lines.add(new CardLine(theme, font).left("Max combat level!", theme.getMet()));
+		}
+		else
+		{
+			lines.add(new CardLine(theme, font)
+				.left("Next level: ", theme.getNextLevelLabel())
+				.left(String.valueOf(level + 1), theme.getNextLevelValue())
+				.right(String.format(Locale.ROOT, "%.2f to go", level + 1 - precise), theme.getRemainingValue()));
+			lines.add(new PinBar(theme, level, level + 1, precise, theme.getBarFill(), theme.getBarFill2(), theme.getBarBackground(), null));
+			Map<Skill, Integer> next = CombatLevel.needed(levels, level + 1);
+			Map<Skill, Integer> toGoal = aiming ? CombatLevel.needed(levels, goal) : Collections.emptyMap();
+			CardLine heading = new CardLine(theme, font).left("Levels needed", theme.getMore())
+				.right(aiming ? "next / goal" : "next", theme.getMore());
+			lines.add(heading);
+			Color goalColor = theme.getGoalLevel() == null ? theme.getBarFill() : theme.getGoalLevel();
+			for (Skill skill : CombatLevel.SKILLS)
+			{
+				CardLine line = new CardLine(theme, font)
+					.icon(theme.isSkillIcon() ? skillIconManager.getSkillImage(skill, true) : null)
+					.left(skill.getName(), theme.getUnlock())
+					.right(neededText(next.get(skill)), next.get(skill) == null ? theme.getMore() : theme.getNextUnlockLevel());
+				if (aiming)
+				{
+					line.right(" / ", theme.getMore())
+						.right(neededText(toGoal.get(skill)), toGoal.get(skill) == null ? theme.getMore() : goalColor);
+				}
+				lines.add(line);
+			}
+		}
+		if (goal > 0)
+		{
+			Color goalLabel = theme.getGoalLabel() == null ? theme.getBarFill() : theme.getGoalLabel();
+			CardLine line = new CardLine(theme, font)
+				.left("Goal: ", goalLabel)
+				.left(String.valueOf(goal), theme.getGoalLevel() == null ? theme.getBarFill() : theme.getGoalLevel());
+			lines.add(aiming ? line.right(String.format(Locale.ROOT, "%.2f to go", goal - precise), theme.getGoalXp())
+				: line.right("Reached!", theme.getMet()));
+			// from 3, the lowest combat level there is
+			lines.add(goalBar(theme, 3, goal, Math.min(precise, goal), theme.getBarFill()));
+		}
+
+		int width = (int) (ComponentConstants.STANDARD_WIDTH * textSize / regular.getSize() * theme.widthScale(textSize))
+			+ 2 * (theme.getPadding() - PANEL_PADDING);
+		for (LayoutableRenderableEntity line : lines)
+		{
+			if (line instanceof CardLine)
+			{
+				width = Math.max(width, ((CardLine) line).minWidth() + 2 * theme.getPadding());
+			}
+		}
+		card.setPreferredSize(new Dimension(width, 0));
+		TooltipBox box = new TooltipBox(card, theme, Collections.emptyList());
+		if (icon != null || !theme.isSkillIcon())
+		{
+			combatCache = box;
+		}
+		return box;
+	}
+
+	/** "+3" for levels still to get, "-" when 99 isn't enough on its own. */
+	static String neededText(Integer levels)
+	{
+		return levels == null ? "-" : "+" + levels;
 	}
 
 	/** The task's requirements as the player stands, with the ones checked off by hand counted as met. Client thread. */

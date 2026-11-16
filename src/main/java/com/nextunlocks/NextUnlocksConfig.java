@@ -1578,6 +1578,28 @@ public interface NextUnlocksConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "pinnedCombat",
+		name = "",
+		description = "Whether the combat level card is pinned above the chatbox",
+		hidden = true
+	)
+	default boolean pinnedCombat()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "combatGoal",
+		name = "",
+		description = "The combat level to aim for on the combat level card, 0 for none",
+		hidden = true
+	)
+	default int combatGoal()
+	{
+		return 0;
+	}
+
+	@ConfigItem(
 		keyName = "hiddenSections",
 		name = "",
 		description = "Skill guide sections hidden in the panel and tooltips, as SKILL:Header, semicolon separated",

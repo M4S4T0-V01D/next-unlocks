@@ -229,7 +229,8 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 	/** the skill picked on the Goals tab to add a goal for, or null */
 	private volatile Skill picking;
 	/** the skill whose cards the Looks tab changes, or null for every card */
-	private volatile Skill target;
+	/** The cards the Looks tab changes: null for all, a skill's name, or {@link CombatLevel#LOOK}. */
+	private volatile String target;
 	private volatile boolean choosingTarget;
 	private volatile LookTab lookTab = LookTab.STYLE;
 	/** each tab's height as last drawn, the window's size before it is drawn again */
@@ -343,10 +344,10 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 	/** look settings go to the picked skill's own look when there is one, the rest to the config */
 	private void set(String key, Object value)
 	{
-		Skill skill = target;
-		if (skill != null && Look.KEYS.containsKey(key))
+		String cards = target;
+		if (cards != null && Look.KEYS.containsKey(key))
 		{
-			plugin.setLook(skill, key, Look.format(value));
+			plugin.setLook(cards, key, Look.format(value));
 			return;
 		}
 		configManager.setConfiguration(NextUnlocksConfig.GROUP, key, value);
@@ -540,9 +541,10 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 
 	private int drawLooks(Graphics2D g, Point mouse, List<Hit> out, int left, int cy, int inner)
 	{
-		Skill skill = target;
+		String skill = target;
+		String name = cardsName(skill);
 		cy = heading(g, "Cards to change", left, cy);
-		String who = skill == null ? "All skills" : skill.getName() + (plugin.hasOwnLook(skill) ? " (own look)" : "");
+		String who = skill == null ? name : name + (plugin.hasOwnLook(skill) ? " (own look)" : "");
 		button(g, mouse, out, new Rectangle(left, cy, inner, 18), choosingTarget ? "Pick below" : who, choosingTarget,
 			() -> choosingTarget = !choosingTarget);
 		cy += 22;
@@ -554,9 +556,15 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 				choosingTarget = false;
 			});
 			cy += 22;
-			cy = skillGrid(g, mouse, out, left, cy, s -> s == target, s ->
+			button(g, mouse, out, new Rectangle(left, cy, inner, 18), "Combat level", CombatLevel.LOOK.equals(skill), () ->
 			{
-				target = s;
+				target = CombatLevel.LOOK;
+				choosingTarget = false;
+			});
+			cy += 22;
+			cy = skillGrid(g, mouse, out, left, cy, s -> s.name().equals(target), s ->
+			{
+				target = s.name();
 				choosingTarget = false;
 			});
 		}
@@ -615,7 +623,7 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		cy += 2;
 		if (skill != null)
 		{
-			button(g, mouse, out, new Rectangle(left, cy, inner, 18), "Give " + skill.getName() + " the same look as the rest",
+			button(g, mouse, out, new Rectangle(left, cy, inner, 18), "Give " + name + " the same look as the rest",
 				false, () -> plugin.resetLook(skill));
 			return cy + 22;
 		}
@@ -671,7 +679,28 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 	}
 
 	/** saved looks: load one onto the cards being changed, rename or delete it, or save the current one */
-	private int drawPresets(Graphics2D g, Point mouse, List<Hit> out, int left, int cy, int inner, Skill skill)
+	/** "All skills", the skill's name, or "Combat level" for the Looks tab's cards. */
+	private static String cardsName(String cards)
+	{
+		if (cards == null)
+		{
+			return "All skills";
+		}
+		if (CombatLevel.LOOK.equals(cards))
+		{
+			return "Combat level";
+		}
+		try
+		{
+			return Skill.valueOf(cards).getName();
+		}
+		catch (IllegalArgumentException e)
+		{
+			return cards;
+		}
+	}
+
+	private int drawPresets(Graphics2D g, Point mouse, List<Hit> out, int left, int cy, int inner, String skill)
 	{
 		List<String> presets = plugin.presets();
 		if (presets.isEmpty())
@@ -697,11 +726,11 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 			text(g, "and " + (presets.size() - MAX_ROWS) + " more, in the RuneLite config", left, cy + 13, GREY);
 			cy += 18;
 		}
-		String save = skill == null ? "Save the cards' look..." : "Save " + skill.getName() + "'s look...";
-		button(g, mouse, out, new Rectangle(left, cy + 2, inner, 18), save, false, () -> plugin.askSavePreset(skill));
+		String save = skill == null ? "Save the cards' look..." : "Save " + cardsName(skill) + "'s look...";
+		button(g, mouse, out, new Rectangle(left, cy + 2, inner, 18), save, false, () -> plugin.askSavePreset(skill, cardsName(skill)));
 		cy += 24;
 		g.setFont(FontManager.getRunescapeSmallFont());
-		text(g, skill == null ? "Load sets every card's look" : "Load sets " + skill.getName() + "'s own look", left, cy + 10, GREY);
+		text(g, skill == null ? "Load sets every card's look" : "Load sets " + cardsName(skill) + "'s own look", left, cy + 10, GREY);
 		g.setFont(FontManager.getRunescapeFont());
 		return cy + 16;
 	}
