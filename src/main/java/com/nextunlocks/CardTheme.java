@@ -61,7 +61,10 @@ class CardTheme
 	int corner;
 	/** Space between the frame and the content. */
 	int padding;
-	/** The background ignores the opacity setting, for looks that only work solid. */
+	/**
+	 * The background is solid at the default opacity and above, for looks that only work solid; lower opacities still
+	 * fade it, header band included.
+	 */
 	boolean opaque;
 	boolean scanlines;
 	boolean shadow;
@@ -163,6 +166,13 @@ class CardTheme
 		{
 			theme.background(fade(style.background, opacity));
 			theme.background2(style.background2 == null ? null : fade(style.background2, opacity));
+		}
+		else if (style.opaque && opacity < DEFAULT_OPACITY)
+		{
+			int solid = opacity * 100 / DEFAULT_OPACITY;
+			theme.background(fade(style.background, solid));
+			theme.background2(style.background2 == null ? null : fade(style.background2, solid));
+			theme.headerBand(style.headerBand == null ? null : fade(style.headerBand, solid));
 		}
 		NextUnlocksConfig.CardFont font = look.get("pinFont");
 		if (font != NextUnlocksConfig.CardFont.STYLE)
@@ -345,6 +355,9 @@ class CardTheme
 		}
 		return skill;
 	}
+
+	/** The opacity setting's default, where opaque looks are fully solid. */
+	static final int DEFAULT_OPACITY = 60;
 
 	private static Color fade(Color c, int opacity)
 	{

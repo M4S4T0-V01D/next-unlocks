@@ -76,6 +76,17 @@ public class CombatLevelTest
 	}
 
 	@Test
+	public void opaqueLooksStillFade()
+	{
+		CardTheme classic = CardTheme.classic(Palette.DEFAULT, new Color(70, 61, 50, 200), null);
+		CardTheme solid = CardTheme.pinned(new Look(CONFIG, null), Palette.DEFAULT, classic, Skill.MAGIC);
+		assertEquals(255, solid.getBackground().getAlpha());
+		CardTheme faded = CardTheme.pinned(new Look(CONFIG, Collections.singletonMap("tooltipOpacity", "30")),
+			Palette.DEFAULT, classic, Skill.MAGIC);
+		assertEquals(127, faded.getBackground().getAlpha());
+	}
+
+	@Test
 	public void neededText()
 	{
 		assertEquals("+3", NextUnlocksPlugin.neededText(3));
