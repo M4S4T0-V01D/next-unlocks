@@ -109,6 +109,8 @@ public class NextUnlocksPlugin extends Plugin
 	private static final int TOOLTIP_ICON_COLUMNS = 5;
 	private static final int ICON_GAP = 2;
 	private static final int ICON_TOP_PADDING = 3;
+	/** The slot behind pinned icons when the card has no bar background. */
+	private static final Color SLOT_FILL = new Color(0, 0, 0, 90);
 	/** PanelComponent's default left plus right border. */
 	private static final int PANEL_BORDER = 10;
 	/** PanelComponent's default border on each side, which the classic card keeps. */
@@ -778,6 +780,7 @@ public class NextUnlocksPlugin extends Plugin
 		icons.setBackgroundColor(null);
 		icons.setBorder(new Rectangle());
 		icons.setGap(new Point(ICON_GAP, ICON_GAP));
+		int iconsTop = 0;
 		boolean complete = true;
 		int texts = 0;
 		int hidden = 0;
@@ -788,7 +791,10 @@ public class NextUnlocksPlugin extends Plugin
 				BufferedImage image = u.getItem() != null ? itemManager.getImage(u.getItem()) : spriteManager.getSprite(u.getSprite(), 0);
 				// sprites can be missing before the cache is ready; don't keep a tooltip without them
 				complete &= image != null;
-				icons.getChildren().add(new UnlockTileComponent(image, u.getText(), nextLevel, palette.getLevel(), snapshot.locked(u), scale));
+				// pinned cards sit icons in slots; the level is only on them when no line says it
+				UnlockTileComponent tile = new UnlockTileComponent(image, u.getText(), pinnedCard && !iconsOnly ? null : nextLevel,
+					palette.getLevel(), snapshot.locked(u), scale);
+				icons.getChildren().add(pinnedCard ? slot(tile, theme) : tile);
 			}
 			else if (!iconsOnly && !u.hasIcon() && texts < TOOLTIP_ENTRIES)
 			{
@@ -805,7 +811,8 @@ public class NextUnlocksPlugin extends Plugin
 			if (iconsAt > 0)
 			{
 				// a little space under the text above (border is left, top, right, bottom)
-				icons.setBorder(new Rectangle(0, ICON_TOP_PADDING, 0, 0));
+				iconsTop = ICON_TOP_PADDING;
+				icons.setBorder(new Rectangle(0, iconsTop, 0, 0));
 			}
 			lines.add(iconsAt, icons);
 		}
@@ -831,7 +838,8 @@ public class NextUnlocksPlugin extends Plugin
 		}
 
 		int columns = iconsOnly ? Math.min(TOOLTIP_ICON_COLUMNS, icons.getChildren().size()) : TOOLTIP_ICON_COLUMNS;
-		int width = columns * (UnlockTileComponent.size(UnlockTile.WIDTH, scale) + ICON_GAP) - ICON_GAP + PANEL_BORDER;
+		int tileWidth = UnlockTileComponent.width(scale, pinnedCard);
+		int width = columns * (tileWidth + ICON_GAP) - ICON_GAP + PANEL_BORDER;
 		if (!iconsOnly || config.tooltipXp())
 		{
 			// room for the text, which grows with its size and with fonts wider than the game's
@@ -848,6 +856,14 @@ public class NextUnlocksPlugin extends Plugin
 			}
 		}
 		tooltip.setPreferredSize(new Dimension(width, 0));
+		if (pinnedCard && !icons.getChildren().isEmpty())
+		{
+			// center the row of icons, the first row when they wrap
+			int inside = width - 2 * theme.getPadding();
+			int perRow = Math.max(1, (inside + ICON_GAP) / (tileWidth + ICON_GAP));
+			int shown = Math.min(perRow, icons.getChildren().size());
+			icons.setBorder(new Rectangle(Math.max(0, (inside - shown * (tileWidth + ICON_GAP) + ICON_GAP) / 2), iconsTop, 0, 0));
+		}
 
 		TooltipBox box = new TooltipBox(tooltip, theme, updates);
 		if (complete)
@@ -855,6 +871,18 @@ public class NextUnlocksPlugin extends Plugin
 			cache.put(skill, box);
 		}
 		return box;
+	}
+
+	/** An icon in a slot in the card's colors: the bar's background darkened, edged with the card's border. */
+	static UnlockTileComponent slot(UnlockTileComponent tile, CardTheme theme)
+	{
+		Color bar = theme.getBarBackground();
+		// darker than the bar, so the slot looks sunk into the card whatever its colors
+		Color fill = bar == null ? SLOT_FILL : new Color(bar.getRed() * 11 / 20, bar.getGreen() * 11 / 20, bar.getBlue() * 11 / 20,
+			Math.min(bar.getAlpha(), 170));
+		Color border = theme.getBorder();
+		Color edge = border == null ? null : new Color(border.getRed(), border.getGreen(), border.getBlue(), Math.min(border.getAlpha(), 110));
+		return tile.slot(fill, edge, Math.min(theme.getCorner(), 4));
 	}
 
 	/** A goal bar: the card's goal colors, or the skill's color when it has none. */

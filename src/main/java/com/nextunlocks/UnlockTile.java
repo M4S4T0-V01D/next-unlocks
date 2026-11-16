@@ -86,6 +86,10 @@ class UnlockTile extends JComponent
 			g.drawImage(image, (width - w) / 2, (height - h) / 2, w, h, null);
 			g.setComposite(composite);
 		}
+		if (level == null)
+		{
+			return;
+		}
 		FontMetrics fm = g.getFontMetrics();
 		int y = fm.getAscent() - 1;
 		g.setColor(Color.BLACK);
