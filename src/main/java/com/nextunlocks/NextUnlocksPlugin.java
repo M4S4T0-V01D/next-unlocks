@@ -258,6 +258,8 @@ public class NextUnlocksPlugin extends Plugin
 	private volatile Set<String> hiddenSections = Collections.emptySet();
 	/** Replaced whole; written from the panel's thread too. */
 	private volatile List<Goal> goals = Collections.emptyList();
+	/** The XP each goal was set at, for its bar. */
+	private volatile Map<Goal, Integer> goalStarts = Collections.emptyMap();
 	/** Required quests not finished yet, whatever the grey-out setting; client thread. */
 	private Set<Integer> questsToDo = Collections.emptySet();
 	/** Names of finished quests that quest entries name; client thread. */
@@ -303,6 +305,7 @@ public class NextUnlocksPlugin extends Plugin
 		useSkillLooksOnce();
 		loadHiddenSections();
 		goals = Goal.parse(config.goals());
+		goalStarts = Goal.parseStarts(config.goalStarts());
 		panel = new NextUnlocksPanel(repository, skillIconManager, itemManager, spriteManager, this::setSectionHidden, this::toggleGoal,
 			title -> tasks.get(title) != null, this::toggleTaskLater, tasks::items,
 			(skill, item) -> clientThread.invokeLater(() -> askTally(skill, item)));
@@ -419,6 +422,10 @@ public class NextUnlocksPlugin extends Plugin
 		}
 
 		Integer seen = xpSeen.put(skill, event.getXp());
+		if (seen == null)
+		{
+			startGoals();
+		}
 		if (seen != null && event.getXp() > seen)
 		{
 			long now = System.currentTimeMillis();
@@ -623,6 +630,10 @@ public class NextUnlocksPlugin extends Plugin
 			{
 				goals = Goal.parse(config.goals());
 			}
+			if ("goalStarts".equals(event.getKey()))
+			{
+				goalStarts = Goal.parseStarts(config.goalStarts());
+			}
 			clearTooltips();
 			clientThread.invokeLater(() ->
 			{
@@ -732,7 +743,7 @@ public class NextUnlocksPlugin extends Plugin
 			{
 				int nextXp = Experience.getXpForLevel(level + 1);
 				lines.add(new CardLine(theme, font)
-					.left("Next level at:", theme.getNextLevelLabel())
+					.left(pinnedCard ? "Next level:" : "Next level at:", theme.getNextLevelLabel())
 					.right(number.format(nextXp), theme.getNextLevelValue()));
 				CardLine remaining = new CardLine(theme, font)
 					.left("Remaining XP:", theme.getRemainingLabel())
@@ -812,8 +823,9 @@ public class NextUnlocksPlugin extends Plugin
 				.right(number.format(Math.max(0, goalXp - xp)) + " xp", theme.getGoalXp());
 			lines.add(goalLine);
 			updates.add(x -> goalLine.setRight(0, number.format(Math.max(0, goalXp - x)) + " xp"));
-			// the whole way from 0 xp, as the start of a goal isn't kept; no level-up effect, the bar above has it
-			PinBar goalBar = goalBar(theme, 0, goalXp, xp, skillColor);
+			// from the XP the goal was set at; no level-up effect, the bar above has it
+			Integer start = goalStarts.get(goal);
+			PinBar goalBar = goalBar(theme, start != null && start < goalXp ? start : 0, goalXp, xp, skillColor);
 			lines.add(goalBar);
 			updates.add(goalBar::setValue);
 		}
@@ -1328,12 +1340,18 @@ public class NextUnlocksPlugin extends Plugin
 	{
 		if (level > 0)
 		{
-			configManager.setConfiguration(NextUnlocksConfig.GROUP, "combatGoal", level);
+			if (level != config.combatGoal())
+			{
+				configManager.unsetConfiguration(NextUnlocksConfig.GROUP, "combatGoalStart");
+				configManager.setConfiguration(NextUnlocksConfig.GROUP, "combatGoal", level);
+				startGoals();
+			}
 			setCombatPinned(true);
 		}
 		else
 		{
 			configManager.unsetConfiguration(NextUnlocksConfig.GROUP, "combatGoal");
+			configManager.unsetConfiguration(NextUnlocksConfig.GROUP, "combatGoalStart");
 		}
 	}
 
@@ -1980,8 +1998,9 @@ public class NextUnlocksPlugin extends Plugin
 				.left(String.valueOf(goal), theme.getGoalLevel() == null ? theme.getBarFill() : theme.getGoalLevel());
 			lines.add(aiming ? line.right(String.format(Locale.ROOT, "%.2f to go", goal - precise), theme.getGoalXp())
 				: line.right("Reached!", theme.getMet()));
-			// from 3, the lowest combat level there is
-			lines.add(goalBar(theme, 3, goal, Math.min(precise, goal), theme.getBarFill()));
+			// from the exact combat level the goal was set at
+			double start = combatGoalStart();
+			lines.add(goalBar(theme, start < goal ? start : 3, goal, Math.min(precise, goal), theme.getBarFill()));
 		}
 
 		int width = (int) (ComponentConstants.STANDARD_WIDTH * textSize / regular.getSize() * theme.widthScale(textSize))
@@ -2153,6 +2172,47 @@ public class NextUnlocksPlugin extends Plugin
 	{
 		goals = Collections.unmodifiableList(updated);
 		configManager.setConfiguration(NextUnlocksConfig.GROUP, "goals", Goal.format(updated));
+		startGoals();
+	}
+
+	/**
+	 * Keeps the XP each goal was set at, so its bar runs from there to the goal: new goals start at the XP the player has
+	 * now, or when the XP is first seen if they were set logged out, and dropped goals are forgotten. Any thread.
+	 */
+	private synchronized void startGoals()
+	{
+		Map<Goal, Integer> starts = new LinkedHashMap<>();
+		for (Goal goal : goals)
+		{
+			Integer start = goalStarts.containsKey(goal) ? goalStarts.get(goal) : xpSeen.get(goal.getSkill());
+			if (start != null)
+			{
+				starts.put(goal, start);
+			}
+		}
+		if (!starts.equals(goalStarts))
+		{
+			goalStarts = Collections.unmodifiableMap(starts);
+			configManager.setConfiguration(NextUnlocksConfig.GROUP, "goalStarts", Goal.formatStarts(starts));
+		}
+		if (config.combatGoal() > 0 && config.combatGoalStart().isEmpty() && levels.keySet().containsAll(CombatLevel.SKILLS))
+		{
+			configManager.setConfiguration(NextUnlocksConfig.GROUP, "combatGoalStart",
+				String.format(Locale.ROOT, "%.4f", CombatLevel.precise(levels)));
+		}
+	}
+
+	/** Where the combat goal's bar starts: the exact combat level the goal was set at, or 3 when that isn't known. */
+	private double combatGoalStart()
+	{
+		try
+		{
+			return Double.parseDouble(config.combatGoalStart());
+		}
+		catch (NumberFormatException e)
+		{
+			return 3;
+		}
 	}
 
 	/** Announces and drops the skill's goals the level reaches. Client thread. */

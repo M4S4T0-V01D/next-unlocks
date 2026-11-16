@@ -968,8 +968,8 @@ public interface NextUnlocksConfig extends Config
 
 	@ConfigItem(
 		keyName = "pinColorNextLevelLabel",
-		name = "'Next level at:' words",
-		description = "The 'Next level at:' label",
+		name = "'Next level:' words",
+		description = "The 'Next level:' label",
 		position = 207,
 		section = pinColorSection
 	)
@@ -1585,6 +1585,28 @@ public interface NextUnlocksConfig extends Config
 		hidden = true
 	)
 	default String pinnedTasks()
+	{
+		return "";
+	}
+
+	@ConfigItem(
+		keyName = "goalStarts",
+		name = "",
+		description = "The XP each goal was set at, so its bar runs from there",
+		hidden = true
+	)
+	default String goalStarts()
+	{
+		return "";
+	}
+
+	@ConfigItem(
+		keyName = "combatGoalStart",
+		name = "",
+		description = "The exact combat level the combat goal was set at",
+		hidden = true
+	)
+	default String combatGoalStart()
 	{
 		return "";
 	}
