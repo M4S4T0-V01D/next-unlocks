@@ -247,6 +247,18 @@ public interface NextUnlocksConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "combatTop",
+		name = "Combat level at top",
+		description = "Show your combat level and a bar to the next level at the top middle of the screen",
+		position = 21,
+		section = tooltipSection
+	)
+	default boolean combatTop()
+	{
+		return false;
+	}
+
 	/** Looks for the pinned cards, from the RuneLite default through the 90s to modern. */
 	enum CardStyle
 	{

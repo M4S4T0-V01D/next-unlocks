@@ -119,6 +119,7 @@ public class NextUnlocksPlugin extends Plugin
 	private static final String REMOVE_GOAL = "Remove goal";
 	private static final String SET_GOAL = "Set goal";
 	private static final String COMBAT_LEVEL = "Combat level";
+	private static final String HIDE_TOP = "Hide from top";
 	/** Upcoming unlock levels offered in the Set goal menu. */
 	private static final int GOAL_CHOICES = 3;
 	private static final int MESSAGE_ENTRIES = 3;
@@ -192,6 +193,9 @@ public class NextUnlocksPlugin extends Plugin
 	private PinnedOverlay pinnedOverlay;
 
 	@Inject
+	private CombatTopOverlay combatTopOverlay;
+
+	@Inject
 	private ConfigManager configManager;
 
 	@Inject
@@ -234,6 +238,7 @@ public class NextUnlocksPlugin extends Plugin
 	private final TaskRepository tasks = new TaskRepository();
 	private final Map<String, TooltipBox> taskCache = new ConcurrentHashMap<>();
 	private volatile TooltipBox combatCache;
+	private volatile TooltipBox plateCache;
 	/** States of the pinned quests and the quests they need, by wiki title; client thread. */
 	private Map<String, QuestState> questStates = Collections.emptyMap();
 	/** Replaced whole, for the panel's menus. */
@@ -311,6 +316,7 @@ public class NextUnlocksPlugin extends Plugin
 		clientToolbar.addNavigation(navButton);
 		overlayManager.add(tooltipOverlay);
 		overlayManager.add(pinnedOverlay);
+		overlayManager.add(combatTopOverlay);
 		overlayManager.add(menu);
 		mouseManager.registerMouseListener(menu);
 		mouseManager.registerMouseWheelListener(menu);
@@ -340,6 +346,7 @@ public class NextUnlocksPlugin extends Plugin
 	{
 		overlayManager.remove(tooltipOverlay);
 		overlayManager.remove(pinnedOverlay);
+		overlayManager.remove(combatTopOverlay);
 		keyManager.unregisterKeyListener(menu);
 		mouseManager.unregisterMouseWheelListener(menu);
 		mouseManager.unregisterMouseListener(menu);
@@ -428,6 +435,7 @@ public class NextUnlocksPlugin extends Plugin
 			// levels and combat level are on the quest and diary cards
 			taskCache.clear();
 			combatCache = null;
+			plateCache = null;
 		}
 		for (Map<Skill, TooltipBox> cache : Arrays.asList(tooltipCache, pinnedCache))
 		{
@@ -659,6 +667,7 @@ public class NextUnlocksPlugin extends Plugin
 		pinnedCache.clear();
 		taskCache.clear();
 		combatCache = null;
+		plateCache = null;
 	}
 
 	private LayoutableRenderableEntity tooltip(Skill skill, boolean pinnedCard)
@@ -1058,6 +1067,15 @@ public class NextUnlocksPlugin extends Plugin
 		}
 		if (pinnedOverlay.combatAt(mouse.getX(), mouse.getY()) && !hasPinEntry())
 		{
+			addCombatEntries();
+		}
+		if (combatTopOverlay.contains(mouse.getX(), mouse.getY()) && !hasPinEntry())
+		{
+			client.getMenu().createMenuEntry(1)
+				.setOption(HIDE_TOP)
+				.setTarget(ColorUtil.wrapWithColorTag(COMBAT_LEVEL, config.colorNext()))
+				.setType(MenuAction.RUNELITE)
+				.onClick(e -> configManager.setConfiguration(NextUnlocksConfig.GROUP, "combatTop", false));
 			addCombatEntries();
 		}
 		String task = pinnedOverlay.taskAt(mouse.getX(), mouse.getY());
@@ -1980,6 +1998,45 @@ public class NextUnlocksPlugin extends Plugin
 		if (icon != null || !theme.isSkillIcon())
 		{
 			combatCache = box;
+		}
+		return box;
+	}
+
+	/** The combat level plate for the top of the screen: icon, level and a thin bar to the next level. Client thread. */
+	LayoutableRenderableEntity combatPlate()
+	{
+		if (levels.isEmpty())
+		{
+			return null;
+		}
+		TooltipBox cached = plateCache;
+		if (cached != null)
+		{
+			return cached;
+		}
+		Palette palette = snapshot().getPalette();
+		CardTheme theme = CardTheme.pinned(look(CombatLevel.LOOK), palette, theme(palette, false, null), null, true);
+		Font font = theme.font(config.tooltipTextSize());
+		int level = CombatLevel.level(levels);
+		double precise = CombatLevel.precise(levels);
+
+		PanelComponent card = new PanelComponent();
+		BufferedImage icon = theme.isSkillIcon() ? spriteManager.getSprite(SpriteID.SideIcons.COMBAT, 0) : null;
+		CardLine line = new CardLine(theme, font, true)
+			.icon(icon)
+			.left(COMBAT_LEVEL, theme.getSkillName())
+			.right(String.valueOf(level), theme.getLevelValue());
+		card.getChildren().add(line);
+		if (level < Experience.MAX_COMBAT_LEVEL)
+		{
+			card.getChildren().add(new PinBar(theme, level, level + 1, precise, theme.getBarFill(), theme.getBarFill2(),
+				theme.getBarBackground(), null));
+		}
+		card.setPreferredSize(new Dimension(line.minWidth() + 2 * theme.getPadding(), 0));
+		TooltipBox box = new TooltipBox(card, theme, Collections.emptyList());
+		if (icon != null || !theme.isSkillIcon())
+		{
+			plateCache = box;
 		}
 		return box;
 	}

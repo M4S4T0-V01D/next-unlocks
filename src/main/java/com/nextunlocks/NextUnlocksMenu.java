@@ -218,6 +218,7 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 	private final List<Choice> effects = new ArrayList<>();
 	private final List<Toggle> goalToggles = new ArrayList<>();
 	private final List<Toggle> pinToggles = new ArrayList<>();
+	private final List<Toggle> combatToggles = new ArrayList<>();
 	private final List<Toggle> options = new ArrayList<>();
 	private final List<Toggle> guide = new ArrayList<>();
 	private final Choice members;
@@ -310,6 +311,8 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 
 		pinToggles.add(new Toggle("Skill and level", "pinnedLevel", config::pinnedLevel));
 		pinToggles.add(new Toggle("Goal", "pinnedGoal", config::pinnedGoal));
+		combatToggles.add(new Toggle("Pinned card", "pinnedCombat", config::pinnedCombat));
+		combatToggles.add(new Toggle("Top of screen", "combatTop", config::combatTop));
 
 		options.add(new Toggle("Quests", "showQuests", config::showQuests));
 		options.add(new Toggle("Diaries", "showDiaries", config::showDiaries));
@@ -824,7 +827,9 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		button(g, mouse, out, new Rectangle(left, cy + 2, inner, 18), "Pin a quest, diary or item...", false,
 			plugin::askPinTask);
 		cy += 26;
-		cy = heading(g, "Skill cards show", left, cy);
+		cy = heading(g, "Combat level", left, cy);
+		cy = toggles(g, mouse, out, combatToggles, left, cy, inner, 2);
+		cy = heading(g, "Skill cards show", left, cy + 2);
 		return toggles(g, mouse, out, pinToggles, left, cy, inner, 2);
 	}
 
