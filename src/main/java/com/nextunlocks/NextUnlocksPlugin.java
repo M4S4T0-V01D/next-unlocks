@@ -933,6 +933,50 @@ public class NextUnlocksPlugin extends Plugin
 		configManager.setConfiguration(NextUnlocksConfig.GROUP, "skillLooks", Look.writeList(list));
 	}
 
+	/** Change several look settings at once, for every card when the cards are null, or only for those cards. */
+	synchronized void setLooks(String cards, Map<String, String> values)
+	{
+		if (cards == null)
+		{
+			values.forEach((key, value) -> configManager.setConfiguration(NextUnlocksConfig.GROUP, key, value));
+			return;
+		}
+		Map<String, Map<String, String>> list = Look.readList(config.skillLooks());
+		Map<String, String> own = list.computeIfAbsent(cards, k -> new LinkedHashMap<>());
+		values.forEach((key, value) -> own.put(key, Look.clean(value)));
+		configManager.setConfiguration(NextUnlocksConfig.GROUP, "skillLooks", Look.writeList(list));
+	}
+
+	/**
+	 * The colors the cards show with their style's own colors, under the own-colors settings' keys, so own colors can start
+	 * from what the card looks like now.
+	 */
+	Map<String, String> styleColors(String cards)
+	{
+		Map<String, String> own = cards == null ? null : Look.readList(config.skillLooks()).get(cards);
+		Map<String, String> overrides = own == null ? new LinkedHashMap<>() : new LinkedHashMap<>(own);
+		overrides.put("pinCustomColors", "false");
+		Look look = new Look(config, overrides);
+		Palette palette = snapshot().getPalette();
+		boolean combat = CombatLevel.LOOK.equals(cards);
+		Skill skill = null;
+		if (cards != null && !combat)
+		{
+			try
+			{
+				skill = Skill.valueOf(cards);
+			}
+			catch (IllegalArgumentException e)
+			{
+				skill = null;
+			}
+		}
+		CardTheme theme = CardTheme.pinned(look, palette, theme(palette, false, null), skill, combat);
+		Map<String, String> colors = new LinkedHashMap<>();
+		CardTheme.ownColors(theme).forEach((key, color) -> colors.put(key, Look.format(color)));
+		return colors;
+	}
+
 	/** Put the cards back to the look the rest have. */
 	synchronized void resetLook(String cards)
 	{

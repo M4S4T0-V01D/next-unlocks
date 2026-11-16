@@ -248,4 +248,56 @@ public class LooksTest
 			}
 		}
 	}
+
+	@Test
+	public void styleColorsComeBackAsOwnColors()
+	{
+		for (String style : new String[]{"SKILL", "NEON", "PARCHMENT", "CLASSIC"})
+		{
+			CardTheme styled = pinned(Skill.MAGIC, "pinStyle", style);
+			java.util.List<String> pairs = new java.util.ArrayList<>(java.util.Arrays.asList("pinStyle", style, "pinCustomColors", "true"));
+			CardTheme.ownColors(styled).forEach((key, color) ->
+			{
+				assertTrue(key, Look.KEYS.containsKey(key));
+				pairs.add(key);
+				pairs.add(Look.format(color));
+			});
+			CardTheme own = pinned(Skill.MAGIC, pairs.toArray(new String[0]));
+			assertEquals(style, styled.getBackground(), own.getBackground());
+			assertEquals(style, styled.getBorder(), own.getBorder());
+			assertEquals(style, styled.getSkillName(), own.getSkillName());
+			assertEquals(style, styled.getLevelValue(), own.getLevelValue());
+			assertEquals(style, styled.getUnlock(), own.getUnlock());
+			assertEquals(style, styled.getBarFill(), own.getBarFill());
+			assertEquals(style, styled.getBarText(), own.getBarText());
+		}
+	}
+
+	@Test
+	public void menuColourPartsAreEveryColorSetting()
+	{
+		java.util.Set<String> parts = new java.util.HashSet<>();
+		for (String[] part : NextUnlocksMenu.COLOUR_PARTS)
+		{
+			assertTrue(part[0], Look.KEYS.get(part[0]).apply(CONFIG) instanceof Color);
+			parts.add(part[0]);
+		}
+		for (String key : Look.KEYS.keySet())
+		{
+			assertEquals(key, key.startsWith("pinColor"), parts.contains(key));
+		}
+	}
+
+	@Test
+	public void aCardsOwnColorsGoIntoItsPreset()
+	{
+		Color mine = new Color(12, 34, 56, 78);
+		Map<String, String> own = new HashMap<>();
+		own.put("pinCustomColors", "true");
+		own.put("pinColorSkillName", Look.format(mine));
+		Map<String, String> preset = Look.decode(Look.encode(new Look(CONFIG, own).values()));
+		assertEquals("true", preset.get("pinCustomColors"));
+		assertEquals(mine, new Look(CONFIG, preset).get("pinColorSkillName"));
+		assertEquals(mine, pinned(Skill.MAGIC, "pinCustomColors", "true", "pinColorSkillName", Look.format(mine)).getSkillName());
+	}
 }

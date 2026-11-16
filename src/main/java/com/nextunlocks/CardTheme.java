@@ -3,6 +3,8 @@ package com.nextunlocks;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.font.FontRenderContext;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Value;
 import net.runelite.api.Skill;
@@ -354,6 +356,55 @@ class CardTheme
 			}
 		}
 		return skill;
+	}
+
+	/**
+	 * The colors a card shows, under the keys of the own-colors settings, for starting own colors from a style. Parts the
+	 * style leaves to the skill's color are left out; a missing border or goal bar is clear, which those settings read as none.
+	 */
+	static Map<String, Color> ownColors(CardTheme t)
+	{
+		Map<String, Color> c = new LinkedHashMap<>();
+		Color none = new Color(0, 0, 0, 0);
+		put(c, "pinColorBackground", t.background);
+		put(c, "pinColorBackground2", t.background2);
+		c.put("pinColorBorder", t.border == null ? none : t.border);
+		put(c, "pinColorHeaderBand", t.headerBand);
+		put(c, "pinColorSkillName", t.skillName);
+		put(c, "pinColorLevelLabel", t.levelLabel);
+		put(c, "pinColorLevelValue", t.levelValue);
+		put(c, "pinColorXpLabel", t.xpLabel);
+		put(c, "pinColorXpValue", t.xpValue);
+		put(c, "pinColorNextLevelLabel", t.nextLevelLabel);
+		put(c, "pinColorNextLevelValue", t.nextLevelValue);
+		put(c, "pinColorRemainingLabel", t.remainingLabel);
+		put(c, "pinColorRemainingValue", t.remainingValue);
+		put(c, "pinColorNextUnlockLabel", t.nextUnlockLabel);
+		put(c, "pinColorNextUnlockLevel", t.nextUnlockLevel);
+		put(c, "pinColorNextUnlockXp", t.nextUnlockXp);
+		put(c, "pinColorUnlock", t.unlock);
+		put(c, "pinColorMore", t.more);
+		put(c, "pinColorGoalLabel", t.goalLabel);
+		put(c, "pinColorGoalLevel", t.goalLevel);
+		put(c, "pinColorGoalXp", t.goalXp);
+		c.put("pinColorGoalBar", t.goalBar == null ? none : t.goalBar);
+		c.put("pinColorGoalBar2", t.goalBar2 == null ? none : t.goalBar2);
+		put(c, "pinColorTaskTitle", t.taskTitle);
+		put(c, "pinColorMet", t.met);
+		put(c, "pinColorUnmet", t.unmet);
+		put(c, "pinColorBarFill", t.barFill);
+		put(c, "pinColorBarFill2", t.barFill2);
+		put(c, "pinColorBarBackground", t.barBackground);
+		put(c, "pinColorBarText", t.barText);
+		return c;
+	}
+
+	private static void put(Map<String, Color> colors, String key, Color color)
+	{
+		if (color != null)
+		{
+			colors.put(key, color);
+		}
 	}
 
 	/** The opacity setting's default, where opaque looks are fully solid. */

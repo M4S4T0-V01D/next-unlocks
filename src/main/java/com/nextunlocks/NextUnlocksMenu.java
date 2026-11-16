@@ -16,7 +16,9 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BooleanSupplier;
+import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import javax.inject.Inject;
@@ -91,6 +93,48 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		new Color(255, 255, 255, 220),
 	};
 
+	/** colours to pick a card part's from: greys, the game's text colours, then brights and darks */
+	static final Color[] SWATCHES = {
+		new Color(0xffffff), new Color(0xc8c8c8), new Color(0x8c8c8c), new Color(0x505050), new Color(0x282828), new Color(0x000000),
+		new Color(0xff981f), new Color(0xffff00), new Color(0xffb83f), new Color(0xd8c38f), new Color(0x8a6b3d), new Color(0x3e3529),
+		new Color(0xff3030), new Color(0xff8040), new Color(0x40ff40), new Color(0x00c8c8), new Color(0x4090ff), new Color(0xc060ff),
+		new Color(0x7f0000), new Color(0x7f3f00), new Color(0x006000), new Color(0x005060), new Color(0x10206f), new Color(0x4a1a60),
+	};
+
+	/** the card parts own colours can change, as {setting, name} in the order they sit on a card */
+	static final String[][] COLOUR_PARTS = {
+		{"pinColorBackground", "Background"},
+		{"pinColorBackground2", "Background 2"},
+		{"pinColorBorder", "Border"},
+		{"pinColorHeaderBand", "Title band"},
+		{"pinColorSkillName", "Skill name"},
+		{"pinColorLevelLabel", "'Level' word"},
+		{"pinColorLevelValue", "Level number"},
+		{"pinColorXpLabel", "'XP:' word"},
+		{"pinColorXpValue", "XP number"},
+		{"pinColorNextLevelLabel", "'Next level:' words"},
+		{"pinColorNextLevelValue", "Next level XP"},
+		{"pinColorRemainingLabel", "'Remaining XP:' words"},
+		{"pinColorRemainingValue", "Remaining XP"},
+		{"pinColorNextUnlockLabel", "'Next unlock:' words"},
+		{"pinColorNextUnlockLevel", "Next unlock level"},
+		{"pinColorNextUnlockXp", "Next unlock XP"},
+		{"pinColorUnlock", "Unlocks"},
+		{"pinColorMore", "'+N more'"},
+		{"pinColorGoalLabel", "'Goal:' word"},
+		{"pinColorGoalLevel", "Goal level"},
+		{"pinColorGoalXp", "Goal XP"},
+		{"pinColorGoalBar", "Goal bar"},
+		{"pinColorGoalBar2", "Goal bar 2"},
+		{"pinColorTaskTitle", "Quest/diary name"},
+		{"pinColorMet", "Requirement met"},
+		{"pinColorUnmet", "Requirement not met"},
+		{"pinColorBarFill", "Bar fill"},
+		{"pinColorBarFill2", "Bar fill 2"},
+		{"pinColorBarBackground", "Bar background"},
+		{"pinColorBarText", "Bar text"},
+	};
+
 	/** the pinned cards' look, which the Looks tab's reset puts back, with every skill's own */
 	static final String[] LOOK_KEYS;
 
@@ -125,6 +169,7 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		STYLE("Style"),
 		FRAME("Frame"),
 		EFFECTS("Effects"),
+		COLOURS("Colours"),
 		PRESETS("Presets");
 
 		final String label;
@@ -157,15 +202,23 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		final int min;
 		final int max;
 		final IntSupplier value;
+		/** what a drag does instead of setting {@code key}, or null */
+		final IntConsumer apply;
 		Rectangle track;
 
 		Slider(String name, String key, int min, int max, IntSupplier value)
+		{
+			this(name, key, min, max, value, null);
+		}
+
+		Slider(String name, String key, int min, int max, IntSupplier value, IntConsumer apply)
 		{
 			this.name = name;
 			this.key = key;
 			this.min = min;
 			this.max = max;
 			this.value = value;
+			this.apply = apply;
 		}
 	}
 
@@ -216,6 +269,7 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 	private final List<Choice> frames = new ArrayList<>();
 	private final Slider opacity;
 	private final List<Choice> effects = new ArrayList<>();
+	private final List<Slider> channels = new ArrayList<>();
 	private final List<Toggle> goalToggles = new ArrayList<>();
 	private final List<Toggle> pinToggles = new ArrayList<>();
 	private final List<Toggle> combatToggles = new ArrayList<>();
@@ -234,6 +288,8 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 	private volatile String target;
 	private volatile boolean choosingTarget;
 	private volatile LookTab lookTab = LookTab.STYLE;
+	/** the {@link #COLOUR_PARTS} part the Colours tab changes */
+	private volatile int colourPart;
 	/** each tab's height as last drawn, the window's size before it is drawn again */
 	private final int[] heights = new int[Tab.values().length];
 	// the reset asks for a second click within a few seconds
@@ -304,6 +360,17 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		effects.add(lookChoice("XP popup", "pinXpPopup", toggle));
 		effects.add(lookChoice("Bar pulse", "pinXpPulse", toggle));
 		effects.add(lookChoice("Level-up flash", "pinLevelUp", toggle));
+		String[] channel = {"Red", "Green", "Blue", "Opacity"};
+		for (int i = 0; i < channel.length; i++)
+		{
+			int shift = i == 3 ? 24 : 16 - i * 8;
+			channels.add(new Slider(channel[i], null, 0, 255, () -> (partColour().getRGB() >>> shift) & 0xff, v ->
+			{
+				String key = COLOUR_PARTS[colourPart][0];
+				int rgb = (partColour().getRGB() & ~(0xff << shift)) | (v << shift);
+				clientThread.invoke(() -> paint(key, new Color(rgb, true)));
+			}));
+		}
 
 		goalToggles.add(new Toggle("Infoboxes", "goalInfoboxes", config::goalInfoboxes));
 		goalToggles.add(new Toggle("Almost there", "almostThere", config::almostThere));
@@ -600,11 +667,11 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 						slider(g, mouse, out, s, left, cy, inner);
 						cy += 20;
 					}
-					cy = toggles(g, mouse, out, lookToggles, left, cy, inner, 2);
+					cy = toggles(g, mouse, out, lookToggles.subList(1, 3), left, cy, inner, 2);
 				}
 				else
 				{
-					cy = toggles(g, mouse, out, lookToggles.subList(0, 2), left, cy, inner, 2);
+					cy = toggles(g, mouse, out, lookToggles.subList(1, 2), left, cy, inner, 2);
 				}
 				break;
 			case FRAME:
@@ -618,6 +685,9 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 				text(g, "Skill's own picks sparks, leaves, bubbles and more to suit", left, cy + 10, GREY);
 				g.setFont(FontManager.getRunescapeFont());
 				cy += 16;
+				break;
+			case COLOURS:
+				cy = drawColours(g, mouse, out, left, cy, inner, skill);
 				break;
 			default:
 				return drawPresets(g, mouse, out, left, cy, inner, skill);
@@ -679,6 +749,102 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 			out.add(new Hit(r, () -> set("pinGlowColor", c), null));
 		}
 		return cy + 20;
+	}
+
+	/** the cards' own colours: a part to change, swatches, and its red, green, blue and opacity */
+	private int drawColours(Graphics2D g, Point mouse, List<Hit> out, int left, int cy, int inner, String skill)
+	{
+		cy = toggles(g, mouse, out, lookToggles.subList(0, 1), left, cy, inner, 2);
+		int part = Math.floorMod(colourPart, COLOUR_PARTS.length);
+		text(g, "Part", left, cy + 13, ORANGE);
+		Rectangle back = new Rectangle(left + LABEL, cy + 1, 17, 16);
+		Rectangle next = new Rectangle(left + inner - 17, cy + 1, 17, 16);
+		button(g, mouse, out, back, "<", false, () -> colourPart = Math.floorMod(colourPart - 1, COLOUR_PARTS.length));
+		button(g, mouse, out, next, ">", false, () -> colourPart = Math.floorMod(colourPart + 1, COLOUR_PARTS.length));
+		Rectangle field = new Rectangle(back.x + back.width + 3, cy + 1, next.x - back.x - back.width - 6, 16);
+		bevel(g, field, INNER, DARK, LIGHT);
+		String shown = fit(g, COLOUR_PARTS[part][1], field.width - 6);
+		text(g, shown, field.x + (field.width - g.getFontMetrics().stringWidth(shown)) / 2, cy + 13, WHITE);
+		out.add(new Hit(field, () -> colourPart = Math.floorMod(colourPart + 1, COLOUR_PARTS.length), null));
+		cy += 20;
+
+		String key = COLOUR_PARTS[part][0];
+		Color current = partColour();
+		int columns = SWATCHES.length / 2;
+		int sw = (inner - LABEL - (columns - 1) * 3) / columns;
+		text(g, "Colour", left, cy + 13, ORANGE);
+		// the part's colour as it is now, see-through parts over a dark check so their opacity shows
+		Rectangle now = new Rectangle(left, cy + 18, LABEL - 12, 14);
+		bevel(g, now, DARK, DARK, LIGHT);
+		g.setColor(GREY);
+		for (int x = now.x + 1; x < now.x + now.width - 1; x += 8)
+		{
+			g.fillRect(x, now.y + 1 + ((x - now.x) / 8 % 2) * 6, Math.min(4, now.x + now.width - 1 - x), 6);
+		}
+		g.setColor(current);
+		g.fillRect(now.x + 1, now.y + 1, now.width - 2, now.height - 2);
+		for (int i = 0; i < SWATCHES.length; i++)
+		{
+			Color c = SWATCHES[i];
+			Rectangle r = new Rectangle(left + LABEL + (i % columns) * (sw + 3), cy + 2 + (i / columns) * 17, sw, 14);
+			boolean picked = (current.getRGB() & 0xffffff) == (c.getRGB() & 0xffffff);
+			bevel(g, r, c, picked ? WHITE : LIGHT, picked ? WHITE : DARK);
+			if (picked || contains(r, mouse))
+			{
+				g.setColor(WHITE);
+				g.drawRect(r.x - 1, r.y - 1, r.width + 1, r.height + 1);
+			}
+			out.add(new Hit(r, () ->
+			{
+				// keep how see-through the part is, unless it was hidden
+				int alpha = partColour().getAlpha();
+				paint(key, new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha == 0 ? 255 : alpha));
+			}, null));
+		}
+		cy += 2 * 17 + 4;
+		for (Slider s : channels)
+		{
+			slider(g, mouse, out, s, left, cy, inner);
+			cy += 20;
+		}
+		button(g, mouse, out, new Rectangle(left, cy + 2, inner, 18), "Start from the style's colours", false, () ->
+		{
+			Map<String, String> colors = plugin.styleColors(target);
+			colors.put("pinCustomColors", "true");
+			plugin.setLooks(target, colors);
+		});
+		cy += 24;
+		g.setFont(FontManager.getRunescapeSmallFont());
+		text(g, (skill == null ? "Sets every card without its own look" : "Sets only " + cardsName(skill) + "'s cards")
+			+ ", kept in presets", left, cy + 10, GREY);
+		text(g, "Opacity 0 hides the border and goal bars", left, cy + 22, GREY);
+		g.setFont(FontManager.getRunescapeFont());
+		return cy + 28;
+	}
+
+	/** the colour the Colours tab's part has on the cards being changed */
+	private Color partColour()
+	{
+		Color c = plugin.look(target).get(COLOUR_PARTS[Math.floorMod(colourPart, COLOUR_PARTS.length)][0]);
+		return c == null ? Color.BLACK : c;
+	}
+
+	/**
+	 * Give a part of the cards being changed a colour. When they don't use own colours yet, they start from their style's,
+	 * so only this part changes.
+	 */
+	private void paint(String key, Color color)
+	{
+		String cards = target;
+		if (plugin.look(cards).<Boolean>get("pinCustomColors"))
+		{
+			set(key, color);
+			return;
+		}
+		Map<String, String> colors = plugin.styleColors(cards);
+		colors.put(key, Look.format(color));
+		colors.put("pinCustomColors", "true");
+		plugin.setLooks(cards, colors);
 	}
 
 	/** saved looks: load one onto the cards being changed, rename or delete it, or save the current one */
@@ -1042,7 +1208,14 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		if (v != dragged)
 		{
 			dragged = v;
-			set(s.key, v);
+			if (s.apply != null)
+			{
+				s.apply.accept(v);
+			}
+			else
+			{
+				set(s.key, v);
+			}
 		}
 	}
 
