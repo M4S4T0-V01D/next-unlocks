@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Builds src/main/resources/com/nextunlocks/unlocks.json from the OSRS Wiki
-"<Skill>/Level up table" pages. Run with: python3 -I tools/fetch_unlocks.py
+"<Skill>/Level up table" pages. Run with: python3 -I tools/fetch_unlocks.py [--refresh]
+
+All 24 tables come in one API request, and every answer is cached in tools/.cache/unlocks, so a re-run asks the
+wiki for nothing; --refresh fetches again.
 
 Entries that picture an item get its item ID ("item"), and spells and prayers get their
 game sprite ID ("sprite"), so the panel can draw them with the game's own images. Sprite
@@ -10,6 +13,7 @@ Wiki content is licensed CC BY-NC-SA 3.0 (https://oldschool.runescape.wiki).
 """
 import datetime
 import glob
+import importlib.util
 import json
 import os
 import pathlib
@@ -17,9 +21,13 @@ import re
 import shutil
 import subprocess
 import sys
-import time
-import urllib.parse
-import urllib.request
+
+HERE = pathlib.Path(__file__).resolve().parent
+_spec = importlib.util.spec_from_file_location("kitwiki", HERE / "kitwiki.py")
+wiki = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(wiki)
+wiki.setup("next-unlocks data builder (github.com/M4S4T0-V01D/next-unlocks)", HERE / ".cache" / "unlocks")
+REFRESH = "--refresh" in sys.argv
 
 SKILLS = [
     "Attack", "Strength", "Defence", "Ranged", "Prayer", "Magic", "Runecraft",
@@ -27,9 +35,7 @@ SKILLS = [
     "Fletching", "Slayer", "Hunter", "Mining", "Smithing", "Fishing", "Cooking",
     "Firemaking", "Woodcutting", "Farming", "Sailing",
 ]
-API = "https://oldschool.runescape.wiki/api.php"
-USER_AGENT = "next-unlocks-runelite-plugin data builder"
-OUT = pathlib.Path(__file__).resolve().parent.parent / "src/main/resources/com/nextunlocks/unlocks.json"
+OUT = HERE.parent / "src/main/resources/com/nextunlocks/unlocks.json"
 
 PARAM_RE = re.compile(r"^\|(freeplay|members)(\d+)\s*=", re.M)
 LINK_TEMPLATE_RE = re.compile(r"\{\{(?:plink|plinkp|ilink)\|([^}]*)\}\}", re.I)
@@ -42,14 +48,10 @@ PLINK_RE = re.compile(r"\{\{(?:plink|plinkp|ilink)\|([^}]*)\}\}", re.I)
 SPRITE_GROUPS = ["Magicon", "Magicon2", "LunarMagicOn", "MagicNecroOn", "Prayeron"]
 
 
-def fetch(skill):
-    query = urllib.parse.urlencode({
-        "action": "parse", "page": f"{skill}/Level up table", "prop": "wikitext",
-        "format": "json", "formatversion": "2", "redirects": "1",
-    })
-    req = urllib.request.Request(f"{API}?{query}", headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return json.load(resp)["parse"]["wikitext"]
+def tables():
+    """{skill: wikitext of its level up table}, one cached request for all of them."""
+    pages = wiki.wikitext([f"{skill}/Level up table" for skill in SKILLS], REFRESH)
+    return {skill: pages.get(f"{skill}/Level up table") for skill in SKILLS}
 
 
 def first_target(raw):
@@ -146,47 +148,50 @@ def parse(wikitext):
     return [e for e in entries if not e.get("_drop") and e["text"]]
 
 
-def api(params):
-    query = urllib.parse.urlencode({"format": "json", **params})
-    req = urllib.request.Request(f"{API}?{query}", headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return json.load(resp)
-
-
 def norm(title):
     title = title.replace("_", " ").strip()
     return (title[0].upper() + title[1:]) if title else title
 
 
+def item_rows():
+    """The infobox_item bucket's page names and item IDs, cached."""
+    def build():
+        rows, offset = [], 0
+        while True:
+            query = (f"bucket('infobox_item').select('page_name','page_name_sub','item_id')"
+                     f".limit(5000).offset({offset}).run()")
+            batch = wiki.api({"action": "bucket", "query": query})["bucket"]
+            rows += batch
+            if len(batch) < 5000:
+                return rows
+            offset += 5000
+    return wiki.cached("bucket-infobox_item.json", REFRESH, build)
+
+
 def item_ids():
     """Wiki page (and "Page#Version") -> item ID, from the infobox_item bucket."""
-    ids, offset = {}, 0
-    while True:
-        query = (f"bucket('infobox_item').select('page_name','page_name_sub','item_id')"
-                 f".limit(5000).offset({offset}).run()")
-        rows = api({"action": "bucket", "query": query})["bucket"]
-        for row in rows:
-            item = next((int(i) for i in row.get("item_id") or [] if i.isdigit()), None)
-            if item is None:
-                continue
-            page, sub = norm(row["page_name"]), norm(row.get("page_name_sub") or row["page_name"])
-            ids.setdefault(sub, item)
-            # a page with versions gets the first version listed, unless it has an unversioned row
-            if sub == page:
-                ids[page] = item
-            else:
-                ids.setdefault(page, item)
-        if len(rows) < 5000:
-            return ids
-        offset += 5000
-        time.sleep(0.5)
+    ids = {}
+    for row in item_rows():
+        item = next((int(i) for i in row.get("item_id") or [] if i.isdigit()), None)
+        if item is None:
+            continue
+        page, sub = norm(row["page_name"]), norm(row.get("page_name_sub") or row["page_name"])
+        ids.setdefault(sub, item)
+        # a page with versions gets the first version listed, unless it has an unversioned row
+        if sub == page:
+            ids[page] = item
+        else:
+            ids.setdefault(page, item)
+    return ids
 
 
 def redirects(titles):
     """Wiki title -> redirect target, for titles that are redirects."""
     out, titles = {}, sorted(titles)
     for i in range(0, len(titles), 50):
-        data = api({"action": "query", "titles": "|".join(titles[i:i + 50]), "redirects": "1", "formatversion": "2"})
+        batch = titles[i:i + 50]
+        data = wiki.cached(f"redirects-{wiki.key(batch)}.json", REFRESH,
+                           lambda: wiki.api({"action": "query", "titles": "|".join(batch), "redirects": "1"}))
         query = data.get("query", {})
         steps = {norm(n["from"]): norm(n["to"]) for n in query.get("normalized", [])}
         for r in query.get("redirects", []):
@@ -197,7 +202,6 @@ def redirects(titles):
                 target = steps.get(target, target)
             if target != t:
                 out[t] = target
-        time.sleep(0.5)
     return out
 
 
@@ -251,15 +255,17 @@ def add_icons(skills):
 
 def main():
     skills = {}
-    for skill in SKILLS:
+    for skill, text in tables().items():
+        if not text or text.lstrip().upper().startswith("#REDIRECT"):
+            print(f"{skill}: no level up table", file=sys.stderr)
+            continue
         try:
-            entries = parse(fetch(skill))
+            entries = parse(text)
         except Exception as e:  # keep going so one broken page does not block a refresh
             print(f"{skill}: failed ({e})", file=sys.stderr)
             continue
         skills[skill.upper()] = entries
         print(f"{skill}: {len(entries)} entries")
-        time.sleep(0.5)
     if len(skills) != len(SKILLS):
         sys.exit("some skills failed; not writing output")
     add_icons(skills)

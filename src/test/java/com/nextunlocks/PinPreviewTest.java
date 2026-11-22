@@ -78,7 +78,8 @@ public class PinPreviewTest
 
 	/**
 	 * The README's labeled galleries, PIN_GALLERY=folder: every skill's own card, every style, every frame and every trim
-	 * at normal and large size; PIN_ART is the folder of game icons the item trims use.
+	 * at normal and large size; PIN_ART is the folder of game icons the item trims use
+	 * (tools/fetch_art.py fills tools/.cache/art with them through the wiki API).
 	 */
 	@Test
 	public void galleries() throws java.io.IOException

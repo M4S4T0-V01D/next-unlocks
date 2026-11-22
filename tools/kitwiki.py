@@ -130,3 +130,31 @@ def full(title, refresh=False):
 def module(title, refresh=False):
     """The source of a Lua data module page, e.g. "Module:Skill calc/Mining/data"; parse with luadata.parse."""
     return wikitext([title], refresh).get(title, "")
+
+
+def images(names, folder, refresh=False):
+    """Saves the wiki's File:<name> images (e.g. "Abyssal_whip.png") in folder and gives their paths. Files already
+    there are kept, and the rest are looked up 50 per API request (imageinfo), so a re-run asks the wiki for nothing."""
+    folder.mkdir(parents=True, exist_ok=True)
+    paths = {name: folder / name for name in names}
+    missing = [n for n, path in paths.items() if refresh or not path.exists()]
+    for i in range(0, len(missing), 50):
+        batch = missing[i:i + 50]
+        data = api({"action": "query", "prop": "imageinfo", "iiprop": "url",
+                    "titles": "|".join("File:" + n for n in batch)})
+        query = data["query"]
+        # the API answers with normalized titles ("File:Abyssal whip.png"); map them back to the names asked for
+        asked = {"File:" + n: n for n in batch}
+        asked.update({step["to"]: asked[step["from"]] for step in query.get("normalized", [])})
+        for page in query["pages"]:
+            info = page.get("imageinfo")
+            if not info:
+                print(f"  no file {page['title']}")
+                continue
+            req = urllib.request.Request(info[0]["url"], headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                tmp = paths[asked[page["title"]]].with_suffix(".tmp")
+                tmp.write_bytes(resp.read())
+                tmp.replace(paths[asked[page["title"]]])
+            time.sleep(DELAY)
+    return [paths[n] for n in names if paths[n].exists()]

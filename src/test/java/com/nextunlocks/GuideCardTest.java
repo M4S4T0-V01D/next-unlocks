@@ -77,8 +77,9 @@ public class GuideCardTest
 	public void everyStyleDraws() throws Exception
 	{
 		String[] ids = {"f2p-start", "iron-start", "important-quests", "pure-1def", "vale-totems"};
+		// GUIDE_ICONS=tools/.cache/art, filled by tools/fetch_art.py through the wiki API
 		String icons = System.getenv("GUIDE_ICONS");
-		String[] files = {"Bronze_longsword.png", "Ironman_helm.png", "Quest_point_icon.png", "Skull_status_icon.png", "Stats_icon.png"};
+		String[] files = {"Bronze_longsword.png", "Ironman_helm.png", "Quest_point_icon.png", "Skull.png", "Stats_icon.png"};
 		List<TooltipBox> cards = new ArrayList<>();
 		for (int i = 0; i < ids.length; i++)
 		{
