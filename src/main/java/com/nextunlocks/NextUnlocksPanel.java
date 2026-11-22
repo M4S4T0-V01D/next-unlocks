@@ -13,10 +13,12 @@ import java.awt.image.BufferedImage;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -80,6 +82,12 @@ class NextUnlocksPanel extends PluginPanel
 	private static final int ITEM_ICON = 18;
 	private static final Color LOCKED_COLOR = new Color(0xe05a5a);
 	private static final int ALMOST_THERE_ROWS = 5;
+	private static final int RECENT_ROWS = 5;
+	/** "Show more" stops here; the skill pages have the rest. */
+	private static final int RECENT_MAX = 50;
+	/** The skill box's entry for the Guides page. */
+	private static final String GUIDES = "Guides";
+	private static final Color DONE_COLOR = new Color(0x4cbb4c);
 
 	private final UnlockRepository repository;
 	private final SkillIconManager iconManager;
@@ -100,21 +108,32 @@ class NextUnlocksPanel extends PluginPanel
 	private final Consumer<String> taskToggle;
 	/** Asks for an amount goal of a skill's item, like 500 lobsters. */
 	private final BiConsumer<Skill, Integer> amountGoal;
+	/** Called with a guide's id to follow it, or to stop following it. */
+	private final Consumer<String> guideToggle;
+	/** Called with a hand-ticked step's key to tick it off, or back on. */
+	private final Consumer<String> guideCheck;
 	private final IconTextField search = new IconTextField();
-	private final JComboBox<Skill> skillBox = new JComboBox<>();
+	/** The Guides page, "All skills" (null) or a skill. */
+	private final JComboBox<Object> skillBox = new JComboBox<>();
 	private final JPanel content = new JPanel();
 
 	private Snapshot snapshot = Snapshot.EMPTY;
+	private GuidesView guides = GuidesView.EMPTY;
+	/** The guide whose steps the Guides page shows, or null for the list. */
+	private String openGuide;
 	private boolean stale = true;
 	private boolean sectionsOpen;
 	/** Keys of the collapsed panel sections. */
 	private final Set<String> closed = new HashSet<>();
 	private boolean almostThereAll;
+	private boolean recentAll;
 
 	NextUnlocksPanel(UnlockRepository repository, SkillIconManager iconManager, ItemManager itemManager, SpriteManager spriteManager,
 		BiConsumer<String, Boolean> sectionToggle, Consumer<Goal> goalToggle, Predicate<String> pinnable, Consumer<String> taskToggle,
-		Supplier<List<Task>> items, BiConsumer<Skill, Integer> amountGoal)
+		Supplier<List<Task>> items, BiConsumer<Skill, Integer> amountGoal, Consumer<String> guideToggle, Consumer<String> guideCheck)
 	{
+		this.guideToggle = guideToggle;
+		this.guideCheck = guideCheck;
 		this.items = items;
 		this.amountGoal = amountGoal;
 		this.repository = repository;
@@ -129,24 +148,37 @@ class NextUnlocksPanel extends PluginPanel
 		setLayout(new BorderLayout(0, 8));
 		setBorder(new EmptyBorder(10, 10, 10, 10));
 
+		skillBox.addItem(GUIDES);
 		skillBox.addItem(null);
 		for (Skill skill : Skills.STATS_TAB.keySet())
 		{
 			skillBox.addItem(skill);
 		}
+		skillBox.setSelectedIndex(1);
 		skillBox.setRenderer(new DefaultListCellRenderer()
 		{
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean selected, boolean focus)
 			{
 				super.getListCellRendererComponent(list, value, index, selected, focus);
+				if (value == GUIDES)
+				{
+					setText(GUIDES);
+					setIcon(sprites.containsKey(SpriteID.SideIcons.QUEST) ? new ImageIcon(sprites.get(SpriteID.SideIcons.QUEST)) : null);
+					return this;
+				}
 				Skill skill = (Skill) value;
 				setText(skill == null ? "All skills" : skill.getName());
 				setIcon(skill == null ? null : new ImageIcon(iconManager.getSkillImage(skill, true)));
 				return this;
 			}
 		});
-		skillBox.addActionListener(e -> rebuild());
+		sprite(SpriteID.SideIcons.QUEST, image -> skillBox.repaint());
+		skillBox.addActionListener(e ->
+		{
+			openGuide = null;
+			rebuild();
+		});
 
 		search.setIcon(IconTextField.Icon.SEARCH);
 		search.setPreferredSize(new Dimension(PANEL_WIDTH - 20, 30));
@@ -201,6 +233,31 @@ class NextUnlocksPanel extends PluginPanel
 		}
 	}
 
+	/** Opens a guide's page, as from its in-game card. EDT. */
+	void showGuide(String id)
+	{
+		skillBox.setSelectedItem(GUIDES);
+		openGuide = id;
+		rebuild();
+	}
+
+	/** EDT. */
+	void updateGuides(GuidesView guides)
+	{
+		this.guides = guides;
+		if (isShowing())
+		{
+			if (skillBox.getSelectedItem() == GUIDES)
+			{
+				rebuild();
+			}
+		}
+		else
+		{
+			stale = true;
+		}
+	}
+
 	@Override
 	public void onActivate()
 	{
@@ -220,11 +277,16 @@ class NextUnlocksPanel extends PluginPanel
 			content.add(Box.createVerticalStrut(8));
 		}
 
-		Skill selected = (Skill) skillBox.getSelectedItem();
+		Object item = skillBox.getSelectedItem();
+		Skill selected = item instanceof Skill ? (Skill) item : null;
 		String query = search.getText().trim();
 		if (!query.isEmpty())
 		{
 			buildSearch(query);
+		}
+		else if (item == GUIDES)
+		{
+			buildGuides();
 		}
 		else if (selected == null)
 		{
@@ -276,6 +338,7 @@ class NextUnlocksPanel extends PluginPanel
 
 		buildGoals();
 		buildAlmostThere(null);
+		buildRecent();
 		if (!section("next", "Next unlocks", rows.size()))
 		{
 			return;
@@ -342,15 +405,12 @@ class NextUnlocksPanel extends PluginPanel
 		return tiles;
 	}
 
-	/** A card per goal, with the xp left to it. */
+	/** A card per goal, with the xp left to it, then one per amount goal. */
 	private void buildGoals()
 	{
 		List<Goal> goals = snapshot.getGoals();
-		if (goals.isEmpty())
-		{
-			return;
-		}
-		if (!section("goals", "Goals", goals.size()))
+		List<Tally> tallies = snapshot.getTallies();
+		if (goals.isEmpty() && tallies.isEmpty() || !section("goals", "Goals", goals.size() + tallies.size()))
 		{
 			return;
 		}
@@ -394,7 +454,62 @@ class NextUnlocksPanel extends PluginPanel
 			card.setComponentPopupMenu(menu);
 			addCard(card);
 		}
+		for (Tally tally : tallies)
+		{
+			addCard(tallyCard(tally));
+		}
 		content.add(Box.createVerticalStrut(6));
+	}
+
+	/** An amount goal's card: the item, how many so far, and a bar in the skill's colour. */
+	private JPanel tallyCard(Tally tally)
+	{
+		Skill skill = tally.getSkill();
+		JPanel card = card();
+		JLabel icon = new JLabel();
+		icon.setHorizontalAlignment(SwingConstants.CENTER);
+		icon.setVerticalAlignment(SwingConstants.TOP);
+		icon.setPreferredSize(new Dimension(ICON_WIDTH, ICON_WIDTH));
+		AsyncBufferedImage image = itemManager.getImage(tally.getItem());
+		Runnable set = () -> icon.setIcon(new ImageIcon(ImageUtil.resizeImage(image, ITEM_ICON + 4, ITEM_ICON + 4, true)));
+		set.run();
+		image.onLoaded(() -> SwingUtilities.invokeLater(set));
+		card.add(icon, BorderLayout.WEST);
+
+		JPanel top = new JPanel(new BorderLayout());
+		top.setOpaque(false);
+		top.add(html("<b>" + escape(tally.goalText()) + "</b>", TEXT_WIDTH - 110), BorderLayout.WEST);
+		JLabel count = new JLabel(tally.isDone() ? "Done!" : String.format(Locale.ROOT, "%,d/%,d", tally.getCount(), tally.getTarget()));
+		count.setFont(FontManager.getRunescapeSmallFont());
+		count.setForeground(tally.isDone() ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.LIGHT_GRAY_COLOR);
+		top.add(count, BorderLayout.EAST);
+
+		ProgressBar bar = new ProgressBar();
+		bar.setMaximumValue(tally.getTarget());
+		bar.setValue(Math.min(tally.getCount(), tally.getTarget()));
+		bar.setForeground(Skills.color(skill));
+		bar.setBackground(new Color(Palette.rgb(snapshot.getPalette().getProgressBackground())));
+		bar.setPreferredSize(new Dimension(0, 4));
+		bar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 4));
+
+		JPanel body = new JPanel(new BorderLayout(0, 3));
+		body.setOpaque(false);
+		body.add(top, BorderLayout.NORTH);
+		JLabel how = new JLabel(skill.getName() + (Tally.usesUp(skill) ? ", counts items used up" : ", counts items gained"));
+		how.setFont(FontManager.getRunescapeSmallFont());
+		how.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		body.add(how, BorderLayout.CENTER);
+		body.add(bar, BorderLayout.SOUTH);
+		card.add(body, BorderLayout.CENTER);
+
+		Runnable open = () -> skillBox.setSelectedItem(skill);
+		card.setToolTipText(bar.getPercentage() + "% there. Right-click to change the amount or remove the goal");
+		clickable(card, open);
+		JPopupMenu menu = new JPopupMenu();
+		menu.add(menuItem("Change amount", () -> amountGoal.accept(skill, tally.getItem())));
+		menu.add(menuItem("Remove goal", () -> taskToggle.accept(tally.key())));
+		card.setComponentPopupMenu(menu);
+		return card;
 	}
 
 	/** Quests and diaries one skill level away, and unlocks only waiting on a quest; of one skill, or of all when null. */
@@ -528,6 +643,311 @@ class NextUnlocksPanel extends PluginPanel
 		return open;
 	}
 
+	/** The Guides page: the followed guides, then every guide by category, or one guide's steps. */
+	private void buildGuides()
+	{
+		Guide open = openGuide == null ? null : guides.getGuides().stream()
+			.filter(g -> g.getId().equals(openGuide)).findFirst().orElse(null);
+		if (open != null)
+		{
+			buildGuide(open);
+			return;
+		}
+		content.add(note("Follow up to " + NextUnlocksPlugin.MAX_GUIDES + " guides. Steps tick off as you play, and the guides"
+			+ " you follow get a card in game. Click a guide to see its steps."));
+		content.add(Box.createVerticalStrut(8));
+
+		List<Guide> followed = guides.getGuides().stream().filter(guides::isFollowed)
+			.sorted(Comparator.comparingInt(g -> guides.getFollowed().indexOf(g.getId())))
+			.collect(Collectors.toList());
+		if (!followed.isEmpty() && section("guides:following", "Following", followed.size()))
+		{
+			followed.forEach(g -> addCard(guideCard(g, true)));
+			content.add(Box.createVerticalStrut(8));
+		}
+
+		Map<String, List<Guide>> byCategory = new LinkedHashMap<>();
+		for (Guide guide : guides.getGuides())
+		{
+			byCategory.computeIfAbsent(guide.getCategory(), k -> new ArrayList<>()).add(guide);
+		}
+		for (Map.Entry<String, List<Guide>> category : byCategory.entrySet())
+		{
+			List<Guide> list = new ArrayList<>(category.getValue());
+			if (guides.isLoggedIn())
+			{
+				// guides for this kind of account first
+				Guide.Account other = guides.isIron() ? Guide.Account.MAIN : Guide.Account.IRON;
+				list.sort(Comparator.comparing(g -> g.getAccount() == other));
+			}
+			if (section("guides:" + category.getKey(), category.getKey(), list.size()))
+			{
+				list.forEach(g -> addCard(guideCard(g, false)));
+				content.add(Box.createVerticalStrut(8));
+			}
+		}
+	}
+
+	/** A guide in the list: its accent, name, what it's for and how far along it is. */
+	private JPanel guideCard(Guide guide, boolean following)
+	{
+		GuideProgress progress = guides.getProgress().get(guide.getId());
+		Color accent = GuideLooks.accent(guide.getStyle());
+		JPanel card = card();
+		card.setBorder(new CompoundBorder(new MatteBorder(0, 3, 0, 0, accent), new EmptyBorder(6, 6, 6, 6)));
+
+		JPanel top = new JPanel(new BorderLayout());
+		top.setOpaque(false);
+		String tags = (guide.isMembers() ? "" : " " + colored("F2P", ColorScheme.LIGHT_GRAY_COLOR))
+			+ (guide.getAccount() == Guide.Account.IRON ? " " + colored("Iron", GuideLooks.accent(Guide.Style.IRON)) : "")
+			+ (!following && guides.isFollowed(guide) ? " " + colored("✓ Following", DONE_COLOR) : "");
+		top.add(html("<b>" + colored(escape(guide.getName()), accent) + "</b>" + tags, CARD_TEXT_WIDTH), BorderLayout.WEST);
+		if (progress != null)
+		{
+			JLabel count = new JLabel(progress.done() + "/" + progress.total());
+			count.setFont(FontManager.getRunescapeSmallFont());
+			count.setForeground(progress.isComplete() ? DONE_COLOR : ColorScheme.LIGHT_GRAY_COLOR);
+			top.add(count, BorderLayout.EAST);
+		}
+
+		JPanel body = new JPanel(new BorderLayout(0, 3));
+		body.setOpaque(false);
+		body.add(top, BorderLayout.NORTH);
+		String line = guide.getAbout();
+		if (following && progress != null)
+		{
+			List<Guide.Step> next = progress.upcoming(1);
+			line = progress.isComplete() ? "Guide complete!" : next.isEmpty() ? "" : "Next: " + next.get(0).getTitle();
+		}
+		JLabel about = html(colored(escape(line), ColorScheme.LIGHT_GRAY_COLOR), TEXT_WIDTH - 10);
+		about.setFont(FontManager.getRunescapeSmallFont());
+		body.add(about, BorderLayout.CENTER);
+		if (progress != null && progress.done() > 0)
+		{
+			body.add(stepBar(progress, accent), BorderLayout.SOUTH);
+		}
+		card.add(body, BorderLayout.CENTER);
+		card.setToolTipText("Click to see the steps");
+		clickable(card, () ->
+		{
+			openGuide = guide.getId();
+			rebuild();
+		});
+		JPopupMenu menu = new JPopupMenu();
+		menu.add(followItem(guide));
+		card.setComponentPopupMenu(menu);
+		return card;
+	}
+
+	private JMenuItem followItem(Guide guide)
+	{
+		return menuItem(guides.isFollowed(guide) ? "Stop following" : "Follow", () -> guideToggle.accept(guide.getId()));
+	}
+
+	private static JComponent stepBar(GuideProgress progress, Color color)
+	{
+		ProgressBar bar = new ProgressBar();
+		bar.setMaximumValue(Math.max(1, progress.total()));
+		bar.setValue(progress.done());
+		bar.setForeground(color);
+		bar.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		bar.setPreferredSize(new Dimension(0, 4));
+		bar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 4));
+		bar.setToolTipText(progress.done() + " of " + progress.total() + " steps done");
+		return bar;
+	}
+
+	/** One guide: a header to follow it, its caps, then its steps by group. */
+	private void buildGuide(Guide guide)
+	{
+		GuideProgress progress = guides.getProgress().get(guide.getId());
+		Color accent = GuideLooks.accent(guide.getStyle());
+
+		JLabel back = new JLabel("‹ All guides");
+		back.setFont(FontManager.getRunescapeSmallFont());
+		back.setForeground(LEVEL_COLOR);
+		back.setAlignmentX(LEFT_ALIGNMENT);
+		clickable(back, () ->
+		{
+			openGuide = null;
+			rebuild();
+		});
+		content.add(back);
+		content.add(Box.createVerticalStrut(6));
+
+		JPanel head = new JPanel(new BorderLayout(0, 4));
+		head.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		head.setAlignmentX(LEFT_ALIGNMENT);
+		head.setBorder(new CompoundBorder(new MatteBorder(3, 0, 0, 0, accent), new EmptyBorder(8, 8, 8, 8)));
+		StringBuilder text = new StringBuilder("<b>" + colored(escape(guide.getName()), accent) + "</b><br>"
+			+ colored(escape(guide.getAbout()), ColorScheme.LIGHT_GRAY_COLOR));
+		if (guide.isPure())
+		{
+			text.append("<br><br>Keep ");
+			List<String> caps = new ArrayList<>();
+			guide.getCaps().forEach((skill, cap) ->
+			{
+				Integer at = progress == null ? null : progress.getBroken().get(skill);
+				caps.add(at == null ? skill.getName() + " at " + cap
+					: colored(skill.getName() + " at " + cap + " (it's " + at + ")", LOCKED_COLOR));
+			});
+			text.append(String.join(", ", caps)).append('.');
+		}
+		head.add(html(text.toString(), TEXT_WIDTH - 10), BorderLayout.NORTH);
+
+		JPanel row = new JPanel(new BorderLayout(6, 0));
+		row.setOpaque(false);
+		boolean following = guides.isFollowed(guide);
+		JLabel follow = new JLabel(following ? "✓ Following" : "Follow", SwingConstants.CENTER);
+		follow.setOpaque(true);
+		follow.setBackground(following ? ColorScheme.DARK_GRAY_COLOR : accent.darker());
+		follow.setForeground(following ? DONE_COLOR : Color.WHITE);
+		follow.setBorder(new EmptyBorder(4, 10, 4, 10));
+		follow.setToolTipText(following ? "Click to stop following; its card leaves the game screen"
+			: guides.getFollowed().size() >= NextUnlocksPlugin.MAX_GUIDES ? "You follow " + NextUnlocksPlugin.MAX_GUIDES + " guides; stop one first"
+			: "Click to follow: its next steps get a card in game");
+		clickable(follow, () -> guideToggle.accept(guide.getId()));
+		row.add(follow, BorderLayout.WEST);
+		if (progress != null)
+		{
+			JLabel count = new JLabel(progress.isComplete() ? "Complete!" : progress.done() + " of " + progress.total() + " done");
+			count.setFont(FontManager.getRunescapeSmallFont());
+			count.setForeground(progress.isComplete() ? DONE_COLOR : ColorScheme.LIGHT_GRAY_COLOR);
+			row.add(count, BorderLayout.EAST);
+		}
+		head.add(row, BorderLayout.CENTER);
+		if (progress != null)
+		{
+			head.add(stepBar(progress, accent), BorderLayout.SOUTH);
+		}
+		head.setMaximumSize(new Dimension(Integer.MAX_VALUE, head.getPreferredSize().height));
+		content.add(head);
+		content.add(Box.createVerticalStrut(8));
+		if (!guides.isLoggedIn())
+		{
+			content.add(note("Log in to tick off the steps you've done."));
+			content.add(Box.createVerticalStrut(8));
+		}
+
+		for (Guide.Group group : guide.getGroups())
+		{
+			long done = progress == null ? 0 : group.getSteps().stream().filter(progress::isDone).count();
+			if (section("guide:" + guide.getId() + ":" + group.getName(), group.getName(), group.getSteps().size() - (int) done))
+			{
+				group.getSteps().forEach(step -> addCard(stepCard(step, progress)));
+				content.add(Box.createVerticalStrut(8));
+			}
+		}
+	}
+
+	/** A guide step: its icon, what to do and why, ticked once done. */
+	private JPanel stepCard(Guide.Step step, GuideProgress progress)
+	{
+		boolean done = progress != null && progress.isDone(step);
+		JPanel card = card();
+		card.add(stepIcon(step), BorderLayout.WEST);
+
+		Color color;
+		switch (step.getType())
+		{
+			case QUEST:
+				color = QUEST_COLOR;
+				break;
+			case DIARY:
+				color = DIARY_COLOR;
+				break;
+			case LEVEL:
+			case UNLOCK:
+				color = LEVEL_COLOR;
+				break;
+			default:
+				color = Color.WHITE;
+		}
+		String title = done ? colored("✓ ", DONE_COLOR) + colored(escape(step.getTitle()), ColorScheme.LIGHT_GRAY_COLOR)
+			: colored(escape(step.getTitle()), color);
+		StringBuilder text = new StringBuilder(title);
+		if (!done && step.getWhy() != null)
+		{
+			text.append("<br>").append(colored(escape(step.getWhy()), ColorScheme.LIGHT_GRAY_COLOR));
+		}
+		String warning = progress == null || done ? null : progress.warning(step);
+		if (warning != null)
+		{
+			text.append("<br>").append(colored(escape(warning), LOCKED_COLOR));
+		}
+		JLabel body = html(text.toString(), CARD_TEXT_WIDTH);
+		if (done)
+		{
+			body.setFont(FontManager.getRunescapeSmallFont());
+		}
+		card.add(body, BorderLayout.CENTER);
+
+		JPopupMenu menu = new JPopupMenu();
+		Runnable click;
+		String tip;
+		if (step.isManual())
+		{
+			click = () -> guideCheck.accept(step.getKey());
+			tip = done ? "Click to mark it not done" : "Click to tick it off";
+			menu.add(menuItem(done ? "Mark not done" : "Mark done", click));
+		}
+		else if (step.getSkill() != null)
+		{
+			Skill skill = step.getSkill();
+			click = () -> skillBox.setSelectedItem(skill);
+			tip = "Ticks off at " + skill.getName() + " " + step.getLevel() + "; click to see " + skill.getName() + " unlocks";
+		}
+		else
+		{
+			click = () -> openWiki(step.getWiki());
+			tip = "Ticks off once it's done in game; click to open it on the OSRS Wiki";
+			if (pinnable.test(step.getWiki()))
+			{
+				menu.add(pinItem(step.getWiki()));
+			}
+		}
+		if (step.getWiki() != null)
+		{
+			menu.add(menuItem("Open on the OSRS Wiki", () -> openWiki(step.getWiki())));
+		}
+		card.setToolTipText(tip);
+		clickable(card, click);
+		card.setComponentPopupMenu(menu.getComponentCount() == 0 ? null : menu);
+		return card;
+	}
+
+	private JLabel stepIcon(Guide.Step step)
+	{
+		Integer item = step.getIcon() != null ? step.getIcon() : step.getUnlock() != null ? step.getUnlock().getItem() : null;
+		if (item != null)
+		{
+			JLabel label = new JLabel();
+			label.setHorizontalAlignment(SwingConstants.CENTER);
+			label.setVerticalAlignment(SwingConstants.TOP);
+			label.setPreferredSize(new Dimension(ICON_WIDTH, ICON_WIDTH));
+			AsyncBufferedImage image = itemManager.getImage(item);
+			Runnable set = () -> label.setIcon(new ImageIcon(ImageUtil.resizeImage(image, ITEM_ICON + 4, ITEM_ICON + 4, true)));
+			set.run();
+			image.onLoaded(() -> SwingUtilities.invokeLater(set));
+			return label;
+		}
+		switch (step.getType())
+		{
+			case QUEST:
+				return spriteIcon(SpriteID.SideIcons.QUEST);
+			case DIARY:
+				return spriteIcon(SpriteID.SideIcons.ACHIEVEMENT_DIARIES);
+			case LEVEL:
+			case UNLOCK:
+				JLabel label = new JLabel(new ImageIcon(iconManager.getSkillImage(step.getSkill(), true)));
+				label.setVerticalAlignment(SwingConstants.TOP);
+				label.setPreferredSize(new Dimension(ICON_WIDTH, ICON_WIDTH));
+				return label;
+			default:
+				return spriteIcon(SpriteID.SideIcons.OPTIONS);
+		}
+	}
+
 	/** A wiki title as players know it: a subquest's or a page section's own name. */
 	static String displayTitle(String title)
 	{
@@ -617,16 +1037,157 @@ class NextUnlocksPanel extends PluginPanel
 		}
 
 		List<Unlock> next = upcoming.values().stream().flatMap(List::stream).collect(Collectors.toList());
-		if (!section("upcoming", "Upcoming unlocks", next.size()))
+		if (section("upcoming", "Upcoming unlocks", next.size()))
+		{
+			if (next.isEmpty())
+			{
+				content.add(note("Nothing left to unlock with these filters."));
+			}
+			else
+			{
+				addUnlocks(skill, next);
+			}
+		}
+		content.add(Box.createVerticalStrut(4));
+		buildTimeline(skill);
+	}
+
+	/** A level-up from the history and what it unlocked with the current filters. */
+	private static final class Reached
+	{
+		final History.Entry entry;
+		final List<Unlock> unlocks;
+
+		Reached(History.Entry entry, List<Unlock> unlocks)
+		{
+			this.entry = entry;
+			this.unlocks = unlocks;
+		}
+	}
+
+	/** Level-ups that unlocked something, newest first, of one skill or all when null. */
+	private List<Reached> reached(Skill only)
+	{
+		List<History.Entry> history = snapshot.getHistory();
+		List<Reached> out = new ArrayList<>();
+		for (int i = history.size() - 1; i >= 0; i--)
+		{
+			History.Entry e = history.get(i);
+			if (only != null && e.getSkill() != only)
+			{
+				continue;
+			}
+			List<Unlock> unlocks = new ArrayList<>();
+			for (int level = e.getFrom() + 1; level <= e.getTo(); level++)
+			{
+				unlocks.addAll(repository.at(e.getSkill(), level, snapshot.shown(e.getSkill())));
+			}
+			if (!unlocks.isEmpty())
+			{
+				out.add(new Reached(e, unlocks));
+			}
+		}
+		return out;
+	}
+
+	private static String levels(History.Entry e)
+	{
+		return e.getTo() - e.getFrom() > 1 ? (e.getFrom() + 1) + "-" + e.getTo() : String.valueOf(e.getTo());
+	}
+
+	private JLabel when(History.Entry e, long now)
+	{
+		JLabel label = new JLabel(History.ago(e.getTime(), now, ZoneId.systemDefault()));
+		label.setFont(FontManager.getRunescapeSmallFont());
+		label.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		label.setToolTipText(History.date(e.getTime(), ZoneId.systemDefault()));
+		return label;
+	}
+
+	/** The latest level-ups that unlocked something, as cards like the Next unlocks rows. */
+	private void buildRecent()
+	{
+		if (!snapshot.isRecentUnlocks() || !snapshot.isLoggedIn())
 		{
 			return;
 		}
-		if (next.isEmpty())
+		List<Reached> recent = reached(null);
+		if (recent.isEmpty() || !section("recent", "Recently unlocked", recent.size()))
 		{
-			content.add(note("Nothing left to unlock with these filters."));
 			return;
 		}
-		addUnlocks(skill, next);
+		long now = System.currentTimeMillis();
+		for (Reached r : recent.subList(0, Math.min(recent.size(), recentAll ? RECENT_MAX : RECENT_ROWS)))
+		{
+			Skill skill = r.entry.getSkill();
+			JPanel card = card();
+			Runnable open = () -> skillBox.setSelectedItem(skill);
+			card.add(new JLabel(new ImageIcon(iconManager.getSkillImage(skill, true))), BorderLayout.WEST);
+
+			JPanel top = new JPanel(new BorderLayout());
+			top.setOpaque(false);
+			top.add(html("<b>" + skill.getName() + "</b> " + levels(r.entry), TEXT_WIDTH - 110), BorderLayout.WEST);
+			top.add(when(r.entry, now), BorderLayout.EAST);
+
+			JPanel body = new JPanel(new BorderLayout(0, 3));
+			body.setOpaque(false);
+			body.add(top, BorderLayout.NORTH);
+			body.add(preview(skill, r.unlocks, open), BorderLayout.CENTER);
+			card.add(body, BorderLayout.CENTER);
+			clickable(card, open);
+			addCard(card);
+		}
+
+		if (recent.size() > RECENT_ROWS)
+		{
+			int more = Math.min(recent.size(), RECENT_MAX) - RECENT_ROWS;
+			JLabel toggle = new JLabel(recentAll ? "Show fewer" : "Show " + more + " more");
+			toggle.setFont(FontManager.getRunescapeSmallFont());
+			toggle.setForeground(LEVEL_COLOR);
+			toggle.setAlignmentX(LEFT_ALIGNMENT);
+			clickable(toggle, () ->
+			{
+				recentAll = !recentAll;
+				rebuild();
+			});
+			content.add(toggle);
+		}
+		content.add(Box.createVerticalStrut(8));
+	}
+
+	/** Every recorded level-up of the skill that unlocked something, newest first. */
+	private void buildTimeline(Skill skill)
+	{
+		if (!snapshot.isLoggedIn())
+		{
+			return;
+		}
+		List<Reached> timeline = reached(skill);
+		if (!section("timeline", "Timeline", timeline.size()))
+		{
+			return;
+		}
+		if (timeline.isEmpty())
+		{
+			content.add(note("What your " + skill.getName() + " level-ups unlock shows here, with the date."));
+			return;
+		}
+		long now = System.currentTimeMillis();
+		for (Reached r : timeline)
+		{
+			JPanel row = new JPanel(new BorderLayout());
+			row.setOpaque(false);
+			row.setAlignmentX(LEFT_ALIGNMENT);
+			JLabel level = new JLabel("Level " + levels(r.entry));
+			level.setFont(FontManager.getRunescapeSmallFont());
+			level.setForeground(snapshot.getPalette().getLevel());
+			row.add(level, BorderLayout.WEST);
+			row.add(when(r.entry, now), BorderLayout.EAST);
+			row.setMaximumSize(new Dimension(Integer.MAX_VALUE, row.getPreferredSize().height));
+			content.add(row);
+			content.add(Box.createVerticalStrut(3));
+			addUnlocks(skill, r.unlocks);
+		}
 	}
 
 	/** Checkboxes for the skill guide's sections, behind a toggle. */

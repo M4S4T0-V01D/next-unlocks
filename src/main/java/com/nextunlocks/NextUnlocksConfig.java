@@ -114,6 +114,39 @@ public interface NextUnlocksConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "guideMessages",
+		name = "Guide step messages",
+		description = "Post a chat message when a step of a guide you follow is done, with the next step",
+		position = 8
+	)
+	default boolean guideMessages()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "guideCapWarnings",
+		name = "Pure cap warnings",
+		description = "Post a red chat warning when you gain XP in a skill a pure guide you follow keeps capped",
+		position = 9
+	)
+	default boolean guideCapWarnings()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "guideCards",
+		name = "Guide cards in game",
+		description = "Show a card above the chatbox for each guide you follow, with its next steps",
+		position = 9
+	)
+	default boolean guideCards()
+	{
+		return true;
+	}
+
 	@ConfigSection(
 		name = "Skills tab tooltip",
 		description = "The tooltip shown when hovering a skill in the skills tab",
@@ -431,13 +464,82 @@ public interface NextUnlocksConfig extends Config
 		BRACKETS("Corner brackets"),
 		ORNATE("Ornate"),
 		PIXEL("Pixel"),
-		DASHED("Dashed");
+		DASHED("Dashed"),
+		SCALLOPED("Scalloped"),
+		TICKET("Ticket");
 
 		private final String name;
 
 		FrameStyle(String name)
 		{
 			this.name = name;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
+	/** Decorations drawn over the frame: corner pieces and things running along the edges. */
+	enum Trim
+	{
+		STYLE("Style default"),
+		AUTO("Skill's own"),
+		OFF("None"),
+		FILIGREE("Gold filigree"),
+		PRINCESS("Princess"),
+		VINES("Ivy vines"),
+		ROSES("Rose vines"),
+		THORNS("Thorny briar"),
+		ANVILS("Anvils"),
+		SWORDS("Crossed swords"),
+		GEMS("Gems"),
+		STARS("Twinkling stars"),
+		HEARTS("Hearts"),
+		SKULLS("Skulls"),
+		SNOW("Snowflakes"),
+		CHAINS("Chains"),
+		ANCHOR("Anchor and chain"),
+		NET("Fishing net"),
+		LOGS("Logs and hatchet"),
+		FLAMES("Flames"),
+		HERBS("Herbs"),
+		RUNES("Runes"),
+		BONES("Bones"),
+		ARROWS("Arrows and bow"),
+		DRAGON_WEAPONS("Dragon weapons"),
+		WHIP("Abyssal whip"),
+		MINIMAP_DRAGONS("Minimap dragons");
+
+		private final String name;
+
+		Trim(String name)
+		{
+			this.name = name;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+
+	enum TrimSize
+	{
+		SMALL("Small", 0.75),
+		NORMAL("Normal", 1),
+		LARGE("Large", 1.35);
+
+		private final String name;
+		final double scale;
+
+		TrimSize(String name, double scale)
+		{
+			this.name = name;
+			this.scale = scale;
 		}
 
 		@Override
@@ -870,6 +972,43 @@ public interface NextUnlocksConfig extends Config
 	default Ambient pinAmbient()
 	{
 		return Ambient.STYLE;
+	}
+
+	@ConfigItem(
+		keyName = "pinTrim",
+		name = "Trim",
+		description = "Decorations over the frame: filigree, vines, anvils, swords, nets, flames, runes and more. Skill's own picks one to"
+			+ " suit each skill. Goes with any frame",
+		position = 123,
+		section = pinStyleSection
+	)
+	default Trim pinTrim()
+	{
+		return Trim.AUTO;
+	}
+
+	@ConfigItem(
+		keyName = "pinTrimSize",
+		name = "Trim size",
+		description = "How big the trim's corner pieces and edge decorations are",
+		position = 124,
+		section = pinStyleSection
+	)
+	default TrimSize pinTrimSize()
+	{
+		return TrimSize.NORMAL;
+	}
+
+	@ConfigItem(
+		keyName = "pinTrimTint",
+		name = "Trim in border color",
+		description = "Draw the trim in the card's border color instead of its own gold, green, red and so on",
+		position = 125,
+		section = pinStyleSection
+	)
+	default StyleToggle pinTrimTint()
+	{
+		return StyleToggle.STYLE;
 	}
 
 	@ConfigSection(
@@ -1371,6 +1510,18 @@ public interface NextUnlocksConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "tallyBank",
+		name = "Banked on amount goals",
+		description = "Show how many of an amount goal's item are in your bank, as of the last time it was open",
+		position = 29,
+		section = goalSection
+	)
+	default boolean tallyBank()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "almostThere",
 		name = "Almost there",
 		description = "List quests and diaries one skill level short, and unlocks you have the level for that only need a quest, in the side panel",
@@ -1378,6 +1529,18 @@ public interface NextUnlocksConfig extends Config
 		section = goalSection
 	)
 	default boolean almostThere()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "recentUnlocks",
+		name = "Recently unlocked",
+		description = "List what your latest level-ups unlocked, and when, at the top of the side panel. Each skill's page keeps its full timeline either way",
+		position = 30,
+		section = goalSection
+	)
+	default boolean recentUnlocks()
 	{
 		return true;
 	}
@@ -1651,6 +1814,17 @@ public interface NextUnlocksConfig extends Config
 		hidden = true
 	)
 	default String checkedOff()
+	{
+		return "";
+	}
+
+	@ConfigItem(
+		keyName = "tallyBanked",
+		name = "",
+		description = "How many of each amount goal's item the bank held when last open, as item:amount, comma separated",
+		hidden = true
+	)
+	default String tallyBanked()
 	{
 		return "";
 	}

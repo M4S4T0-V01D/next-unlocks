@@ -10,6 +10,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.text.DecimalFormat;
 import java.util.Random;
@@ -176,8 +177,7 @@ class PinBar implements LayoutableRenderableEntity
 		graphics.fillRect(x, y, (int) (width * progress), HEIGHT);
 		String text = PERCENT.format(progress * 100) + "%";
 		FontMetrics metrics = graphics.getFontMetrics();
-		label(graphics, text, x + (width - metrics.stringWidth(text)) / 2,
-			y + (HEIGHT - metrics.getHeight()) / 2 + metrics.getHeight(), textColor);
+		label(graphics, text, x + (width - metrics.stringWidth(text)) / 2, baseline(graphics, text, y), textColor);
 	}
 
 	/** Blocks that light up one by one; the last one blinks near the end, and they chase in color at 100%. */
@@ -354,7 +354,7 @@ class PinBar implements LayoutableRenderableEntity
 		String text = (int) Math.floor(progress * 100) + "%";
 		FontMetrics metrics = graphics.getFontMetrics();
 		int tx = x + (width - metrics.stringWidth(text)) / 2;
-		int ty = y + (HEIGHT - metrics.getHeight()) / 2 + metrics.getAscent();
+		int ty = baseline(graphics, text, y);
 		if (full)
 		{
 			tx += (int) Math.round(noise(step, 6));
@@ -377,8 +377,14 @@ class PinBar implements LayoutableRenderableEntity
 	{
 		String text = (int) Math.floor(progress * 100) + "%";
 		FontMetrics metrics = graphics.getFontMetrics();
-		label(graphics, text, location.x + (width - metrics.stringWidth(text)) / 2,
-			location.y + (HEIGHT - metrics.getHeight()) / 2 + metrics.getAscent(), c);
+		label(graphics, text, location.x + (width - metrics.stringWidth(text)) / 2, baseline(graphics, text, location.y), c);
+	}
+
+	/** Where to draw text so its ink, shadow included, sits in the middle of a bar starting at top. */
+	private static int baseline(Graphics2D graphics, String text, int top)
+	{
+		Rectangle2D ink = graphics.getFont().createGlyphVector(graphics.getFontRenderContext(), text).getVisualBounds();
+		return top + (int) Math.round((HEIGHT - 1 - ink.getHeight()) / 2 - ink.getY());
 	}
 
 	/** Text with a dark shadow, so it reads on any fill. */

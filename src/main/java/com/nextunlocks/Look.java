@@ -42,6 +42,9 @@ final class Look
 		k.put("pinFrame", NextUnlocksConfig::pinFrame);
 		k.put("pinBorderMotion", NextUnlocksConfig::pinBorderMotion);
 		k.put("pinAmbient", NextUnlocksConfig::pinAmbient);
+		k.put("pinTrim", NextUnlocksConfig::pinTrim);
+		k.put("pinTrimSize", NextUnlocksConfig::pinTrimSize);
+		k.put("pinTrimTint", NextUnlocksConfig::pinTrimTint);
 		k.put("tooltipOpacity", NextUnlocksConfig::tooltipOpacity);
 		k.put("pinCustomColors", NextUnlocksConfig::pinCustomColors);
 		k.put("pinColorBackground", NextUnlocksConfig::pinColorBackground);

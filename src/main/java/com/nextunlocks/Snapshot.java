@@ -14,7 +14,8 @@ class Snapshot
 {
 	static final Snapshot EMPTY = new Snapshot(Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(),
 		u -> true, 5, Collections.emptySet(), Collections.emptySet(), Palette.DEFAULT,
-		Collections.emptySet(), Collections.emptySet(), Collections.emptyList(), false, Collections.emptySet());
+		Collections.emptySet(), Collections.emptySet(), Collections.emptyList(), false, Collections.emptySet(),
+		Collections.emptyList(), false, Collections.emptyList());
 
 	/** Real levels. */
 	Map<Skill, Integer> levels;
@@ -38,6 +39,12 @@ class Snapshot
 	boolean almostThere;
 	/** Wiki titles of the pinned quests and diaries. */
 	Set<String> pinnedTasks;
+	/** The account's level-ups, newest last. */
+	List<History.Entry> history;
+	/** Whether the overview lists what was unlocked lately. */
+	boolean recentUnlocks;
+	/** The amount goals, in the order they were pinned. */
+	List<Tally> tallies;
 
 	static String sectionKey(Skill skill, String section)
 	{

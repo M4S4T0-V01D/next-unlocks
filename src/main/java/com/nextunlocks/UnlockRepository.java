@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
@@ -70,6 +71,8 @@ public class UnlockRepository
 	/** The items the game's skill guide lists, by item ID, with the levels it says they need; empty until it's read. */
 	@Getter
 	private volatile Map<Integer, GuideItem> guideItems = Collections.emptyMap();
+	/** Item icons the skill guide shows for differently named entries, like the hammer: tools, not goals. */
+	private volatile Set<Integer> tools = Collections.emptySet();
 
 	public void load(Gson gson) throws IOException
 	{
@@ -124,6 +127,8 @@ public class UnlockRepository
 		Map<Skill, TreeMap<Integer, String>> ordered = new EnumMap<>(Skill.class);
 		Map<Long, String> headers = new HashMap<>();
 		Map<Integer, GuideItem> items = new HashMap<>();
+		// every entry name each item icon is shown for
+		Map<Integer, Set<String>> names = new HashMap<>();
 		for (int row : client.getDBTableRows(DBTableID.SkillGuideSubsections.ID))
 		{
 			Integer skillId = integer(client, row, DBTableID.SkillGuideSubsections.COL_SKILL);
@@ -170,8 +175,12 @@ public class UnlockRepository
 				item = null;
 			}
 			boolean members = bool(field(client, row, DBTableID.SkillFeatures.COL_MEMBERSONLY, 0));
-			GuideItem needs = item == null ? null : items.computeIfAbsent(item, k -> new GuideItem(text.startsWith("Members: ")
-				? text.substring("Members: ".length()).trim() : text));
+			String name = text.startsWith("Members: ") ? text.substring("Members: ".length()).trim() : text;
+			if (item != null)
+			{
+				names.computeIfAbsent(item, k -> new HashSet<>()).add(name.toLowerCase(Locale.ROOT));
+			}
+			GuideItem needs = item == null ? null : items.computeIfAbsent(item, k -> new GuideItem(name));
 
 			// the skill column lists (skill, level, subsection) tuples; each read returns one position across all of them
 			Object[] skillIds = field(client, row, DBTableID.SkillFeatures.COL_SKILL, 0);
@@ -203,6 +212,17 @@ public class UnlockRepository
 		ordered.forEach((skill, byOrder) -> sections.put(skill, Collections.unmodifiableList(new ArrayList<>(new LinkedHashSet<>(byOrder.values())))));
 		this.sections = sections;
 		items.values().removeIf(GuideItem::isEmpty);
+		// an icon that pictures differently named entries, like the hammer, is a tool shown for them, not an item to aim for
+		Set<Integer> tools = new HashSet<>();
+		names.forEach((item, named) ->
+		{
+			if (named.size() > 1)
+			{
+				tools.add(item);
+			}
+		});
+		items.keySet().removeAll(tools);
+		this.tools = Collections.unmodifiableSet(tools);
 		guideItems = Collections.unmodifiableMap(items);
 		setSkillGuide(guide);
 	}
@@ -374,6 +394,54 @@ public class UnlockRepository
 	public List<Unlock> all(Skill skill)
 	{
 		return bySkill.getOrDefault(skill, Collections.emptyList());
+	}
+
+	/**
+	 * The skills whose unlocks make, gather or use up the item, in skill order: Fishing for Raw lobster, Woodcutting and
+	 * Firemaking for Logs. Unlocks to wield or wear it don't count.
+	 */
+	public List<Skill> makers(int item)
+	{
+		List<Skill> out = new ArrayList<>();
+		if (isTool(item))
+		{
+			return out;
+		}
+		for (Skill skill : Skill.values())
+		{
+			for (Unlock u : all(skill))
+			{
+				if (u.getItem() != null && u.getItem() == item && makes(skill, u))
+				{
+					out.add(skill);
+					break;
+				}
+			}
+		}
+		return out;
+	}
+
+	/** Whether the skill guide only shows the item as a tool for other things, like the hammer. */
+	public boolean isTool(int item)
+	{
+		return tools.contains(item);
+	}
+
+	/** Whether a skill's unlock picturing an item is about making or gathering it, not wielding or wearing it. */
+	static boolean makes(Skill skill, Unlock u)
+	{
+		switch (skill)
+		{
+			case ATTACK:
+			case STRENGTH:
+			case DEFENCE:
+			case RANGED:
+			case HITPOINTS:
+				return false;
+			default:
+				return (u.getSection() == null || !GuideItem.EQUIPMENT.matcher(u.getSection()).find())
+					&& (u.getText() == null || !u.getText().matches("(?i)(members: )?(wield|wear|equip)\\b.*"));
+		}
 	}
 
 	/** Unlocks at exactly {@code level}. */

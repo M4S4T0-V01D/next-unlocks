@@ -95,6 +95,12 @@ class CardLine implements LayoutableRenderableEntity
 		right.get(index).text = text;
 	}
 
+	/** The icon's height: a little over the capitals, and on the title line as tall as the text, ascenders and all. */
+	private int iconHeight(int ascent, int descent)
+	{
+		return header ? ascent + 2 : ascent - descent + 2;
+	}
+
 	/** The width both sides need on one line, icon included; 0 when there is nothing on the right, as the left can wrap. */
 	int minWidth()
 	{
@@ -115,7 +121,7 @@ class CardLine implements LayoutableRenderableEntity
 		if (icon != null && icon.getHeight() > 0)
 		{
 			LineMetrics metrics = font.getLineMetrics("A", context);
-			int iconHeight = Math.round(metrics.getAscent() - metrics.getDescent()) + 2;
+			int iconHeight = iconHeight(Math.round(metrics.getAscent()), Math.round(metrics.getDescent()));
 			width += Math.round(icon.getWidth() * iconHeight / (float) icon.getHeight()) + 3;
 		}
 		return width;
@@ -136,7 +142,7 @@ class CardLine implements LayoutableRenderableEntity
 		int width = preferred.width;
 		int rightWidth = width(metrics, right);
 		int indent = 0;
-		int iconHeight = metrics.getAscent() - metrics.getDescent() + 2;
+		int iconHeight = iconHeight(metrics.getAscent(), metrics.getDescent());
 		if (icon != null && iconHeight > 0)
 		{
 			if (scaled == null || scaledHeight != iconHeight)
@@ -158,11 +164,13 @@ class CardLine implements LayoutableRenderableEntity
 		int lines = wrapped == null ? 1 : wrapped.size();
 		int height = lines * lineHeight;
 		int x = location.x;
-		int baseline = location.y + lineHeight;
+		// up by the descent, so a g or a y stays inside the line rather than touching a bar under it
+		int baseline = location.y + lineHeight - metrics.getDescent();
 		if (indent > 0)
 		{
-			// sits on the text's baseline, from the top of its capitals
-			graphics.drawImage(scaled, x, baseline - metrics.getDescent() - iconHeight + 1, null);
+			// centered on the capitals
+			int capitals = metrics.getAscent() - metrics.getDescent();
+			graphics.drawImage(scaled, x, baseline - (capitals + iconHeight) / 2, null);
 		}
 
 		if (theme.isGlowText() && theme.getGlow() != null)
@@ -179,7 +187,8 @@ class CardLine implements LayoutableRenderableEntity
 					// a few copies a pixel apart, so the blur has enough to spread
 					for (int[] o : new int[][]{{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}})
 					{
-						paintText(g, metrics, lefts, at + o[0], lineHeight + o[1], width - at, rightWidth, theme.getGlow());
+						paintText(g, metrics, lefts, at + o[0], lineHeight - metrics.getDescent() + o[1], width - at, rightWidth,
+								theme.getGlow());
 					}
 				});
 				glowKey = key;

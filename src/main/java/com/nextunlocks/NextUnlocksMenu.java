@@ -153,6 +153,7 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		LOOKS("Looks"),
 		GOALS("Goals"),
 		PINS("Pins"),
+		GUIDES("Guides"),
 		OPTIONS("Options");
 
 		final String label;
@@ -275,6 +276,7 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 	private final List<Toggle> combatToggles = new ArrayList<>();
 	private final List<Toggle> options = new ArrayList<>();
 	private final List<Toggle> guide = new ArrayList<>();
+	private final List<Toggle> guideToggles = new ArrayList<>();
 	private final Choice members;
 	private final Slider levelsAhead;
 	private final Slider buttonAngle;
@@ -351,6 +353,9 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		frames.add(lookChoice("Frame", "pinFrame", NextUnlocksConfig.FrameStyle.values()));
 		frames.add(lookChoice("Border", "pinBorderWidth", NextUnlocksConfig.BorderWidth.values()));
 		frames.add(lookChoice("Border motion", "pinBorderMotion", NextUnlocksConfig.BorderMotion.values()));
+		frames.add(lookChoice("Trim", "pinTrim", NextUnlocksConfig.Trim.values()));
+		frames.add(lookChoice("Trim size", "pinTrimSize", NextUnlocksConfig.TrimSize.values()));
+		frames.add(lookChoice("Trim tint", "pinTrimTint", toggle));
 		frames.add(lookChoice("Corners", "pinCorner", NextUnlocksConfig.Corner.values()));
 		frames.add(lookChoice("Padding", "pinPadding", NextUnlocksConfig.Padding.values()));
 		opacity = new Slider("Opacity", "tooltipOpacity", 0, 100, () -> plugin.look(target).<Integer>get("tooltipOpacity"));
@@ -374,6 +379,7 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 
 		goalToggles.add(new Toggle("Infoboxes", "goalInfoboxes", config::goalInfoboxes));
 		goalToggles.add(new Toggle("Almost there", "almostThere", config::almostThere));
+		goalToggles.add(new Toggle("Recently unlocked", "recentUnlocks", config::recentUnlocks));
 		goalToggles.add(new Toggle("Item making levels", "itemMakingLevels", config::itemMakingLevels));
 
 		pinToggles.add(new Toggle("Skill and level", "pinnedLevel", config::pinnedLevel));
@@ -391,6 +397,10 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		options.add(new Toggle("Tooltip icons only", "tooltipIconsOnly", config::tooltipIconsOnly));
 		options.add(new Toggle("Tooltip XP", "tooltipXp", config::tooltipXp));
 		options.add(new Toggle("Tooltip progress", "tooltipProgress", config::tooltipProgress));
+
+		guideToggles.add(new Toggle("Cards in game", "guideCards", config::guideCards));
+		guideToggles.add(new Toggle("Step messages", "guideMessages", config::guideMessages));
+		guideToggles.add(new Toggle("Pure cap warnings", "guideCapWarnings", config::guideCapWarnings));
 
 		guide.add(new Toggle("Next Unlocks tab", "guideTab", config::guideTab));
 		guide.add(new Toggle("Highlight next", "guideHighlight", config::guideHighlight));
@@ -596,6 +606,9 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 				break;
 			case PINS:
 				cy = drawPins(g, mouse, out, left, cy, inner);
+				break;
+			case GUIDES:
+				cy = drawGuides(g, mouse, out, left, cy, inner);
 				break;
 			default:
 				cy = drawOptions(g, mouse, out, left, cy, inner);
@@ -997,6 +1010,37 @@ class NextUnlocksMenu extends Overlay implements MouseListener, MouseWheelListen
 		cy = toggles(g, mouse, out, combatToggles, left, cy, inner, 2);
 		cy = heading(g, "Skill cards show", left, cy + 2);
 		return toggles(g, mouse, out, pinToggles, left, cy, inner, 2);
+	}
+
+	private int drawGuides(Graphics2D g, Point mouse, List<Hit> out, int left, int cy, int inner)
+	{
+		List<Guide> followed = plugin.followedGuides();
+		cy = heading(g, "Following (" + followed.size() + "/" + NextUnlocksPlugin.MAX_GUIDES + ")", left, cy);
+		if (followed.isEmpty())
+		{
+			text(g, "None yet. Pick up to " + NextUnlocksPlugin.MAX_GUIDES + " below.", left, cy + 13, GREY);
+			cy += 18;
+		}
+		for (Guide guide : followed)
+		{
+			GuideProgress progress = plugin.getGuideProgress().get(guide.getId());
+			row(g, mouse, out, null, guide.getName(), progress == null ? null : progress.done() + "/" + progress.total(), left, cy,
+				inner, () -> plugin.toggleGuide(guide.getId()));
+			cy += 20;
+		}
+
+		cy = heading(g, "All guides", left, cy + 2);
+		List<Guide> all = plugin.allGuides();
+		int w = (inner - 4) / 2;
+		for (int i = 0; i < all.size(); i++)
+		{
+			Guide guide = all.get(i);
+			Rectangle r = new Rectangle(left + (i % 2) * (w + 4), cy + (i / 2) * 20, w, 18);
+			button(g, mouse, out, r, fit(g, guide.getName(), w - 6), followed.contains(guide), () -> plugin.toggleGuide(guide.getId()));
+		}
+		cy += (all.size() + 1) / 2 * 20 + 4;
+		cy = heading(g, "Show", left, cy);
+		return toggles(g, mouse, out, guideToggles, left, cy, inner, 2);
 	}
 
 	private int drawOptions(Graphics2D g, Point mouse, List<Hit> out, int left, int cy, int inner)

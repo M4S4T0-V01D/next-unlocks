@@ -199,6 +199,130 @@ public class LooksTest
 	}
 
 	@Test
+	public void everyTrimDraws() throws java.io.IOException
+	{
+		assertNull(pinned(Skill.ATTACK, "pinTrim", "OFF").getTrim());
+		assertEquals(NextUnlocksConfig.Trim.ROSES, pinned(Skill.ATTACK, "pinTrim", "ROSES").getTrim());
+		assertTrue(pinned(Skill.ATTACK, "pinTrim", "ROSES", "pinTrimTint", "ON").isTrimTint());
+		assertEquals(1.35, pinned(Skill.ATTACK, "pinTrimSize", "LARGE").getTrimScale(), 0.001);
+
+		// the game's art for the preview, exported from a cache: sprites as id-0.png, icons by item id
+		String sprites = System.getenv("TRIM_SPRITES");
+		String icons = System.getenv("TRIM_ICONS");
+		if (sprites != null)
+		{
+			CardArt.minimap(javax.imageio.ImageIO.read(new java.io.File(sprites, "1037-0.png")),
+				javax.imageio.ImageIO.read(new java.io.File(sprites, "1182-0.png")),
+				javax.imageio.ImageIO.read(new java.io.File(sprites, "1038-0.png")));
+		}
+		if (icons != null)
+		{
+			CardArt.items = id ->
+			{
+				try
+				{
+					return javax.imageio.ImageIO.read(new java.io.File(icons, id + ".png"));
+				}
+				catch (java.io.IOException e)
+				{
+					return null;
+				}
+			};
+		}
+		try
+		{
+			trimSheet(System.getenv("TRIM_PREVIEW"));
+		}
+		finally
+		{
+			CardArt.clear();
+		}
+	}
+
+	@Test
+	public void trimsUseTheGamesArt() throws java.io.IOException
+	{
+		// a stand-in minimap: a stone square with a round map hole, on a panel that should be cut away
+		BufferedImage cover = new BufferedImage(120, 100, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = cover.createGraphics();
+		g.setColor(new Color(110, 100, 80));
+		g.fillRect(0, 0, 120, 100);
+		g.setComposite(java.awt.AlphaComposite.Clear);
+		g.fillOval(30, 20, 60, 60);
+		g.dispose();
+		BufferedImage side = new BufferedImage(20, 100, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D s = side.createGraphics();
+		s.setColor(new Color(60, 56, 37));
+		s.fillRect(0, 0, 20, 100);
+		s.dispose();
+		BufferedImage icon = new BufferedImage(36, 32, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D i = icon.createGraphics();
+		i.setColor(Color.RED);
+		i.fillRect(10, 8, 12, 14);
+		i.dispose();
+		try
+		{
+			assertNull(CardArt.bounds(new BufferedImage(36, 32, BufferedImage.TYPE_INT_ARGB)));
+			assertEquals(new java.awt.Rectangle(10, 8, 12, 14), CardArt.bounds(icon));
+			CardArt.items = id -> icon;
+			CardArt.minimap(side, cover, side);
+			BufferedImage dragons = CardArt.dragons();
+			assertNotNull(dragons);
+			// only the ring around the hole is kept, not the panel out at the sides
+			assertTrue(dragons.getWidth() < 140 && dragons.getWidth() > 100);
+			assertNotNull(CardArt.dragons(50, 40, Color.CYAN));
+			trimSheet(null);
+		}
+		finally
+		{
+			CardArt.clear();
+		}
+		assertNull(CardArt.dragons());
+	}
+
+	private void trimSheet(String file) throws java.io.IOException
+	{
+		NextUnlocksConfig.Trim[] trims = NextUnlocksConfig.Trim.values();
+		String[] frames = {"ORNATE", "TICKET", "SCALLOPED", "ROUNDED", "DOUBLE"};
+		int cols = 3;
+		BufferedImage sheet = new BufferedImage(cols * 250, (trims.length + cols - 1) / cols * 110, BufferedImage.TYPE_INT_RGB);
+		Graphics2D out = sheet.createGraphics();
+		out.setColor(new Color(40, 40, 40));
+		out.fillRect(0, 0, sheet.getWidth(), sheet.getHeight());
+		for (int i = 0; i < trims.length; i++)
+		{
+			for (String size : new String[]{"SMALL", "LARGE", "NORMAL"})
+			{
+				for (String tint : new String[]{"ON", "OFF"})
+				{
+					CardTheme theme = pinned(Skill.ATTACK, "pinFrame", frames[i % frames.length],
+						"pinTrim", trims[i].name(), "pinTrimSize", size, "pinTrimTint", tint, "pinBorderWidth", "THICK");
+					PanelComponent panel = new PanelComponent();
+					panel.getChildren().add(LineComponent.builder().left(trims[i].toString()).right(frames[i % frames.length]).build());
+					panel.getChildren().add(LineComponent.builder().left("Next unlock").right("Level 50").build());
+					panel.getChildren().add(LineComponent.builder().left("Rune scimitar").right("12 levels").build());
+					TooltipBox box = new TooltipBox(panel, theme, new java.util.ArrayList<>());
+					box.setPreferredSize(new Dimension(220, 0));
+					box.setPreferredLocation(new Point(i % cols * 250 + 15, i / cols * 110 + 15));
+					// the last pass, normal size in the trim's own colors, is the one left on the sheet
+					// the first render lays the card out, off the sheet
+					Graphics2D scratch = new BufferedImage(sheet.getWidth(), sheet.getHeight(), BufferedImage.TYPE_INT_ARGB).createGraphics();
+					box.render(scratch);
+					scratch.dispose();
+					Graphics2D g = (Graphics2D) out.create();
+					box.render(g);
+					g.dispose();
+				}
+			}
+		}
+		out.dispose();
+		if (file != null)
+		{
+			javax.imageio.ImageIO.write(sheet, "png", new java.io.File(file));
+		}
+	}
+
+	@Test
 	public void titleLineHasRoomForBothSides()
 	{
 		CardTheme theme = pinned(Skill.HITPOINTS);
@@ -299,5 +423,19 @@ public class LooksTest
 		assertEquals("true", preset.get("pinCustomColors"));
 		assertEquals(mine, new Look(CONFIG, preset).get("pinColorSkillName"));
 		assertEquals(mine, pinned(Skill.MAGIC, "pinCustomColors", "true", "pinColorSkillName", Look.format(mine)).getSkillName());
+	}
+
+	@Test
+	public void everySkillHasItsOwnTrim()
+	{
+		for (Skill skill : Skill.values())
+		{
+			NextUnlocksConfig.Trim trim = SkillLooks.trim(skill);
+			assertNotNull(skill.name(), trim);
+			assertTrue(skill.name(), trim != NextUnlocksConfig.Trim.AUTO && trim != NextUnlocksConfig.Trim.STYLE
+				&& trim != NextUnlocksConfig.Trim.OFF);
+		}
+		assertEquals(NextUnlocksConfig.Trim.NET, SkillLooks.trim(Skill.FISHING));
+		assertEquals(NextUnlocksConfig.Trim.RUNES, SkillLooks.trim(Skill.RUNECRAFT));
 	}
 }

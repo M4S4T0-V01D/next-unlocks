@@ -1,5 +1,6 @@
 """Builds src/main/resources/com/nextunlocks/quests.json from the OSRS Wiki: every quest and miniquest with its
-members flag, skill/quest point/combat requirements and the quests it needs first.
+members flag, skill/quest point/combat requirements, the quests it needs first and its XP rewards
+(for the pure guides' level caps: "xp" fixed, "maybeXp" skills offered as a choice, "lamp" a lamp or similar).
 
     python3 -I tools/fetch_quests.py [--refresh]
 
@@ -99,6 +100,30 @@ def main(refresh):
             entry["combat"] = combat
         if needs:
             entry["quests"] = needs
+        rewards = template(text, "Quest rewards").get("rewards", "")
+        xp, maybe = {}, []
+        for line in rewards.split("\n"):
+            if "experience" not in line.lower():
+                continue
+            # {{SCP|Skill|N}} [[Skill]] experience; a bare {{SCP|N}} after "with" is a level needed, not xp
+            for skill, amount in re.findall(r"\{\{\s*SCP\s*\|\s*([A-Za-z ]+?)\s*\|\s*([\d,]+)(?:\.\d+)?\s*(?:\|[^{}]*)?\}\}\s*"
+                                            r"(?:\[\[[^\]]*\]\]\s*|[A-Za-z]+\s+)?(?:\[\[)?experience", line, re.I):
+                skill = skill.strip().capitalize()
+                if skill in SKILLS:
+                    xp[skill.upper()] = xp.get(skill.upper(), 0) + int(amount.replace(",", ""))
+            # skills named without an amount: a choice between them, like Monkey Madness I's
+            for skill in re.findall(r"\{\{\s*SCP\s*\|\s*([A-Za-z ]+?)\s*\}\}", line):
+                skill = skill.strip().capitalize()
+                if skill in SKILLS and skill.upper() not in xp and skill.upper() not in maybe:
+                    maybe.append(skill.upper())
+        if xp:
+            entry["xp"] = xp
+        if maybe:
+            entry["maybeXp"] = maybe
+        # "the ability to use lamps on Runecraft" (Rune Mysteries) isn't a lamp of its own
+        if any(re.search(r"(?:your|the player's) choo?s|of (?:your|the player's) choi|any (?:three )?skills?|lamp", line, re.I)
+               and not re.search(r"ability to use", line, re.I) for line in rewards.split("\n")):
+            entry["lamp"] = True
         out.append(entry)
     # Category:Quests also holds pages like "Quest points" that have no quest infobox
     kept = {e["wiki"] for e in out}

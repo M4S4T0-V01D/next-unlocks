@@ -6,6 +6,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,12 +25,15 @@ import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 import net.runelite.client.util.Text;
 
 /**
- * Pinned skill tooltips and quest or diary cards, side by side on top of the chatbox. When the chatbox is collapsed they sit
+ * Pinned skill tooltips, quest or diary cards and followed guides' cards, side by side on top of the chatbox. When the chatbox is collapsed they sit
  * on top of its buttons instead.
  */
 class PinnedOverlay extends Overlay
 {
-	private static final int GAP = 2;
+	/** Between cards: wide enough that trims sticking out past a frame, like chain rings, don't meet. */
+	private static final int GAP = 4;
+	/** Above the chatbox or the private messages. */
+	private static final int LIFT = 2;
 	/** Where the game opens windows like the bank, in the fixed, resizable and other layouts. */
 	private static final int[] WINDOW_CONTAINERS = {
 		InterfaceID.Toplevel.MAINMODAL, InterfaceID.Toplevel.SIDEMODAL,
@@ -48,6 +52,8 @@ class PinnedOverlay extends Overlay
 	/** Measured size of the card last drawn for a pin; cards are drawn upward from the chatbox. */
 	private final Map<Object, LayoutableRenderableEntity> measured = new HashMap<>();
 	private final Map<Object, Dimension> sizes = new HashMap<>();
+	/** Where each guide card was drawn last frame, for scrolling them from the mouse wheel off the client thread. */
+	private volatile Map<Guide, Rectangle> guideCards = Collections.emptyMap();
 
 	@Inject
 	PinnedOverlay(Client client, NextUnlocksPlugin plugin, TooltipManager tooltipManager)
@@ -63,17 +69,20 @@ class PinnedOverlay extends Overlay
 	public Dimension render(Graphics2D graphics)
 	{
 		drawn.clear();
-		if (plugin.getPinned().isEmpty() && plugin.getPinnedTasks().isEmpty() && !plugin.isCombatPinned())
+		List<Guide> guides = plugin.guideCardGuides();
+		if (plugin.getPinned().isEmpty() && plugin.getPinnedTasks().isEmpty() && !plugin.isCombatPinned() && guides.isEmpty())
 		{
+			guideCards = Collections.emptyMap();
 			return null;
 		}
 		Rectangle chat = chatTop();
 		if (chat == null)
 		{
+			guideCards = Collections.emptyMap();
 			return null;
 		}
 
-		// combat level first, then skill cards, then quests and diaries
+		// combat level first, then skill cards, then quests and diaries, then followed guides
 		Map<Object, LayoutableRenderableEntity> cards = new LinkedHashMap<>();
 		if (plugin.isCombatPinned())
 		{
@@ -99,6 +108,14 @@ class PinnedOverlay extends Overlay
 				cards.put(task, card);
 			}
 		}
+		for (Guide guide : guides)
+		{
+			LayoutableRenderableEntity card = plugin.guideCard(guide);
+			if (card != null)
+			{
+				cards.put(guide, card);
+			}
+		}
 
 		// every skill card as tall as the tallest, so text-only ones line up with ones holding icons
 		int skillHeight = 0;
@@ -122,11 +139,11 @@ class PinnedOverlay extends Overlay
 			tallest = Math.max(tallest, height);
 		}
 		// split private chat shows just above the chatbox; go above its messages instead of over them
-		int bottom = chat.y - GAP;
+		int bottom = chat.y - LIFT;
 		Integer pmTop = privateChatTop(new Rectangle(chat.x, bottom - tallest, width, tallest));
 		if (pmTop != null)
 		{
-			bottom = Math.min(bottom, pmTop - GAP);
+			bottom = Math.min(bottom, pmTop - LIFT);
 		}
 
 		net.runelite.api.Point mouse = client.getMouseCanvasPosition();
@@ -163,6 +180,15 @@ class PinnedOverlay extends Overlay
 			drawn.put(e.getKey(), new Rectangle(location, rendered));
 			x += rendered.width + GAP;
 		}
+		Map<Guide, Rectangle> guideRects = new HashMap<>();
+		drawn.forEach((pin, bounds) ->
+		{
+			if (pin instanceof Guide)
+			{
+				guideRects.put((Guide) pin, bounds);
+			}
+		});
+		guideCards = guideRects;
 		// level-up bursts and xp effects last, so they fly over the cards beside them
 		for (Map.Entry<Object, LayoutableRenderableEntity> e : shown.entrySet())
 		{
@@ -204,13 +230,33 @@ class PinnedOverlay extends Overlay
 		return pin instanceof Skill ? (Skill) pin : null;
 	}
 
-	/** The wiki title of the pinned quest or diary drawn under a canvas point, or null. Client thread. */
 	/** Whether the combat level card is under the mouse. */
 	boolean combatAt(int x, int y)
 	{
 		return pinAt(x, y) == CombatLevel.PIN;
 	}
 
+	/** The followed guide whose card is drawn under a canvas point, or null. Client thread. */
+	Guide guideAt(int x, int y)
+	{
+		Object pin = pinAt(x, y);
+		return pin instanceof Guide ? (Guide) pin : null;
+	}
+
+	/** The followed guide whose card was drawn under a canvas point last frame, or null. Any thread. */
+	Guide guideUnder(int x, int y)
+	{
+		for (Map.Entry<Guide, Rectangle> e : guideCards.entrySet())
+		{
+			if (e.getValue().contains(x, y))
+			{
+				return e.getKey();
+			}
+		}
+		return null;
+	}
+
+	/** The wiki title of the pinned quest or diary drawn under a canvas point, or null. Client thread. */
 	String taskAt(int x, int y)
 	{
 		Object pin = pinAt(x, y);

@@ -22,7 +22,8 @@
 "Tale of the Righteous",
 "Client of Kourend",
 "X Marks the Spot"
-]
+],
+"lamp": true
 },
 {
 "name": "A Night at the Theatre",
@@ -36,12 +37,24 @@
 "Nature Spirit",
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"maybeXp": [
+"ATTACK",
+"STRENGTH",
+"DEFENCE",
+"RANGED",
+"MAGIC",
+"HITPOINTS"
+],
+"lamp": true
 },
 {
 "name": "A Porcine of Interest",
 "wiki": "A Porcine of Interest",
-"members": true
+"members": true,
+"xp": {
+"SLAYER": 1000
+}
 },
 {
 "name": "A Ruff Situation",
@@ -49,12 +62,19 @@
 "members": true,
 "skills": {
 "CRAFTING": 15
+},
+"xp": {
+"CRAFTING": 1000
 }
 },
 {
 "name": "A Soul's Bane",
 "wiki": "A Soul's Bane",
-"members": true
+"members": true,
+"xp": {
+"DEFENCE": 500,
+"HITPOINTS": 500
+}
 },
 {
 "name": "A Tail of Two Cats",
@@ -63,7 +83,8 @@
 "quests": [
 "Icthlarin's Little Helper",
 "Gertrude's Cat"
-]
+],
+"lamp": true
 },
 {
 "name": "A Taste of Hope",
@@ -83,7 +104,8 @@
 "Nature Spirit",
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"lamp": true
 },
 {
 "name": "Alfred Grimhand's Barcrawl",
@@ -104,7 +126,13 @@
 "The Restless Ghost",
 "Ernest the Chicken",
 "Priest in Peril"
-]
+],
+"xp": {
+"CRAFTING": 1000,
+"FLETCHING": 1000,
+"SLAYER": 1000,
+"WOODCUTTING": 2500
+}
 },
 {
 "name": "Another Slice of H.A.M.",
@@ -121,7 +149,11 @@
 "Rune Mysteries",
 "The Giant Dwarf",
 "The Dig Site"
-]
+],
+"xp": {
+"MINING": 3000,
+"PRAYER": 3000
+}
 },
 {
 "name": "At First Light",
@@ -135,7 +167,12 @@
 "quests": [
 "Children of the Sun",
 "Eagles' Peak"
-]
+],
+"xp": {
+"HUNTER": 4500,
+"CONSTRUCTION": 800,
+"HERBLORE": 500
+}
 },
 {
 "name": "Barbarian Training",
@@ -164,7 +201,10 @@
 "name": "Below Ice Mountain",
 "wiki": "Below Ice Mountain",
 "members": false,
-"questPoints": 16
+"questPoints": 16,
+"xp": {
+"MINING": 1200
+}
 },
 {
 "name": "Beneath Cursed Sands",
@@ -180,7 +220,10 @@
 "Prince Ali Rescue",
 "Icthlarin's Little Helper",
 "Gertrude's Cat"
-]
+],
+"xp": {
+"AGILITY": 50000
+}
 },
 {
 "name": "Between a Rock...",
@@ -194,7 +237,12 @@
 "quests": [
 "Dwarf Cannon",
 "Fishing Contest"
-]
+],
+"xp": {
+"DEFENCE": 5000,
+"MINING": 5000,
+"SMITHING": 5000
+}
 },
 {
 "name": "Big Chompy Bird Hunting",
@@ -204,6 +252,11 @@
 "FLETCHING": 5,
 "COOKING": 30,
 "RANGED": 30
+},
+"xp": {
+"FLETCHING": 262,
+"COOKING": 1470,
+"RANGED": 735
 }
 },
 {
@@ -212,13 +265,17 @@
 "members": true,
 "quests": [
 "Plague City"
-]
+],
+"xp": {
+"THIEVING": 1250
+}
 },
 {
 "name": "Black Knights' Fortress",
 "wiki": "Black Knights' Fortress",
 "members": false,
-"questPoints": 12
+"questPoints": 12,
+"lamp": true
 },
 {
 "name": "Bone Voyage",
@@ -260,7 +317,12 @@
 "Jungle Potion",
 "Druidic Ritual",
 "Priest in Peril"
-]
+],
+"xp": {
+"CRAFTING": 7000,
+"SMITHING": 7000,
+"AGILITY": 7000
+}
 },
 {
 "name": "Children of the Sun",
@@ -273,12 +335,16 @@
 "members": true,
 "quests": [
 "X Marks the Spot"
-]
+],
+"lamp": true
 },
 {
 "name": "Clock Tower",
 "wiki": "Clock Tower",
-"members": true
+"members": true,
+"xp": {
+"FIREMAKING": 1000
+}
 },
 {
 "name": "Cold War",
@@ -290,6 +356,11 @@
 "CRAFTING": 30,
 "CONSTRUCTION": 34,
 "THIEVING": 15
+},
+"xp": {
+"CRAFTING": 2000,
+"AGILITY": 5000,
+"CONSTRUCTION": 1500
 }
 },
 {
@@ -300,12 +371,27 @@
 "Prince Ali Rescue",
 "Icthlarin's Little Helper",
 "Gertrude's Cat"
-]
+],
+"xp": {
+"THIEVING": 7000
+},
+"maybeXp": [
+"ATTACK",
+"STRENGTH",
+"DEFENCE",
+"HITPOINTS",
+"RANGED",
+"MAGIC"
+],
+"lamp": true
 },
 {
 "name": "Cook's Assistant",
 "wiki": "Cook's Assistant",
-"members": false
+"members": false,
+"xp": {
+"COOKING": 300
+}
 },
 {
 "name": "Crab Quest",
@@ -314,6 +400,10 @@
 "skills": {
 "SAILING": 40,
 "FISHING": 30
+},
+"xp": {
+"SAILING": 10000,
+"FISHING": 3000
 }
 },
 {
@@ -327,7 +417,10 @@
 "quests": [
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"xp": {
+"THIEVING": 1000
+}
 },
 {
 "name": "Current Affairs",
@@ -339,7 +432,11 @@
 },
 "quests": [
 "Pandemonium"
-]
+],
+"xp": {
+"SAILING": 1400,
+"FISHING": 1000
+}
 },
 {
 "name": "Curse of the Empty Lord",
@@ -357,7 +454,10 @@
 {
 "name": "Daddy's Home",
 "wiki": "Daddy's Home",
-"members": true
+"members": true,
+"xp": {
+"CONSTRUCTION": 944
+}
 },
 {
 "name": "Darkness of Hallowvale",
@@ -378,12 +478,21 @@
 "Nature Spirit",
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"xp": {
+"AGILITY": 7000,
+"THIEVING": 6000,
+"CONSTRUCTION": 2000
+},
+"lamp": true
 },
 {
 "name": "Death Plateau",
 "wiki": "Death Plateau",
-"members": true
+"members": true,
+"xp": {
+"ATTACK": 3000
+}
 },
 {
 "name": "Death on the Isle",
@@ -395,7 +504,12 @@
 },
 "quests": [
 "Children of the Sun"
-]
+],
+"xp": {
+"THIEVING": 10000,
+"AGILITY": 7500,
+"CRAFTING": 5000
+}
 },
 {
 "name": "Death to the Dorgeshuun",
@@ -409,7 +523,11 @@
 "The Lost Tribe",
 "Goblin Diplomacy",
 "Rune Mysteries"
-]
+],
+"xp": {
+"THIEVING": 2000,
+"RANGED": 2000
+}
 },
 {
 "name": "Defender of Varrock",
@@ -432,12 +550,18 @@
 "Rune Mysteries",
 "Romeo & Juliet",
 "Demon Slayer"
-]
+],
+"xp": {
+"SMITHING": 15000,
+"HUNTER": 15000
+},
+"lamp": true
 },
 {
 "name": "Demon Slayer",
 "wiki": "Demon Slayer",
-"members": false
+"members": false,
+"lamp": true
 },
 {
 "name": "Desert Treasure I",
@@ -458,7 +582,10 @@
 "Priest in Peril",
 "Waterfall Quest",
 "Plague City"
-]
+],
+"xp": {
+"MAGIC": 20006
+}
 },
 {
 "name": "Desert Treasure II - The Fallen Empire",
@@ -514,7 +641,17 @@
 "The Garden of Death",
 "Below Ice Mountain",
 "His Faithful Servants"
-]
+],
+"maybeXp": [
+"ATTACK",
+"STRENGTH",
+"DEFENCE",
+"HITPOINTS",
+"RANGED",
+"MAGIC",
+"PRAYER"
+],
+"lamp": true
 },
 {
 "name": "Devious Minds",
@@ -538,18 +675,30 @@
 "Troll Stronghold",
 "Death Plateau",
 "Doric's Quest"
-]
+],
+"xp": {
+"FLETCHING": 5000,
+"RUNECRAFT": 5000,
+"SMITHING": 6500
+}
 },
 {
 "name": "Doric's Quest",
 "wiki": "Doric's Quest",
-"members": false
+"members": false,
+"xp": {
+"MINING": 1300
+}
 },
 {
 "name": "Dragon Slayer I",
 "wiki": "Dragon Slayer I",
 "members": false,
-"questPoints": 32
+"questPoints": 32,
+"xp": {
+"STRENGTH": 18650,
+"DEFENCE": 18650
+}
 },
 {
 "name": "Dragon Slayer II",
@@ -601,7 +750,13 @@
 "Client of Kourend",
 "X Marks the Spot",
 "Barbarian Training"
-]
+],
+"xp": {
+"SMITHING": 80000,
+"MINING": 60000,
+"AGILITY": 50000,
+"THIEVING": 50000
+}
 },
 {
 "name": "Dream Mentor",
@@ -619,17 +774,28 @@
 "Druidic Ritual",
 "Troll Stronghold",
 "Death Plateau"
-]
+],
+"xp": {
+"HITPOINTS": 15000,
+"MAGIC": 10000
+},
+"lamp": true
 },
 {
 "name": "Druidic Ritual",
 "wiki": "Druidic Ritual",
-"members": true
+"members": true,
+"xp": {
+"HERBLORE": 250
+}
 },
 {
 "name": "Dwarf Cannon",
 "wiki": "Dwarf Cannon",
-"members": true
+"members": true,
+"xp": {
+"CRAFTING": 750
+}
 },
 {
 "name": "Eadgar's Ruse",
@@ -642,7 +808,10 @@
 "Druidic Ritual",
 "Troll Stronghold",
 "Death Plateau"
-]
+],
+"xp": {
+"HERBLORE": 11000
+}
 },
 {
 "name": "Eagles' Peak",
@@ -650,6 +819,9 @@
 "members": true,
 "skills": {
 "HUNTER": 27
+},
+"xp": {
+"HUNTER": 2500
 }
 },
 {
@@ -660,6 +832,10 @@
 "MINING": 20,
 "SMITHING": 20,
 "CRAFTING": 20
+},
+"xp": {
+"CRAFTING": 5000,
+"SMITHING": 5000
 }
 },
 {
@@ -672,7 +848,11 @@
 },
 "quests": [
 "Elemental Workshop I"
-]
+],
+"xp": {
+"SMITHING": 7500,
+"CRAFTING": 7500
+}
 },
 {
 "name": "Enakhra's Lament",
@@ -683,6 +863,12 @@
 "FIREMAKING": 45,
 "PRAYER": 43,
 "MAGIC": 39
+},
+"xp": {
+"CRAFTING": 7000,
+"MINING": 7000,
+"FIREMAKING": 7000,
+"MAGIC": 7000
 }
 },
 {
@@ -694,7 +880,13 @@
 "FARMING": 30,
 "CRAFTING": 36
 },
-"questPoints": 20
+"questPoints": 20,
+"xp": {
+"CRAFTING": 2000,
+"FARMING": 3000,
+"WOODCUTTING": 1500,
+"FIREMAKING": 4000
+}
 },
 {
 "name": "Enter the Abyss",
@@ -707,7 +899,8 @@
 {
 "name": "Ernest the Chicken",
 "wiki": "Ernest the Chicken",
-"members": false
+"members": false,
+"lamp": true
 },
 {
 "name": "Ethically Acquired Antiquities",
@@ -719,7 +912,10 @@
 "quests": [
 "Children of the Sun",
 "Shield of Arrav"
-]
+],
+"xp": {
+"THIEVING": 6000
+}
 },
 {
 "name": "Fairytale I - Growing Pains",
@@ -730,7 +926,12 @@
 "Nature Spirit",
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"xp": {
+"FARMING": 3500,
+"ATTACK": 2000,
+"MAGIC": 1000
+}
 },
 {
 "name": "Fairytale II - Cure a Queen",
@@ -747,7 +948,12 @@
 "Nature Spirit",
 "The Restless Ghost",
 "Priest in Peril"
-]
+],
+"xp": {
+"HERBLORE": 3500,
+"THIEVING": 2500
+},
+"lamp": true
 },
 {
 "name": "Fairytale III - Nexus of Power",
@@ -766,7 +972,13 @@
 },
 "quests": [
 "Pandemonium"
-]
+],
+"xp": {
+"CRAFTING": 10000,
+"SAILING": 12500,
+"MINING": 5000,
+"RUNECRAFT": 5000
+}
 },
 {
 "name": "Family Crest",
@@ -790,7 +1002,11 @@
 {
 "name": "Fight Arena",
 "wiki": "Fight Arena",
-"members": true
+"members": true,
+"xp": {
+"ATTACK": 12175,
+"THIEVING": 2175
+}
 },
 {
 "name": "Fishing Contest",
@@ -798,6 +1014,9 @@
 "members": true,
 "skills": {
 "FISHING": 10
+},
+"xp": {
+"FISHING": 2437
 }
 },
 {
@@ -823,7 +1042,11 @@
 "quests": [
 "The Giant Dwarf",
 "Fishing Contest"
-]
+],
+"xp": {
+"COOKING": 5000,
+"FARMING": 5000
+}
 },
 {
 "name": "Garden of Tranquillity",
@@ -836,12 +1059,18 @@
 "Creature of Fenkenstrain",
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"xp": {
+"FARMING": 5000
+}
 },
 {
 "name": "Gertrude's Cat",
 "wiki": "Gertrude's Cat",
-"members": true
+"members": true,
+"xp": {
+"COOKING": 1525
+}
 },
 {
 "name": "Getting Ahead",
@@ -850,6 +1079,10 @@
 "skills": {
 "CRAFTING": 30,
 "CONSTRUCTION": 26
+},
+"xp": {
+"CRAFTING": 4000,
+"CONSTRUCTION": 3200
 }
 },
 {
@@ -863,12 +1096,18 @@
 "quests": [
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"xp": {
+"PRAYER": 2400
+}
 },
 {
 "name": "Goblin Diplomacy",
 "wiki": "Goblin Diplomacy",
-"members": false
+"members": false,
+"xp": {
+"CRAFTING": 200
+}
 },
 {
 "name": "Grim Tales",
@@ -883,7 +1122,15 @@
 },
 "quests": [
 "Witch's House"
-]
+],
+"xp": {
+"WOODCUTTING": 60000,
+"AGILITY": 25000,
+"THIEVING": 25000,
+"HERBLORE": 15000,
+"FARMING": 10000,
+"HITPOINTS": 5000
+}
 },
 {
 "name": "Haunted Mine",
@@ -894,12 +1141,18 @@
 },
 "quests": [
 "Priest in Peril"
-]
+],
+"xp": {
+"STRENGTH": 22000
+}
 },
 {
 "name": "Hazeel Cult",
 "wiki": "Hazeel Cult",
-"members": true
+"members": true,
+"xp": {
+"THIEVING": 1500
+}
 },
 {
 "name": "Heroes' Quest",
@@ -917,7 +1170,21 @@
 "Lost City",
 "Merlin's Crystal",
 "Dragon Slayer I"
-]
+],
+"xp": {
+"ATTACK": 3075,
+"DEFENCE": 3075,
+"STRENGTH": 3075,
+"HITPOINTS": 3075,
+"RANGED": 2075,
+"FISHING": 2725,
+"COOKING": 2825,
+"WOODCUTTING": 1575,
+"FIREMAKING": 1575,
+"SMITHING": 2275,
+"MINING": 2575,
+"HERBLORE": 1325
+}
 },
 {
 "name": "His Faithful Servants",
@@ -936,7 +1203,11 @@
 },
 "quests": [
 "Merlin's Crystal"
-]
+],
+"xp": {
+"PRAYER": 11000,
+"DEFENCE": 15300
+}
 },
 {
 "name": "Hopespear's Will",
@@ -961,7 +1232,13 @@
 },
 "quests": [
 "Alfred Grimhand's Barcrawl"
-]
+],
+"xp": {
+"MAGIC": 4662,
+"STRENGTH": 4662,
+"RANGED": 4662
+},
+"lamp": true
 },
 {
 "name": "Icthlarin's Little Helper",
@@ -969,12 +1246,20 @@
 "members": true,
 "quests": [
 "Gertrude's Cat"
-]
+],
+"xp": {
+"THIEVING": 4500,
+"AGILITY": 4000,
+"WOODCUTTING": 4000
+}
 },
 {
 "name": "Imp Catcher",
 "wiki": "Imp Catcher",
-"members": false
+"members": false,
+"xp": {
+"MAGIC": 875
+}
 },
 {
 "name": "In Aid of the Myreque",
@@ -991,7 +1276,13 @@
 "Nature Spirit",
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"xp": {
+"ATTACK": 2000,
+"STRENGTH": 2000,
+"CRAFTING": 2000,
+"DEFENCE": 2000
+}
 },
 {
 "name": "In Search of Knowledge",
@@ -1009,7 +1300,14 @@
 "Nature Spirit",
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"xp": {
+"ATTACK": 600,
+"DEFENCE": 600,
+"STRENGTH": 600,
+"HITPOINTS": 600,
+"CRAFTING": 600
+}
 },
 {
 "name": "Into the Tombs",
@@ -1032,7 +1330,10 @@
 },
 "quests": [
 "Druidic Ritual"
-]
+],
+"xp": {
+"HERBLORE": 775
+}
 },
 {
 "name": "King's Ransom",
@@ -1052,7 +1353,12 @@
 "Shilo Village",
 "Jungle Potion",
 "Druidic Ritual"
-]
+],
+"xp": {
+"DEFENCE": 33000,
+"MAGIC": 5000
+},
+"lamp": true
 },
 {
 "name": "Lair of Tarn Razorlor",
@@ -1084,7 +1390,13 @@
 "The Giant Dwarf",
 "The Dig Site",
 "Fishing Contest"
-]
+],
+"xp": {
+"AGILITY": 8000,
+"FISHING": 8000,
+"THIEVING": 8000,
+"HERBLORE": 8000
+}
 },
 {
 "name": "Learning the Ropes",
@@ -1122,7 +1434,22 @@
 "Biohazard",
 "Plague City",
 "Waterfall Quest"
-]
+],
+"maybeXp": [
+"ATTACK",
+"DEFENCE",
+"STRENGTH",
+"HITPOINTS",
+"PRAYER",
+"MAGIC",
+"WOODCUTTING",
+"CRAFTING",
+"SMITHING",
+"HERBLORE",
+"AGILITY",
+"THIEVING"
+],
+"lamp": true
 },
 {
 "name": "Lost City",
@@ -1131,6 +1458,10 @@
 "skills": {
 "CRAFTING": 31,
 "WOODCUTTING": 36
+},
+"xp": {
+"WOODCUTTING": 1500,
+"CRAFTING": 1500
 }
 },
 {
@@ -1153,7 +1484,11 @@
 "Shilo Village",
 "Jungle Potion",
 "Druidic Ritual"
-]
+],
+"xp": {
+"MAGIC": 5000,
+"RUNECRAFT": 5000
+}
 },
 {
 "name": "Mage Arena I",
@@ -1202,7 +1537,13 @@
 "The Restless Ghost",
 "Cold War",
 "Romeo & Juliet"
-]
+],
+"xp": {
+"CONSTRUCTION": 10000,
+"FIREMAKING": 40000,
+"MINING": 50000,
+"AGILITY": 50000
+}
 },
 {
 "name": "Making History",
@@ -1211,7 +1552,12 @@
 "quests": [
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"xp": {
+"CRAFTING": 1000,
+"PRAYER": 1000
+},
+"lamp": true
 },
 {
 "name": "Meat and Greet",
@@ -1219,22 +1565,35 @@
 "members": true,
 "quests": [
 "Children of the Sun"
-]
+],
+"xp": {
+"COOKING": 8000
+}
 },
 {
 "name": "Merlin's Crystal",
 "wiki": "Merlin's Crystal",
-"members": true
+"members": true,
+"xp": {
+"FIREMAKING": 1000
+},
+"lamp": true
 },
 {
 "name": "Misthalin Mystery",
 "wiki": "Misthalin Mystery",
-"members": false
+"members": false,
+"xp": {
+"CRAFTING": 600
+}
 },
 {
 "name": "Monk's Friend",
 "wiki": "Monk's Friend",
-"members": true
+"members": true,
+"xp": {
+"WOODCUTTING": 2000
+}
 },
 {
 "name": "Monkey Madness I",
@@ -1243,6 +1602,12 @@
 "quests": [
 "The Grand Tree",
 "Tree Gnome Village"
+],
+"maybeXp": [
+"ATTACK",
+"DEFENCE",
+"STRENGTH",
+"HITPOINTS"
 ]
 },
 {
@@ -1266,7 +1631,13 @@
 "Troll Stronghold",
 "Death Plateau",
 "Watchtower"
-]
+],
+"xp": {
+"SLAYER": 80000,
+"AGILITY": 60000,
+"THIEVING": 50000,
+"HUNTER": 50000
+}
 },
 {
 "name": "Mountain Daughter",
@@ -1274,6 +1645,10 @@
 "members": true,
 "skills": {
 "AGILITY": 20
+},
+"xp": {
+"PRAYER": 2000,
+"ATTACK": 1000
 }
 },
 {
@@ -1293,7 +1668,11 @@
 "Waterfall Quest",
 "Big Chompy Bird Hunting",
 "Sheep Herder"
-]
+],
+"xp": {
+"THIEVING": 40000,
+"HITPOINTS": 25000
+}
 },
 {
 "name": "Mourning's End Part II",
@@ -1309,17 +1688,24 @@
 "Waterfall Quest",
 "Big Chompy Bird Hunting",
 "Sheep Herder"
-]
+],
+"xp": {
+"AGILITY": 60000
+}
 },
 {
 "name": "Mudfoot's Big Adventure",
 "wiki": "Mudfoot's Big Adventure",
-"members": false
+"members": false,
+"lamp": true
 },
 {
 "name": "Murder Mystery",
 "wiki": "Murder Mystery",
-"members": true
+"members": true,
+"xp": {
+"CRAFTING": 1406
+}
 },
 {
 "name": "My Arm's Big Adventure",
@@ -1336,7 +1722,11 @@
 "Death Plateau",
 "The Feud",
 "Jungle Potion"
-]
+],
+"xp": {
+"HERBLORE": 10000,
+"FARMING": 5000
+}
 },
 {
 "name": "Nature Spirit",
@@ -1345,12 +1735,26 @@
 "quests": [
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"xp": {
+"CRAFTING": 3000,
+"DEFENCE": 2000,
+"HITPOINTS": 2000
+}
 },
 {
 "name": "Observatory Quest",
 "wiki": "Observatory Quest",
-"members": true
+"members": true,
+"xp": {
+"CRAFTING": 2250
+},
+"maybeXp": [
+"ATTACK",
+"STRENGTH",
+"HITPOINTS",
+"DEFENCE"
+]
 },
 {
 "name": "Olaf's Quest",
@@ -1362,7 +1766,10 @@
 },
 "quests": [
 "The Fremennik Trials"
-]
+],
+"xp": {
+"DEFENCE": 12000
+}
 },
 {
 "name": "One Small Favour",
@@ -1379,12 +1786,16 @@
 "Shilo Village",
 "Jungle Potion",
 "Druidic Ritual"
-]
+],
+"lamp": true
 },
 {
 "name": "Pandemonium",
 "wiki": "Pandemonium",
-"members": true
+"members": true,
+"xp": {
+"SAILING": 400
+}
 },
 {
 "name": "Perilous Moons",
@@ -1400,27 +1811,46 @@
 "quests": [
 "Twilight's Promise",
 "Children of the Sun"
-]
+],
+"xp": {
+"SLAYER": 40000,
+"RUNECRAFT": 5000,
+"HUNTER": 5000,
+"FISHING": 5000
+}
 },
 {
 "name": "Pirate's Treasure",
 "wiki": "Pirate's Treasure",
-"members": false
+"members": false,
+"xp": {
+"COOKING": 800
+}
 },
 {
 "name": "Plague City",
 "wiki": "Plague City",
-"members": true
+"members": true,
+"xp": {
+"MINING": 2425
+}
 },
 {
 "name": "Priest in Peril",
 "wiki": "Priest in Peril",
-"members": true
+"members": true,
+"xp": {
+"PRAYER": 1406
+}
 },
 {
 "name": "Prince Ali Rescue",
 "wiki": "Prince Ali Rescue",
-"members": false
+"members": false,
+"xp": {
+"SMITHING": 500,
+"CRAFTING": 500
+}
 },
 {
 "name": "Prying Times",
@@ -1433,12 +1863,20 @@
 "quests": [
 "Pandemonium",
 "The Knight's Sword"
-]
+],
+"xp": {
+"SMITHING": 1000,
+"SAILING": 800
+}
 },
 {
 "name": "Rag and Bone Man I",
 "wiki": "Rag and Bone Man I",
-"members": true
+"members": true,
+"xp": {
+"COOKING": 500,
+"PRAYER": 500
+}
 },
 {
 "name": "Rag and Bone Man II",
@@ -1452,7 +1890,10 @@
 "Rag and Bone Man I",
 "Skippy and the Mogres",
 "Creature of Fenkenstrain"
-]
+],
+"xp": {
+"PRAYER": 5000
+}
 },
 {
 "name": "Ratcatchers",
@@ -1462,7 +1903,10 @@
 "Icthlarin's Little Helper",
 "Gertrude's Cat",
 "The Giant Dwarf"
-]
+],
+"xp": {
+"THIEVING": 4500
+}
 },
 {
 "name": "Recipe for Disaster",
@@ -1523,7 +1967,8 @@
 "Death Plateau",
 "Horror from the Deep",
 "Alfred Grimhand's Barcrawl"
-]
+],
+"lamp": true
 },
 {
 "name": "Recruitment Drive",
@@ -1532,7 +1977,12 @@
 "quests": [
 "Black Knights' Fortress",
 "Druidic Ritual"
-]
+],
+"xp": {
+"PRAYER": 1000,
+"HERBLORE": 1000,
+"AGILITY": 1000
+}
 },
 {
 "name": "Regicide",
@@ -1546,12 +1996,16 @@
 "Underground Pass",
 "Biohazard",
 "Plague City"
-]
+],
+"xp": {
+"AGILITY": 13750
+}
 },
 {
 "name": "Romeo & Juliet",
 "wiki": "Romeo & Juliet",
-"members": false
+"members": false,
+"lamp": true
 },
 {
 "name": "Roving Elves",
@@ -1566,7 +2020,10 @@
 "Biohazard",
 "Plague City",
 "Waterfall Quest"
-]
+],
+"xp": {
+"STRENGTH": 10000
+}
 },
 {
 "name": "Royal Trouble",
@@ -1584,7 +2041,12 @@
 "Merlin's Crystal",
 "Dragon Slayer I",
 "The Fremennik Trials"
-]
+],
+"xp": {
+"AGILITY": 5000,
+"SLAYER": 5000,
+"HITPOINTS": 5000
+}
 },
 {
 "name": "Rum Deal",
@@ -1603,12 +2065,20 @@
 "Jungle Potion",
 "Druidic Ritual",
 "Priest in Peril"
-]
+],
+"xp": {
+"FISHING": 7000,
+"PRAYER": 7000,
+"FARMING": 7000
+}
 },
 {
 "name": "Rune Mysteries",
 "wiki": "Rune Mysteries",
-"members": false
+"members": false,
+"xp": {
+"RUNECRAFT": 500
+}
 },
 {
 "name": "Scorpion Catcher",
@@ -1619,7 +2089,10 @@
 },
 "quests": [
 "Alfred Grimhand's Barcrawl"
-]
+],
+"xp": {
+"STRENGTH": 6625
+}
 },
 {
 "name": "Scrambled!",
@@ -1632,7 +2105,12 @@
 },
 "quests": [
 "Children of the Sun"
-]
+],
+"xp": {
+"CONSTRUCTION": 5000,
+"COOKING": 5000,
+"SMITHING": 5000
+}
 },
 {
 "name": "Sea Slug",
@@ -1640,6 +2118,9 @@
 "members": true,
 "skills": {
 "FIREMAKING": 30
+},
+"xp": {
+"FISHING": 7175
 }
 },
 {
@@ -1683,7 +2164,12 @@
 "Doric's Quest",
 "Enter the Abyss",
 "Hazeel Cult"
-]
+],
+"xp": {
+"AGILITY": 60000,
+"THIEVING": 50000,
+"HUNTER": 40000
+}
 },
 {
 "name": "Shades of Mort'ton",
@@ -1696,7 +2182,11 @@
 },
 "quests": [
 "Priest in Peril"
-]
+],
+"xp": {
+"HERBLORE": 2000,
+"CRAFTING": 2000
+}
 },
 {
 "name": "Shadow of the Storm",
@@ -1722,22 +2212,35 @@
 },
 "quests": [
 "Children of the Sun"
-]
+],
+"xp": {
+"SLAYER": 10000,
+"HUNTER": 4000,
+"FISHING": 3000,
+"CONSTRUCTION": 3000
+}
 },
 {
 "name": "Sheep Herder",
 "wiki": "Sheep Herder",
-"members": true
+"members": true,
+"xp": {
+"HUNTER": 1000
+}
 },
 {
 "name": "Sheep Shearer",
 "wiki": "Sheep Shearer",
-"members": false
+"members": false,
+"xp": {
+"CRAFTING": 150
+}
 },
 {
 "name": "Shield of Arrav",
 "wiki": "Shield of Arrav",
-"members": false
+"members": false,
+"lamp": true
 },
 {
 "name": "Shilo Village",
@@ -1750,7 +2253,10 @@
 "quests": [
 "Jungle Potion",
 "Druidic Ritual"
-]
+],
+"xp": {
+"CRAFTING": 3875
+}
 },
 {
 "name": "Sins of the Father",
@@ -1774,7 +2280,8 @@
 "Nature Spirit",
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"lamp": true
 },
 {
 "name": "Skippy and the Mogres",
@@ -1790,6 +2297,9 @@
 "members": true,
 "skills": {
 "SMITHING": 15
+},
+"xp": {
+"SMITHING": 6000
 }
 },
 {
@@ -1821,7 +2331,17 @@
 "Priest in Peril",
 "The Restless Ghost",
 "Druidic Ritual"
-]
+],
+"xp": {
+"AGILITY": 40000,
+"CONSTRUCTION": 40000,
+"FARMING": 40000,
+"HERBLORE": 40000,
+"HUNTER": 40000,
+"MINING": 40000,
+"SMITHING": 40000,
+"WOODCUTTING": 40000
+}
 },
 {
 "name": "Spirits of the Elid",
@@ -1832,6 +2352,11 @@
 "RANGED": 37,
 "MINING": 37,
 "THIEVING": 37
+},
+"xp": {
+"PRAYER": 8000,
+"THIEVING": 1000,
+"MAGIC": 1000
 }
 },
 {
@@ -1857,7 +2382,12 @@
 "Creature of Fenkenstrain",
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"xp": {
+"MAGIC": 15000,
+"PRAYER": 10000,
+"FISHING": 50000
+}
 },
 {
 "name": "Tai Bwo Wannai Trio",
@@ -1871,7 +2401,13 @@
 "quests": [
 "Jungle Potion",
 "Druidic Ritual"
-]
+],
+"xp": {
+"COOKING": 5000,
+"FISHING": 5000,
+"ATTACK": 2500,
+"STRENGTH": 2500
+}
 },
 {
 "name": "Tale of the Righteous",
@@ -1884,7 +2420,10 @@
 "quests": [
 "Client of Kourend",
 "X Marks the Spot"
-]
+],
+"xp": {
+"MINING": 1500
+}
 },
 {
 "name": "Tears of Guthix",
@@ -1895,7 +2434,10 @@
 "CRAFTING": 20,
 "MINING": 20
 },
-"questPoints": 43
+"questPoints": 43,
+"xp": {
+"CRAFTING": 1000
+}
 },
 {
 "name": "Temple of Ikov",
@@ -1904,6 +2446,10 @@
 "skills": {
 "THIEVING": 42,
 "RANGED": 40
+},
+"xp": {
+"RANGED": 10500,
+"FLETCHING": 8000
 }
 },
 {
@@ -1916,7 +2462,10 @@
 "quests": [
 "Enter the Abyss",
 "Rune Mysteries"
-]
+],
+"xp": {
+"RUNECRAFT": 5000
+}
 },
 {
 "name": "The Ascent of Arceuus",
@@ -1928,7 +2477,11 @@
 "quests": [
 "Client of Kourend",
 "X Marks the Spot"
-]
+],
+"xp": {
+"HUNTER": 1500,
+"RUNECRAFT": 500
+}
 },
 {
 "name": "The Blood Moon Rises",
@@ -1957,7 +2510,8 @@
 "Nature Spirit",
 "Priest in Peril",
 "The Restless Ghost"
-]
+],
+"lamp": true
 },
 {
 "name": "The Chosen Commander",
@@ -1983,7 +2537,10 @@
 {
 "name": "The Corsair Curse",
 "wiki": "The Corsair Curse",
-"members": false
+"members": false,
+"xp": {
+"FIREMAKING": 1200
+}
 },
 {
 "name": "The Curse of Arrav",
@@ -2014,7 +2571,12 @@
 "Troll Romance",
 "Troll Stronghold",
 "Death Plateau"
-]
+],
+"xp": {
+"MINING": 40000,
+"THIEVING": 40000,
+"AGILITY": 40000
+}
 },
 {
 "name": "The Depths of Despair",
@@ -2026,7 +2588,10 @@
 "quests": [
 "Client of Kourend",
 "X Marks the Spot"
-]
+],
+"xp": {
+"AGILITY": 1500
+}
 },
 {
 "name": "The Dig Site",
@@ -2036,6 +2601,10 @@
 "AGILITY": 10,
 "HERBLORE": 10,
 "THIEVING": 25
+},
+"xp": {
+"MINING": 15300,
+"HERBLORE": 2000
 }
 },
 {
@@ -2056,7 +2625,13 @@
 },
 "quests": [
 "The Grand Tree"
-]
+],
+"xp": {
+"MAGIC": 12000,
+"WOODCUTTING": 2500,
+"RUNECRAFT": 6000,
+"CONSTRUCTION": 250
+}
 },
 {
 "name": "The Feud",
@@ -2064,6 +2639,9 @@
 "members": true,
 "skills": {
 "THIEVING": 30
+},
+"xp": {
+"THIEVING": 15000
 }
 },
 {
@@ -2080,7 +2658,13 @@
 "Twilight's Promise",
 "Children of the Sun",
 "Perilous Moons"
-]
+],
+"xp": {
+"THIEVING": 55000,
+"RUNECRAFT": 25000,
+"FLETCHING": 25000
+},
+"lamp": true
 },
 {
 "name": "The Forsaken Tower",
@@ -2089,7 +2673,11 @@
 "quests": [
 "Client of Kourend",
 "X Marks the Spot"
-]
+],
+"xp": {
+"MINING": 500,
+"SMITHING": 500
+}
 },
 {
 "name": "The Fractured Archive",
@@ -2167,7 +2755,12 @@
 "Dragon Slayer I",
 "Merlin's Crystal",
 "Shield of Arrav"
-]
+],
+"xp": {
+"SLAYER": 50000,
+"CRAFTING": 50000,
+"RUNECRAFT": 30000
+}
 },
 {
 "name": "The Fremennik Isles",
@@ -2178,12 +2771,35 @@
 },
 "quests": [
 "The Fremennik Trials"
+],
+"xp": {
+"CONSTRUCTION": 5000,
+"CRAFTING": 5000,
+"WOODCUTTING": 10000
+},
+"maybeXp": [
+"STRENGTH",
+"ATTACK",
+"DEFENCE",
+"HITPOINTS"
 ]
 },
 {
 "name": "The Fremennik Trials",
 "wiki": "The Fremennik Trials",
-"members": true
+"members": true,
+"xp": {
+"AGILITY": 2812,
+"ATTACK": 2812,
+"CRAFTING": 2812,
+"DEFENCE": 2812,
+"FISHING": 2812,
+"FLETCHING": 2812,
+"HITPOINTS": 2812,
+"STRENGTH": 2812,
+"THIEVING": 2812,
+"WOODCUTTING": 2812
+}
 },
 {
 "name": "The Frozen Door",
@@ -2205,6 +2821,9 @@
 "members": true,
 "skills": {
 "FARMING": 20
+},
+"xp": {
+"FARMING": 10000
 }
 },
 {
@@ -2226,6 +2845,14 @@
 "FIREMAKING": 16,
 "MAGIC": 33,
 "THIEVING": 14
+},
+"xp": {
+"MINING": 2500,
+"SMITHING": 2500,
+"CRAFTING": 2500,
+"MAGIC": 1500,
+"THIEVING": 1500,
+"FIREMAKING": 1500
 }
 },
 {
@@ -2235,6 +2862,10 @@
 "skills": {
 "CRAFTING": 20,
 "THIEVING": 25
+},
+"xp": {
+"THIEVING": 1000,
+"CRAFTING": 1000
 }
 },
 {
@@ -2243,6 +2874,11 @@
 "members": true,
 "skills": {
 "AGILITY": 25
+},
+"xp": {
+"ATTACK": 18400,
+"AGILITY": 7900,
+"MAGIC": 2150
 }
 },
 {
@@ -2272,7 +2908,14 @@
 "Shield of Arrav",
 "Olaf's Quest",
 "Pandemonium"
-]
+],
+"xp": {
+"AGILITY": 35000,
+"RUNECRAFT": 15000,
+"SAILING": 35000,
+"FLETCHING": 10000
+},
+"lamp": true
 },
 {
 "name": "The Great Brain Robbery",
@@ -2294,7 +2937,13 @@
 "Jungle Potion",
 "Druidic Ritual",
 "Cook's Assistant"
-]
+],
+"xp": {
+"PRAYER": 6000,
+"CRAFTING": 3000,
+"CONSTRUCTION": 2000
+},
+"lamp": true
 },
 {
 "name": "The Hand in the Sand",
@@ -2303,6 +2952,10 @@
 "skills": {
 "THIEVING": 17,
 "CRAFTING": 49
+},
+"xp": {
+"THIEVING": 1000,
+"CRAFTING": 9000
 }
 },
 {
@@ -2318,12 +2971,19 @@
 "quests": [
 "Twilight's Promise",
 "Children of the Sun"
-]
+],
+"xp": {
+"MINING": 8000,
+"THIEVING": 8000,
+"SLAYER": 8000,
+"AGILITY": 8000
+}
 },
 {
 "name": "The Ides of Milk",
 "wiki": "The Ides of Milk",
-"members": false
+"members": false,
+"lamp": true
 },
 {
 "name": "The Knight's Sword",
@@ -2331,6 +2991,9 @@
 "members": false,
 "skills": {
 "MINING": 10
+},
+"xp": {
+"SMITHING": 12725
 }
 },
 {
@@ -2345,7 +3008,10 @@
 "quests": [
 "Goblin Diplomacy",
 "Rune Mysteries"
-]
+],
+"xp": {
+"MINING": 3000
+}
 },
 {
 "name": "The Path of Glouphrie",
@@ -2363,7 +3029,8 @@
 "The Grand Tree",
 "Waterfall Quest",
 "Tree Gnome Village"
-]
+],
+"lamp": true
 },
 {
 "name": "The Queen of Thieves",
@@ -2375,7 +3042,10 @@
 "quests": [
 "Client of Kourend",
 "X Marks the Spot"
-]
+],
+"xp": {
+"THIEVING": 2000
+}
 },
 {
 "name": "The Red Reef",
@@ -2388,12 +3058,19 @@
 "quests": [
 "Troubled Tortugans",
 "Pandemonium"
-]
+],
+"xp": {
+"SAILING": 15000,
+"SMITHING": 5000
+}
 },
 {
 "name": "The Restless Ghost",
 "wiki": "The Restless Ghost",
-"members": false
+"members": false,
+"xp": {
+"PRAYER": 1125
+}
 },
 {
 "name": "The Ribbiting Tale of a Lily Pad Labour Dispute",
@@ -2404,7 +3081,10 @@
 },
 "quests": [
 "Children of the Sun"
-]
+],
+"xp": {
+"WOODCUTTING": 2000
+}
 },
 {
 "name": "The Slug Menace",
@@ -2427,7 +3107,12 @@
 "Enter the Abyss",
 "Priest in Peril",
 "Sea Slug"
-]
+],
+"xp": {
+"CRAFTING": 3500,
+"RUNECRAFT": 3500,
+"THIEVING": 3500
+}
 },
 {
 "name": "The Tourist Trap",
@@ -2436,7 +3121,13 @@
 "skills": {
 "FLETCHING": 10,
 "SMITHING": 20
-}
+},
+"maybeXp": [
+"AGILITY",
+"FLETCHING",
+"SMITHING",
+"THIEVING"
+]
 },
 {
 "name": "The Writing's on the Wall",
@@ -2445,6 +3136,10 @@
 "skills": {
 "AGILITY": 22,
 "THIEVING": 20
+},
+"xp": {
+"AGILITY": 2500,
+"THIEVING": 2500
 }
 },
 {
@@ -2458,7 +3153,13 @@
 "Merlin's Crystal",
 "Dragon Slayer I",
 "The Fremennik Trials"
-]
+],
+"xp": {
+"WOODCUTTING": 1000,
+"MINING": 1000,
+"FISHING": 1000,
+"FARMING": 1000
+}
 },
 {
 "name": "Tower of Life",
@@ -2466,12 +3167,20 @@
 "members": true,
 "skills": {
 "CONSTRUCTION": 10
+},
+"xp": {
+"CONSTRUCTION": 1000,
+"CRAFTING": 500,
+"THIEVING": 500
 }
 },
 {
 "name": "Tree Gnome Village",
 "wiki": "Tree Gnome Village",
-"members": true
+"members": true,
+"xp": {
+"ATTACK": 11450
+}
 },
 {
 "name": "Tribal Totem",
@@ -2479,6 +3188,9 @@
 "members": true,
 "skills": {
 "THIEVING": 21
+},
+"xp": {
+"THIEVING": 1775
 }
 },
 {
@@ -2491,7 +3203,11 @@
 "quests": [
 "Troll Stronghold",
 "Death Plateau"
-]
+],
+"xp": {
+"AGILITY": 8000,
+"STRENGTH": 4000
+}
 },
 {
 "name": "Troll Stronghold",
@@ -2502,7 +3218,10 @@
 },
 "quests": [
 "Death Plateau"
-]
+],
+"xp": {
+"AGILITY": 2000
+}
 },
 {
 "name": "Troubled Tortugans",
@@ -2518,7 +3237,11 @@
 },
 "quests": [
 "Pandemonium"
-]
+],
+"xp": {
+"SAILING": 10000,
+"SLAYER": 8000
+}
 },
 {
 "name": "Twilight's Promise",
@@ -2526,7 +3249,10 @@
 "members": true,
 "quests": [
 "Children of the Sun"
-]
+],
+"xp": {
+"THIEVING": 3000
+}
 },
 {
 "name": "Underground Pass",
@@ -2538,7 +3264,11 @@
 "quests": [
 "Biohazard",
 "Plague City"
-]
+],
+"xp": {
+"AGILITY": 3000,
+"ATTACK": 3000
+}
 },
 {
 "name": "Vale Totems",
@@ -2554,7 +3284,10 @@
 {
 "name": "Vampyre Slayer",
 "wiki": "Vampyre Slayer",
-"members": false
+"members": false,
+"xp": {
+"ATTACK": 4825
+}
 },
 {
 "name": "Wanted!",
@@ -2570,7 +3303,10 @@
 "Goblin Diplomacy",
 "Priest in Peril",
 "Enter the Abyss"
-]
+],
+"xp": {
+"SLAYER": 5000
+}
 },
 {
 "name": "Watchtower",
@@ -2582,12 +3318,19 @@
 "AGILITY": 25,
 "HERBLORE": 14,
 "MINING": 40
+},
+"xp": {
+"MAGIC": 15250
 }
 },
 {
 "name": "Waterfall Quest",
 "wiki": "Waterfall Quest",
-"members": true
+"members": true,
+"xp": {
+"STRENGTH": 13750,
+"ATTACK": 13750
+}
 },
 {
 "name": "What Lies Below",
@@ -2598,7 +3341,11 @@
 },
 "quests": [
 "Rune Mysteries"
-]
+],
+"xp": {
+"RUNECRAFT": 8000,
+"DEFENCE": 2000
+}
 },
 {
 "name": "While Guthix Sleeps",
@@ -2659,22 +3406,35 @@
 "A Tail of Two Cats",
 "Icthlarin's Little Helper",
 "Gertrude's Cat"
-]
+],
+"xp": {
+"THIEVING": 80000,
+"FARMING": 75000,
+"HERBLORE": 75000,
+"HUNTER": 50000
+}
 },
 {
 "name": "Witch's House",
 "wiki": "Witch's House",
-"members": true
+"members": true,
+"xp": {
+"HITPOINTS": 6325
+}
 },
 {
 "name": "Witch's Potion",
 "wiki": "Witch's Potion",
-"members": false
+"members": false,
+"xp": {
+"MAGIC": 325
+}
 },
 {
 "name": "X Marks the Spot",
 "wiki": "X Marks the Spot",
-"members": false
+"members": false,
+"lamp": true
 },
 {
 "name": "Zogre Flesh Eaters",
@@ -2689,7 +3449,12 @@
 "Big Chompy Bird Hunting",
 "Jungle Potion",
 "Druidic Ritual"
-]
+],
+"xp": {
+"FLETCHING": 2000,
+"RANGED": 2000,
+"HERBLORE": 2000
+}
 }
 ]
 }

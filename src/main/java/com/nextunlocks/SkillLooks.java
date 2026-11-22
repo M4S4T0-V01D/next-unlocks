@@ -173,6 +173,62 @@ final class SkillLooks
 		return row == null || row.ambient == null ? NextUnlocksConfig.Ambient.DUST : row.ambient;
 	}
 
+	/** The trim over the skill's pinned card, for Skill's own. */
+	static NextUnlocksConfig.Trim trim(Skill skill)
+	{
+		switch (skill)
+		{
+			case ATTACK:
+				return NextUnlocksConfig.Trim.SWORDS;
+			case STRENGTH:
+				return NextUnlocksConfig.Trim.DRAGON_WEAPONS;
+			case DEFENCE:
+				return NextUnlocksConfig.Trim.CHAINS;
+			case RANGED:
+			case FLETCHING:
+				return NextUnlocksConfig.Trim.ARROWS;
+			case PRAYER:
+				return NextUnlocksConfig.Trim.BONES;
+			case MAGIC:
+				return NextUnlocksConfig.Trim.STARS;
+			case RUNECRAFT:
+				return NextUnlocksConfig.Trim.RUNES;
+			case HITPOINTS:
+				return NextUnlocksConfig.Trim.HEARTS;
+			case CRAFTING:
+				return NextUnlocksConfig.Trim.PRINCESS;
+			case MINING:
+				return NextUnlocksConfig.Trim.GEMS;
+			case SMITHING:
+				return NextUnlocksConfig.Trim.ANVILS;
+			case FISHING:
+				return NextUnlocksConfig.Trim.NET;
+			case COOKING:
+			case FIREMAKING:
+				return NextUnlocksConfig.Trim.FLAMES;
+			case WOODCUTTING:
+				return NextUnlocksConfig.Trim.LOGS;
+			case HERBLORE:
+				return NextUnlocksConfig.Trim.HERBS;
+			case AGILITY:
+				return NextUnlocksConfig.Trim.VINES;
+			case THIEVING:
+				return NextUnlocksConfig.Trim.SKULLS;
+			case SLAYER:
+				return NextUnlocksConfig.Trim.WHIP;
+			case FARMING:
+				return NextUnlocksConfig.Trim.ROSES;
+			case HUNTER:
+				return NextUnlocksConfig.Trim.THORNS;
+			case CONSTRUCTION:
+				return NextUnlocksConfig.Trim.FILIGREE;
+			case SAILING:
+				return NextUnlocksConfig.Trim.ANCHOR;
+			default:
+				return NextUnlocksConfig.Trim.FILIGREE;
+		}
+	}
+
 	/** The skill's own card. */
 	static CardTheme theme(Skill skill, Palette palette, CardTheme classic)
 	{

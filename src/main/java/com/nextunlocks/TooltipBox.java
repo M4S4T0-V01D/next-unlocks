@@ -13,7 +13,10 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -177,6 +180,12 @@ class TooltipBox implements LayoutableRenderableEntity
 				graphics.setPaint(fill);
 				graphics.fill(outline(box));
 				break;
+			case SCALLOPED:
+			case TICKET:
+				graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				graphics.setPaint(fill);
+				graphics.fill(outline(box));
+				break;
 			default:
 				graphics.setPaint(fill);
 				graphics.fillRect(box.x, box.y, box.width, box.height);
@@ -280,6 +289,28 @@ class TooltipBox implements LayoutableRenderableEntity
 				}
 				break;
 			}
+			case SCALLOPED:
+			case TICKET:
+			{
+				int w = Math.max(1, theme.getBorderWidth());
+				graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				if (border != null)
+				{
+					graphics.setColor(border);
+					graphics.setStroke(new BasicStroke(w));
+					graphics.draw(borderPath(box));
+				}
+				if (theme.getInnerBorder() != null)
+				{
+					double in = w + 1.5;
+					graphics.setColor(theme.getInnerBorder());
+					graphics.setStroke(new BasicStroke(1));
+					graphics.draw(theme.getFrame() == CardTheme.Frame.SCALLOPED
+						? scalloped(box.x + in, box.y + in, right - in, bottom - in)
+						: ticket(box.x + in, box.y + in, right - in, bottom - in));
+				}
+				break;
+			}
 			case BRACKETS:
 			{
 				if (border == null)
@@ -341,6 +372,7 @@ class TooltipBox implements LayoutableRenderableEntity
 				break;
 			}
 		}
+		CardTrim.paint(graphics, theme, box);
 		CardMotion.border(graphics, theme, borderPath(box), box);
 		graphics.setStroke(stroke);
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, aa);
@@ -470,6 +502,43 @@ class TooltipBox implements LayoutableRenderableEntity
 				bottom, bottom, bottom - s, bottom - s, bottom - 2 * s, bottom - 2 * s, y + 2 * s, y + 2 * s, y + s, y + s}, 20);
 	}
 
+	/** A box whose edges are rows of half circles bulging out, their tops on the box; the corner setting makes them bigger. */
+	private Shape scalloped(double x, double y, double right, double bottom)
+	{
+		double r = Math.max(4, Math.min(9, 4.5 + theme.getCorner() / 2.0));
+		Area area = new Area(new Rectangle2D.Double(x + r, y + r, Math.max(0, right - x - r * 2), Math.max(0, bottom - y - r * 2)));
+		bumps(area, x + r, right - r, y + r, r, true);
+		bumps(area, x + r, right - r, bottom - r, r, true);
+		bumps(area, y + r, bottom - r, x + r, r, false);
+		bumps(area, y + r, bottom - r, right - r, r, false);
+		return area;
+	}
+
+	/** Circles from one end of an edge to the other, spaced to fit it exactly. */
+	private static void bumps(Area area, double from, double to, double at, double r, boolean across)
+	{
+		int n = Math.max(1, (int) Math.ceil((to - from) / (r * 2)));
+		double step = (to - from) / n;
+		for (int i = 0; i <= n; i++)
+		{
+			double c = from + i * step;
+			area.add(new Area(across ? new Ellipse2D.Double(c - r, at - r, r * 2, r * 2)
+				: new Ellipse2D.Double(at - r, c - r, r * 2, r * 2)));
+		}
+	}
+
+	/** A box with a quarter circle bitten out of each corner, like a ticket stub. */
+	private Shape ticket(double x, double y, double right, double bottom)
+	{
+		double r = Math.max(4, Math.min(Math.min(right - x, bottom - y) / 3, theme.getCorner() + 7));
+		Area area = new Area(new Rectangle2D.Double(x, y, right - x, bottom - y));
+		for (double[] c : new double[][]{{x, y}, {right, y}, {x, bottom}, {right, bottom}})
+		{
+			area.subtract(new Area(new Ellipse2D.Double(c[0] - r, c[1] - r, r * 2, r * 2)));
+		}
+		return area;
+	}
+
 	/** The frame's outline shape, for the glow and for clipping. */
 	private Shape outline(Rectangle box)
 	{
@@ -481,6 +550,10 @@ class TooltipBox implements LayoutableRenderableEntity
 				return notched(box.x, box.y, box.x + box.width, box.y + box.height, notch(0));
 			case PIXEL:
 				return pixel(box.x, box.y, box.x + box.width, box.y + box.height);
+			case SCALLOPED:
+				return scalloped(box.x, box.y, box.x + box.width, box.y + box.height);
+			case TICKET:
+				return ticket(box.x, box.y, box.x + box.width, box.y + box.height);
 			default:
 				return box;
 		}
@@ -501,6 +574,10 @@ class TooltipBox implements LayoutableRenderableEntity
 				return notched(box.x + h, box.y + h, right, bottom, notch(h));
 			case PIXEL:
 				return pixel(box.x + h, box.y + h, right, bottom);
+			case SCALLOPED:
+				return scalloped(box.x + w / 2.0, box.y + w / 2.0, box.x + box.width - w / 2.0, box.y + box.height - w / 2.0);
+			case TICKET:
+				return ticket(box.x + w / 2.0, box.y + w / 2.0, box.x + box.width - w / 2.0, box.y + box.height - w / 2.0);
 			default:
 				return new Rectangle(box.x + h, box.y + h, right - box.x - h, bottom - box.y - h);
 		}

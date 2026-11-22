@@ -28,6 +28,65 @@ public class UnlockRepositoryTest
 	}
 
 	@Test
+	public void aToolTheGuideShowsForManyThingsIsNoGoal()
+	{
+		int hammer = net.runelite.api.gameval.ItemID.HAMMER;
+		int lobster = net.runelite.api.gameval.ItemID.RAW_LOBSTER;
+		// Smithing is the guide's skill 14, Fishing 15
+		Object[][] rows = {{"Repair a broken strut", hammer, 14, 5}, {"Members: Build a chair", hammer, 14, 1}, {"Lobster", lobster, 15, 40}};
+		net.runelite.api.Client client = (net.runelite.api.Client) java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(),
+			new Class<?>[]{net.runelite.api.Client.class}, (proxy, method, args) ->
+			{
+				if (method.getName().equals("getDBTableRows"))
+				{
+					return (int) args[0] == net.runelite.api.gameval.DBTableID.SkillFeatures.ID ? java.util.Arrays.asList(0, 1, 2) : Collections.emptyList();
+				}
+				if (method.getName().equals("getDBTableField"))
+				{
+					Object[] row = rows[(int) args[0]];
+					int column = (int) args[1];
+					int tuple = (int) args[2];
+					if (column == net.runelite.api.gameval.DBTableID.SkillFeatures.COL_TEXT)
+					{
+						return new Object[]{row[0]};
+					}
+					if (column == net.runelite.api.gameval.DBTableID.SkillFeatures.COL_ICON)
+					{
+						return new Object[]{row[1]};
+					}
+					if (column == net.runelite.api.gameval.DBTableID.SkillFeatures.COL_SKILL)
+					{
+						return new Object[]{tuple == 0 ? row[2] : tuple == 1 ? row[3] : 0};
+					}
+				}
+				return null;
+			});
+		repository.loadSkillGuide(client);
+
+		assertTrue(repository.isTool(hammer));
+		assertTrue(repository.makers(hammer).isEmpty());
+		assertFalse(repository.getGuideItems().containsKey(hammer));
+		assertFalse(repository.isTool(lobster));
+		assertTrue(repository.getGuideItems().containsKey(lobster));
+	}
+
+	@Test
+	public void findsTheSkillsThatMakeAnItem()
+	{
+		assertEquals(Collections.singletonList(Skill.FISHING), repository.makers(377));
+		assertEquals(java.util.Arrays.asList(Skill.WOODCUTTING, Skill.FIREMAKING), repository.makers(1511));
+		assertTrue(repository.makers(-5).isEmpty());
+
+		Unlock wield = new Unlock(40, true, Unlock.Type.UNLOCK, "Wield rune scimitars", null, 1333, null, null, null, null);
+		Unlock axe = new Unlock(41, true, Unlock.Type.UNLOCK, "Rune axe", null, 1359, null, null, "Axes", null);
+		Unlock smith = new Unlock(90, true, Unlock.Type.UNLOCK, "Rune scimitar", null, 1333, null, null, "Rune", null);
+		assertFalse(UnlockRepository.makes(Skill.ATTACK, smith));
+		assertFalse(UnlockRepository.makes(Skill.MAGIC, wield));
+		assertFalse(UnlockRepository.makes(Skill.WOODCUTTING, axe));
+		assertTrue(UnlockRepository.makes(Skill.SMITHING, smith));
+	}
+
+	@Test
 	public void everySkillHasData()
 	{
 		for (Skill skill : Skills.STATS_TAB.keySet())
@@ -141,7 +200,8 @@ public class UnlockRepositoryTest
 
 		Map<Skill, Integer> levels = Collections.singletonMap(Skill.MINING, 83);
 		Snapshot boosted = new Snapshot(levels, Collections.emptyMap(), Collections.singletonMap(Skill.MINING, 86), ALL, 5,
-			Collections.emptySet(), Collections.emptySet(), Palette.DEFAULT, Collections.emptySet(), Collections.emptySet(), Collections.emptyList(), false, Collections.emptySet());
+			Collections.emptySet(), Collections.emptySet(), Palette.DEFAULT, Collections.emptySet(), Collections.emptySet(), Collections.emptyList(), false, Collections.emptySet(),
+			Collections.emptyList(), false, Collections.emptyList());
 		assertTrue(boosted.reachedByBoost(Skill.MINING, ore));
 		assertFalse(boosted.upcoming(Skill.MINING).test(ore));
 	}
@@ -152,7 +212,8 @@ public class UnlockRepositoryTest
 		Unlock chest = UnlockRepository.guideUnlock(10, 43, 3, "Chests", "Chest", null, true, null, null, 7);
 		Snapshot snapshot = new Snapshot(Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), ALL, 5,
 			Collections.singleton(7), Collections.singleton(Snapshot.sectionKey(Skill.THIEVING, "Chests")), Palette.DEFAULT,
-			Collections.emptySet(), Collections.emptySet(), Collections.emptyList(), false, Collections.emptySet());
+			Collections.emptySet(), Collections.emptySet(), Collections.emptyList(), false, Collections.emptySet(),
+			Collections.emptyList(), false, Collections.emptyList());
 		assertTrue(snapshot.locked(chest));
 		assertFalse(snapshot.shown(Skill.THIEVING).test(chest));
 		assertTrue(snapshot.shown(Skill.CRAFTING).test(chest));

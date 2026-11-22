@@ -39,6 +39,10 @@ class CardTheme
 		/** Stepped corners, like an old console's text box. */
 		PIXEL,
 		DASHED,
+		/** Edges made of little half-circles bulging out, like a doily. */
+		SCALLOPED,
+		/** Corners bitten in with quarter circles, like a ticket stub. */
+		TICKET,
 	}
 
 	private static final Color[] GREENS = {
@@ -95,6 +99,12 @@ class CardTheme
 	NextUnlocksConfig.Ambient ambient;
 	/** How the border moves; null for not at all. */
 	NextUnlocksConfig.BorderMotion borderMotion;
+	/** Decorations over the frame; null for none. */
+	NextUnlocksConfig.Trim trim;
+	/** How big the trim is drawn; 1 is normal. */
+	double trimScale;
+	/** The trim in the border's color instead of its own. */
+	boolean trimTint;
 
 	Color skillName;
 	Color levelLabel;
@@ -295,6 +305,18 @@ class CardTheme
 			ambient = skill != null ? SkillLooks.ambient(skill) : combat ? SkillLooks.combatAmbient() : null;
 		}
 		theme.ambient(ambient == NextUnlocksConfig.Ambient.OFF ? null : ambient);
+		NextUnlocksConfig.Trim trim = look.get("pinTrim");
+		if (trim == NextUnlocksConfig.Trim.STYLE)
+		{
+			trim = style.trim;
+		}
+		if (trim == NextUnlocksConfig.Trim.AUTO)
+		{
+			trim = style.trim != null ? style.trim : skill != null ? SkillLooks.trim(skill) : combat ? NextUnlocksConfig.Trim.SWORDS : null;
+		}
+		theme.trim(trim == NextUnlocksConfig.Trim.OFF ? null : trim);
+		theme.trimScale(look.<NextUnlocksConfig.TrimSize>get("pinTrimSize").scale);
+		theme.trimTint(look.<NextUnlocksConfig.StyleToggle>get("pinTrimTint").on(style.trimTint));
 		NextUnlocksConfig.BorderMotion motion = look.get("pinBorderMotion");
 		if (motion != NextUnlocksConfig.BorderMotion.STYLE)
 		{
@@ -338,7 +360,11 @@ class CardTheme
 		{
 			theme.padding(padding.pixels);
 		}
-		return theme.build();
+		CardTheme built = theme.build();
+		// keep the text clear of a trim's chains, vines and the like
+		int reach = CardTrim.reach(built.trim);
+		int room = reach == 0 ? 0 : (int) Math.ceil(reach * (built.trimScale > 0 ? built.trimScale : 1)) + 4;
+		return built.padding >= room ? built : built.toBuilder().padding(room).build();
 	}
 
 	/** The skill whose look Each skill's own shows: the one picked for every card, or the card's own. */

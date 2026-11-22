@@ -9,14 +9,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Skill;
 import net.runelite.client.util.Text;
@@ -57,6 +61,26 @@ class TaskRepository
 		int questPoints;
 		int combat;
 		List<String> quests;
+		Map<String, Integer> xp;
+		List<String> maybeXp;
+		boolean lamp;
+	}
+
+	/** XP a quest rewards: fixed amounts, skills offered as a choice, and whether a lamp or other free pick comes too. */
+	@Value
+	static class Reward
+	{
+		static final Reward NONE = new Reward(Collections.emptyMap(), Collections.emptySet(), false);
+
+		Map<Skill, Integer> xp;
+		Set<Skill> maybe;
+		boolean lamp;
+
+		/** Whether the player could end up with XP in the skill from this quest. */
+		boolean mayGive(Skill skill)
+		{
+			return lamp || xp.containsKey(skill) || maybe.contains(skill);
+		}
 	}
 
 	/** Prefix of the key of an item goal only the skill guide knows, followed by its item ID. */
@@ -69,6 +93,7 @@ class TaskRepository
 	private final Map<String, Task> unlockCache = new ConcurrentHashMap<>();
 
 	private volatile Map<String, Task> byWiki = Collections.emptyMap();
+	private volatile Map<String, Reward> rewards = Collections.emptyMap();
 	private volatile Map<Integer, Task> byItem = Collections.emptyMap();
 	private volatile List<Task> items = Collections.emptyList();
 	/** The bundled data alone, which {@link #addGuide} adds the skill guide's items to. */
@@ -99,8 +124,23 @@ class TaskRepository
 	private void load(Data data, ItemData itemData, Map<String, Map<Skill, Integer>> diaries)
 	{
 		Map<String, Task> tasks = new LinkedHashMap<>();
+		Map<String, Reward> questRewards = new HashMap<>();
 		for (RawQuest q : data.quests)
 		{
+			Map<Skill, Integer> xp = new EnumMap<>(Skill.class);
+			if (q.xp != null)
+			{
+				q.xp.forEach((name, amount) -> put(xp, name, amount));
+			}
+			Map<Skill, Integer> maybe = new EnumMap<>(Skill.class);
+			if (q.maybeXp != null)
+			{
+				q.maybeXp.forEach(name -> put(maybe, name, 0));
+			}
+			if (!xp.isEmpty() || !maybe.isEmpty() || q.lamp)
+			{
+				questRewards.put(q.wiki, new Reward(xp, maybe.isEmpty() ? Collections.emptySet() : EnumSet.copyOf(maybe.keySet()), q.lamp));
+			}
 			// a linked map keeps the data's order, highest level first
 			Map<Skill, Integer> skills = new LinkedHashMap<>();
 			if (q.skills != null)
@@ -148,6 +188,7 @@ class TaskRepository
 			i.ids.forEach(id -> ids.putIfAbsent(id, task));
 		}
 		bundledByWiki = byWiki = tasks;
+		rewards = questRewards;
 		bundledByItem = byItem = ids;
 		bundledItems = items = Collections.unmodifiableList(itemTasks);
 	}
@@ -256,6 +297,12 @@ class TaskRepository
 	}
 
 	/** Sets what turns {@link #UNLOCK} keys into cards, and forgets the ones made so far, as after the unlocks reload. */
+	/** The XP the quest with this wiki title rewards, or {@link Reward#NONE}. */
+	Reward reward(String wiki)
+	{
+		return rewards.getOrDefault(wiki, Reward.NONE);
+	}
+
 	void setUnlocks(Function<String, Task> resolver)
 	{
 		unlocks = resolver;

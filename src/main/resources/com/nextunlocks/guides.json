@@ -1,0 +1,1388 @@
+{
+  "guides": [
+    {
+      "id": "f2p-start",
+      "name": "Getting started",
+      "category": "Getting started",
+      "look": "STARTER",
+      "account": "ANY",
+      "members": false,
+      "about": "Free-to-play first steps: the quick quests that skip early grinding, and the levels that open up good gear and money.",
+      "groups": [
+        {
+          "name": "Quick quests",
+          "steps": [
+            {
+              "quest": "X Marks the Spot",
+              "why": "A few minutes long; an antique lamp and coins."
+            },
+            {
+              "quest": "Cook's Assistant",
+              "why": "300 Cooking XP and your first quest point."
+            },
+            {
+              "quest": "Sheep Shearer",
+              "why": "Crafting XP and a quest point, right next to Lumbridge."
+            },
+            {
+              "quest": "The Restless Ghost",
+              "why": "1,125 Prayer XP: Prayer 1 to 9 in one go."
+            },
+            {
+              "quest": "Rune Mysteries",
+              "why": "Opens the Runecraft skill and rune essence mining."
+            },
+            {
+              "quest": "Imp Catcher",
+              "why": "875 Magic XP and an amulet of accuracy."
+            },
+            {
+              "quest": "Witch's Potion",
+              "why": "More free Magic XP."
+            },
+            {
+              "quest": "Doric's Quest",
+              "why": "1,300 Mining XP and use of Doric's anvils."
+            },
+            {
+              "quest": "The Knight's Sword",
+              "why": "12,725 Smithing XP: Smithing 1 to 29."
+            },
+            {
+              "quest": "Vampyre Slayer",
+              "why": "4,825 Attack XP: Attack 1 to 20."
+            }
+          ]
+        },
+        {
+          "name": "Skills",
+          "steps": [
+            {
+              "skill": "MAGIC",
+              "level": 13,
+              "unlock": "Cast Fire Strike",
+              "why": "The strongest early strike spell, good for safe-spotting."
+            },
+            {
+              "skill": "MAGIC",
+              "level": 25,
+              "unlock": "Cast Varrock Teleport",
+              "why": "Your first teleport spell."
+            },
+            {
+              "skill": "WOODCUTTING",
+              "level": 15,
+              "unlock": "Chop oak logs",
+              "why": "Much better XP than normal trees."
+            },
+            {
+              "skill": "MINING",
+              "level": 15,
+              "why": "Iron ore: the fastest early Mining XP."
+            },
+            {
+              "skill": "FISHING",
+              "level": 20,
+              "why": "Fly fish trout (and salmon at 30) at Barbarian Village."
+            },
+            {
+              "skill": "DEFENCE",
+              "level": 40,
+              "why": "Full rune armour."
+            },
+            {
+              "skill": "MAGIC",
+              "level": 55,
+              "unlock": "Cast High Level Alchemy",
+              "why": "Turns items into coins anywhere."
+            }
+          ]
+        },
+        {
+          "name": "Gear goals",
+          "steps": [
+            {
+              "item": "Rune scimitar",
+              "why": "The best free-to-play weapon for training."
+            },
+            {
+              "quest": "Dragon Slayer I",
+              "why": "Lets you wear a rune platebody and green d'hide body. Needs 32 quest points."
+            },
+            {
+              "item": "Rune platebody",
+              "why": "The best free-to-play body armour."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "members-start",
+      "name": "Members: first steps",
+      "category": "Getting started",
+      "look": "STARTER",
+      "account": "ANY",
+      "members": true,
+      "about": "The first members quests and unlocks most players do: fast combat XP, new skills, travel networks and the first useful gear.",
+      "groups": [
+        {
+          "name": "Free combat XP",
+          "steps": [
+            {
+              "quest": "Waterfall Quest",
+              "why": "13,750 Attack and Strength XP: both to 30 with almost no fighting."
+            },
+            {
+              "quest": "Tree Gnome Village",
+              "why": "11,450 Attack XP and the spirit trees."
+            },
+            {
+              "quest": "Fight Arena",
+              "why": "12,175 Attack XP."
+            },
+            {
+              "quest": "Witch's House",
+              "why": "6,325 Hitpoints XP."
+            },
+            {
+              "quest": "The Grand Tree",
+              "why": "18,400 Attack XP and the gnome gliders."
+            }
+          ]
+        },
+        {
+          "name": "New areas and skills",
+          "steps": [
+            {
+              "quest": "Druidic Ritual",
+              "why": "Starts the Herblore skill."
+            },
+            {
+              "quest": "Priest in Peril",
+              "why": "Opens Morytania."
+            },
+            {
+              "quest": "Lost City",
+              "why": "Zanaris and the dragon longsword and dagger."
+            },
+            {
+              "quest": "Plague City",
+              "why": "Needed for the Ardougne Teleport and many later quests."
+            },
+            {
+              "quest": "Fairytale I - Growing Pains",
+              "why": "Magic secateurs; leads into fairy rings."
+            },
+            {
+              "quest": "Fairytale II - Cure a Queen",
+              "why": "Fairy rings, one of the best travel networks (usable partway through)."
+            },
+            {
+              "quest": "Bone Voyage",
+              "why": "Fossil Island and its bird houses."
+            },
+            {
+              "quest": "Children of the Sun",
+              "why": "Varlamore and the quetzal transport."
+            }
+          ]
+        },
+        {
+          "name": "Gear",
+          "steps": [
+            {
+              "quest": "Animal Magnetism",
+              "why": "Ava's accumulator: picks up your arrows and bolts."
+            },
+            {
+              "item": "Ava's accumulator",
+              "why": "Saves ammo for all Ranged training."
+            },
+            {
+              "quest": "Monkey Madness I",
+              "why": "The dragon scimitar and Ape Atoll."
+            },
+            {
+              "item": "Dragon scimitar",
+              "why": "The standard training weapon until the whip."
+            },
+            {
+              "item": "Amulet of glory",
+              "why": "Teleports to Edgeville, Karamja, Draynor and Al Kharid."
+            }
+          ]
+        },
+        {
+          "name": "Travel",
+          "steps": [
+            {
+              "quest": "Ghosts Ahoy",
+              "why": "The Ectophial: unlimited teleports to Port Phasmatys."
+            },
+            {
+              "diary": "Easy Ardougne Diary",
+              "why": "Ardougne cloak 1: unlimited Monastery teleports."
+            },
+            {
+              "diary": "Easy Lumbridge & Draynor Diary",
+              "why": "Explorer's ring 1: run energy and free low alchs."
+            },
+            {
+              "skill": "MAGIC",
+              "level": 45,
+              "unlock": "Cast Camelot Teleport",
+              "why": "Teleport to Seers' Village and Camelot."
+            },
+            {
+              "skill": "AGILITY",
+              "level": 60,
+              "unlock": "Seers' Village Rooftop",
+              "why": "The classic Agility course, with a Camelot Teleport next to it."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "name": "Account security",
+      "category": "Getting started",
+      "look": "STARTER",
+      "account": "ANY",
+      "members": false,
+      "about": "Lock the account down: two-factor login, a bank PIN, and the Stronghold of Security, which pays you for learning to spot scams.",
+      "groups": [
+        {
+          "name": "Protect the account",
+          "steps": [
+            {
+              "text": "Turn on an authenticator",
+              "id": "authenticator",
+              "why": "Two-factor login from your account settings: the best protection against losing the account."
+            },
+            {
+              "text": "Set a bank PIN",
+              "id": "bank-pin",
+              "why": "Ask any banker; it keeps the bank safe even if someone logs in."
+            }
+          ]
+        },
+        {
+          "name": "Stronghold of Security",
+          "steps": [
+            {
+              "text": "Finish the Stronghold of Security",
+              "id": "stronghold-of-security",
+              "why": "Under Barbarian Village: answer the security questions on the doors for 10,000 coins, four emotes, and Fancy or Fighting boots at the end."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "iron-start",
+      "name": "Ironman: getting started",
+      "category": "Getting started",
+      "look": "IRON",
+      "account": "IRON",
+      "members": true,
+      "about": "An ironman's early route: quests that replace grinding, the supply sources you rely on, and the first gear you can make or earn yourself.",
+      "groups": [
+        {
+          "name": "Quest XP",
+          "steps": [
+            {
+              "quest": "X Marks the Spot",
+              "why": "A lamp and coins in a few minutes."
+            },
+            {
+              "quest": "The Restless Ghost",
+              "why": "Prayer 1 to 9."
+            },
+            {
+              "quest": "Waterfall Quest",
+              "why": "Attack and Strength to 30 with almost no fighting."
+            },
+            {
+              "quest": "Tree Gnome Village",
+              "why": "Attack XP and the spirit trees."
+            },
+            {
+              "quest": "Fight Arena",
+              "why": "More Attack XP."
+            },
+            {
+              "quest": "Witch's House",
+              "why": "Hitpoints XP."
+            },
+            {
+              "quest": "The Knight's Sword",
+              "why": "Smithing 1 to 29."
+            },
+            {
+              "quest": "Druidic Ritual",
+              "why": "Starts Herblore; ironmen gather their own herbs."
+            },
+            {
+              "quest": "Client of Kourend",
+              "why": "Two XP lamps and the Kourend Castle Teleport."
+            }
+          ]
+        },
+        {
+          "name": "Supplies",
+          "steps": [
+            {
+              "skill": "THIEVING",
+              "level": 25,
+              "unlock": "Steal from fruit stalls",
+              "why": "Hosidius fruit stalls: fast early Thieving and free food."
+            },
+            {
+              "skill": "FIREMAKING",
+              "level": 50,
+              "unlock": "Subdue the Wintertodt",
+              "why": "Wintertodt crates: seeds, herbs, ores, logs and coins."
+            },
+            {
+              "quest": "Bone Voyage",
+              "why": "Fossil Island: bird houses for passive Hunter XP and nests."
+            },
+            {
+              "skill": "HUNTER",
+              "level": 5,
+              "unlock": "Use bird houses",
+              "why": "Bird house runs every 50 minutes."
+            },
+            {
+              "quest": "Barbarian Training",
+              "why": "Barbarian fishing and Herblore with roe and caviar."
+            },
+            {
+              "skill": "FISHING",
+              "level": 48,
+              "unlock": "leaping trout",
+              "why": "Barbarian fishing: Fishing, Agility and Strength XP together."
+            }
+          ]
+        },
+        {
+          "name": "Access and travel",
+          "steps": [
+            {
+              "quest": "Priest in Peril",
+              "why": "Opens Morytania."
+            },
+            {
+              "quest": "Lost City",
+              "why": "Zanaris and the dragon dagger."
+            },
+            {
+              "quest": "Fairytale II - Cure a Queen",
+              "why": "Fairy rings."
+            },
+            {
+              "quest": "Children of the Sun",
+              "why": "Varlamore and the quetzal transport."
+            },
+            {
+              "diary": "Easy Ardougne Diary",
+              "why": "Ardougne cloak 1: unlimited Monastery teleports."
+            },
+            {
+              "diary": "Easy Falador Diary",
+              "why": "Falador shield 1: a daily prayer restore."
+            },
+            {
+              "diary": "Easy Lumbridge & Draynor Diary",
+              "why": "Explorer's ring 1: run energy and free low alchs."
+            }
+          ]
+        },
+        {
+          "name": "Gear",
+          "steps": [
+            {
+              "text": "Get the graceful outfit",
+              "id": "graceful",
+              "icon": 11850,
+              "why": "Marks of grace from rooftop courses: less weight, faster run energy."
+            },
+            {
+              "quest": "Death Plateau",
+              "why": "Climbing boots and the way to Trollheim."
+            },
+            {
+              "item": "Climbing boots",
+              "why": "A cheap Strength bonus for melee."
+            },
+            {
+              "quest": "Animal Magnetism",
+              "why": "Ava's accumulator."
+            },
+            {
+              "item": "Ava's accumulator",
+              "why": "Saves ammo you'd otherwise have to make."
+            },
+            {
+              "quest": "Monkey Madness I",
+              "why": "The dragon scimitar."
+            },
+            {
+              "item": "Dragon scimitar",
+              "why": "Your training weapon until the whip."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "important-quests",
+      "name": "Important quests",
+      "category": "Quests & travel",
+      "look": "QUESTS",
+      "account": "ANY",
+      "members": true,
+      "about": "The quests whose rewards shape an account: best-in-slot gloves, spellbooks, travel networks, new areas and bosses.",
+      "groups": [
+        {
+          "name": "Early staples",
+          "steps": [
+            {
+              "quest": "Waterfall Quest",
+              "why": "Free Attack and Strength XP."
+            },
+            {
+              "quest": "Priest in Peril",
+              "why": "Opens Morytania."
+            },
+            {
+              "quest": "Lost City",
+              "why": "Zanaris and dragon weapons."
+            },
+            {
+              "quest": "Animal Magnetism",
+              "why": "Ava's accumulator."
+            },
+            {
+              "quest": "Ghosts Ahoy",
+              "why": "The Ectophial."
+            },
+            {
+              "quest": "The Fremennik Trials",
+              "why": "Rellekka, Fremennik helms and the Lunar quests."
+            },
+            {
+              "quest": "Horror from the Deep",
+              "why": "God books and the Lighthouse."
+            },
+            {
+              "quest": "Fairytale II - Cure a Queen",
+              "why": "Fairy rings."
+            },
+            {
+              "quest": "Bone Voyage",
+              "why": "Fossil Island."
+            },
+            {
+              "quest": "Children of the Sun",
+              "why": "Varlamore."
+            }
+          ]
+        },
+        {
+          "name": "Big rewards",
+          "steps": [
+            {
+              "quest": "Monkey Madness I",
+              "why": "The dragon scimitar."
+            },
+            {
+              "quest": "Recipe for Disaster",
+              "why": "Barrows gloves, the best melee gloves for most of the game."
+            },
+            {
+              "quest": "Desert Treasure I",
+              "why": "Ancient Magicks."
+            },
+            {
+              "quest": "Lunar Diplomacy",
+              "why": "The Lunar spellbook."
+            },
+            {
+              "quest": "Dream Mentor",
+              "why": "The full Lunar spellbook and the Lunar chest."
+            },
+            {
+              "quest": "Eadgar's Ruse",
+              "why": "Trollheim Teleport and goutweed."
+            },
+            {
+              "quest": "King's Ransom",
+              "why": "Leads to Piety (70 Defence, 70 Prayer, Knight Waves)."
+            },
+            {
+              "quest": "Regicide",
+              "why": "Tirannwn and Zulrah."
+            }
+          ]
+        },
+        {
+          "name": "Late game",
+          "steps": [
+            {
+              "quest": "Monkey Madness II",
+              "why": "Demonic gorillas and the heavy ballista."
+            },
+            {
+              "quest": "Dragon Slayer II",
+              "why": "Vorkath, the Myths' Guild and Fossil Island Wyverns."
+            },
+            {
+              "quest": "Song of the Elves",
+              "why": "Prifddinas: the Gauntlet, crystal gear and more."
+            },
+            {
+              "quest": "Sins of the Father",
+              "why": "Darkmeyer and the blisterwood flail."
+            },
+            {
+              "quest": "A Kingdom Divided",
+              "why": "Kourend's late rewards and the Arceuus spells."
+            },
+            {
+              "quest": "Desert Treasure II - The Fallen Empire",
+              "why": "Four bosses and the ring upgrades."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "travel",
+      "name": "Travel unlocks",
+      "category": "Quests & travel",
+      "look": "QUESTS",
+      "account": "ANY",
+      "members": true,
+      "about": "Teleports and transport networks in roughly the order you can reach them. Less walking means faster everything.",
+      "groups": [
+        {
+          "name": "Teleport spells",
+          "steps": [
+            {
+              "skill": "MAGIC",
+              "level": 25,
+              "unlock": "Cast Varrock Teleport",
+              "why": "Varrock's Grand Exchange is a short walk away."
+            },
+            {
+              "skill": "MAGIC",
+              "level": 31,
+              "unlock": "Cast Lumbridge Teleport",
+              "why": "Lumbridge Castle."
+            },
+            {
+              "skill": "MAGIC",
+              "level": 37,
+              "unlock": "Cast Falador Teleport",
+              "why": "Falador's centre."
+            },
+            {
+              "skill": "MAGIC",
+              "level": 40,
+              "unlock": "Cast Teleport to House",
+              "why": "Your player-owned house and its portals."
+            },
+            {
+              "skill": "MAGIC",
+              "level": 45,
+              "unlock": "Cast Camelot Teleport",
+              "why": "Seers' Village and Camelot."
+            },
+            {
+              "skill": "MAGIC",
+              "level": 51,
+              "unlock": "Cast Ardougne Teleport",
+              "why": "Ardougne's market, after Plague City."
+            },
+            {
+              "skill": "MAGIC",
+              "level": 58,
+              "unlock": "Cast Watchtower Teleport",
+              "why": "Yanille, after Watchtower."
+            },
+            {
+              "skill": "MAGIC",
+              "level": 61,
+              "unlock": "Cast Trollheim Teleport",
+              "why": "Trollheim and God Wars, after Eadgar's Ruse."
+            }
+          ]
+        },
+        {
+          "name": "Networks",
+          "steps": [
+            {
+              "skill": "WOODCUTTING",
+              "level": 12,
+              "unlock": "Carve log canoes",
+              "why": "Canoes along the River Lum."
+            },
+            {
+              "quest": "Tree Gnome Village",
+              "why": "Spirit trees."
+            },
+            {
+              "quest": "The Grand Tree",
+              "why": "Gnome gliders."
+            },
+            {
+              "quest": "Shilo Village",
+              "why": "The Shilo Village cart from Brimhaven."
+            },
+            {
+              "quest": "Enlightened Journey",
+              "why": "Hot air balloons."
+            },
+            {
+              "quest": "Fairytale II - Cure a Queen",
+              "why": "Fairy rings."
+            },
+            {
+              "quest": "Children of the Sun",
+              "why": "Quetzal transport across Varlamore."
+            }
+          ]
+        },
+        {
+          "name": "Teleport items",
+          "steps": [
+            {
+              "item": "Amulet of glory",
+              "why": "Edgeville, Karamja, Draynor and Al Kharid."
+            },
+            {
+              "quest": "Ghosts Ahoy",
+              "why": "The Ectophial: unlimited Port Phasmatys teleports."
+            },
+            {
+              "diary": "Easy Ardougne Diary",
+              "why": "Ardougne cloak 1: unlimited Monastery teleports."
+            }
+          ]
+        },
+        {
+          "name": "Your house",
+          "steps": [
+            {
+              "skill": "CONSTRUCTION",
+              "level": 50,
+              "unlock": "Build a Portal chamber",
+              "why": "Portals to teleport spots you know."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pure-1def",
+      "name": "1 Defence pure",
+      "category": "Account builds",
+      "look": "PURE",
+      "account": "ANY",
+      "members": true,
+      "about": "Defence stays at 1 while Attack, Strength, Ranged and Magic go up. Every quest here gives no Defence XP; never pick Defence on a lamp or reward.",
+      "caps": {
+        "DEFENCE": 1
+      },
+      "groups": [
+        {
+          "name": "Before you fight",
+          "steps": [
+            {
+              "text": "Never train on a Defence style",
+              "id": "no-def-style",
+              "why": "Defensive, Controlled, Longrange and defensive casting all give Defence XP."
+            }
+          ]
+        },
+        {
+          "name": "Quests",
+          "steps": [
+            {
+              "quest": "Waterfall Quest",
+              "why": "Attack and Strength to 30."
+            },
+            {
+              "quest": "Tree Gnome Village",
+              "why": "11,450 Attack XP."
+            },
+            {
+              "quest": "Fight Arena",
+              "why": "12,175 Attack XP."
+            },
+            {
+              "quest": "Witch's House",
+              "why": "Hitpoints XP."
+            },
+            {
+              "quest": "Vampyre Slayer",
+              "why": "Attack XP."
+            },
+            {
+              "quest": "The Grand Tree",
+              "why": "18,400 Attack XP."
+            },
+            {
+              "quest": "Death Plateau",
+              "why": "Climbing boots."
+            },
+            {
+              "quest": "Priest in Peril",
+              "why": "Prayer XP and Morytania."
+            },
+            {
+              "quest": "Lost City",
+              "why": "The dragon dagger."
+            },
+            {
+              "quest": "Monkey Madness I",
+              "why": "The dragon scimitar. Pick Attack or Strength at the end, never Defence."
+            },
+            {
+              "quest": "Horror from the Deep",
+              "why": "Strength, Ranged and Magic XP and a god book. Don't use its lamp on Defence."
+            },
+            {
+              "quest": "Animal Magnetism",
+              "why": "Ava's accumulator."
+            },
+            {
+              "quest": "Desert Treasure I",
+              "why": "Ancient Magicks."
+            }
+          ]
+        },
+        {
+          "name": "Levels",
+          "steps": [
+            {
+              "skill": "PRAYER",
+              "level": 31,
+              "unlock": "Activate Ultimate Strength",
+              "why": "Most 1 Defence pures stop at 31, 44 or 52 Prayer to keep combat low."
+            },
+            {
+              "skill": "ATTACK",
+              "level": 60,
+              "why": "The dragon scimitar and dragon dagger."
+            },
+            {
+              "skill": "RANGED",
+              "level": 50,
+              "why": "The magic shortbow and Ava's accumulator."
+            },
+            {
+              "skill": "MAGIC",
+              "level": 50,
+              "why": "Needed for Desert Treasure I."
+            }
+          ]
+        },
+        {
+          "name": "Gear",
+          "steps": [
+            {
+              "item": "Climbing boots",
+              "why": "Strength bonus with no Defence needed."
+            },
+            {
+              "item": "Dragon scimitar",
+              "why": "Main training weapon."
+            },
+            {
+              "item": "Dragon dagger",
+              "why": "The classic special attack weapon."
+            },
+            {
+              "item": "Magic shortbow",
+              "why": "Ranged training weapon."
+            },
+            {
+              "item": "Ava's accumulator",
+              "why": "Saves arrows."
+            },
+            {
+              "item": "Mithril gloves",
+              "why": "From part of Recipe for Disaster: only do subquests whose quests give no Defence XP."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pure-strength",
+      "name": "Strength pure",
+      "category": "Account builds",
+      "look": "PURE",
+      "account": "ANY",
+      "members": true,
+      "about": "Attack and Defence stay at 1; Strength does the work. Most early quests give Attack XP, so this one avoids them.",
+      "caps": {
+        "ATTACK": 1,
+        "DEFENCE": 1
+      },
+      "groups": [
+        {
+          "name": "Before you fight",
+          "steps": [
+            {
+              "text": "Only train on the Aggressive style",
+              "id": "aggressive-only",
+              "why": "Accurate gives Attack XP; Controlled and Defensive give Defence XP."
+            }
+          ]
+        },
+        {
+          "name": "Quests",
+          "steps": [
+            {
+              "quest": "Witch's House",
+              "why": "6,325 Hitpoints XP."
+            },
+            {
+              "quest": "Priest in Peril",
+              "why": "Prayer XP and Morytania."
+            },
+            {
+              "quest": "Haunted Mine",
+              "why": "22,000 Strength XP."
+            },
+            {
+              "quest": "Horror from the Deep",
+              "why": "Strength, Ranged and Magic XP. Don't use its lamp on Attack or Defence."
+            },
+            {
+              "quest": "Animal Magnetism",
+              "why": "Ava's accumulator."
+            },
+            {
+              "quest": "Druidic Ritual",
+              "why": "Herblore for your own Strength potions."
+            }
+          ]
+        },
+        {
+          "name": "Levels",
+          "steps": [
+            {
+              "skill": "PRAYER",
+              "level": 31,
+              "unlock": "Activate Ultimate Strength",
+              "why": "A big Strength boost for a small combat level cost."
+            },
+            {
+              "skill": "STRENGTH",
+              "level": 60,
+              "why": "The Tzhaar-ket-om, which needs no Attack."
+            },
+            {
+              "skill": "RANGED",
+              "level": 50,
+              "why": "The magic shortbow."
+            }
+          ]
+        },
+        {
+          "name": "Gear",
+          "steps": [
+            {
+              "item": "Amulet of strength",
+              "why": "Strength bonus with no requirements."
+            },
+            {
+              "item": "Tzhaar-ket-om",
+              "why": "The hardest-hitting weapon with no Attack requirement."
+            },
+            {
+              "item": "Magic shortbow",
+              "why": "Ranged training weapon."
+            },
+            {
+              "item": "Ava's accumulator",
+              "why": "Saves arrows."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pure-zerker",
+      "name": "Zerker",
+      "category": "Account builds",
+      "look": "PURE",
+      "account": "ANY",
+      "members": true,
+      "about": "Defence stops at 45 for the berserker helm. Some quests here give Defence XP, so do them before Defence reaches 45.",
+      "caps": {
+        "DEFENCE": 45
+      },
+      "groups": [
+        {
+          "name": "Quests",
+          "steps": [
+            {
+              "quest": "Waterfall Quest",
+              "why": "Attack and Strength to 30."
+            },
+            {
+              "quest": "Tree Gnome Village",
+              "why": "Attack XP."
+            },
+            {
+              "quest": "Fight Arena",
+              "why": "Attack XP."
+            },
+            {
+              "quest": "The Grand Tree",
+              "why": "Attack XP."
+            },
+            {
+              "quest": "Death Plateau",
+              "why": "Climbing boots."
+            },
+            {
+              "quest": "Lost City",
+              "why": "The dragon dagger."
+            },
+            {
+              "quest": "The Fremennik Trials",
+              "why": "The berserker helm and the way to the Lunar quests. Gives Defence XP."
+            },
+            {
+              "quest": "Monkey Madness I",
+              "why": "The dragon scimitar. Pick Attack or Strength at the end."
+            },
+            {
+              "quest": "Horror from the Deep",
+              "why": "A god book."
+            },
+            {
+              "quest": "Animal Magnetism",
+              "why": "Ava's accumulator."
+            },
+            {
+              "quest": "Desert Treasure I",
+              "why": "Ancient Magicks."
+            },
+            {
+              "quest": "Recipe for Disaster",
+              "why": "Barrows gloves. Its quests give Defence XP; finish them before Defence 45."
+            },
+            {
+              "quest": "Lunar Diplomacy",
+              "why": "The Lunar spellbook (needs 40 Defence)."
+            }
+          ]
+        },
+        {
+          "name": "Levels",
+          "steps": [
+            {
+              "skill": "DEFENCE",
+              "level": 45,
+              "why": "The berserker helm. Stop here."
+            },
+            {
+              "skill": "ATTACK",
+              "level": 60,
+              "why": "The dragon scimitar."
+            },
+            {
+              "skill": "PRAYER",
+              "level": 43,
+              "unlock": "Activate Protect from Melee",
+              "why": "Many zerkers stop at 43 or 52 Prayer."
+            },
+            {
+              "skill": "ATTACK",
+              "level": 70,
+              "why": "The abyssal whip."
+            }
+          ]
+        },
+        {
+          "name": "Gear",
+          "steps": [
+            {
+              "item": "Berserker helm",
+              "why": "The zerker's namesake helm."
+            },
+            {
+              "item": "Fighter torso",
+              "why": "Barbarian Assault: the best melee body at 40 Defence."
+            },
+            {
+              "item": "Rune defender",
+              "why": "Warriors' Guild (Attack plus Strength 130 to enter). The dragon defender needs 60 Defence."
+            },
+            {
+              "item": "Barrows gloves",
+              "why": "From Recipe for Disaster."
+            },
+            {
+              "item": "Dragon scimitar",
+              "why": "Training weapon."
+            },
+            {
+              "item": "Abyssal whip",
+              "why": "Main melee weapon."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pure-obby",
+      "name": "Obby mauler",
+      "category": "Account builds",
+      "look": "PURE",
+      "account": "ANY",
+      "members": true,
+      "about": "Attack and Defence at 1 with the Tzhaar-ket-om and Tokkul gear. Many keep Ranged and Magic low too.",
+      "caps": {
+        "ATTACK": 1,
+        "DEFENCE": 1
+      },
+      "groups": [
+        {
+          "name": "Before you fight",
+          "steps": [
+            {
+              "text": "Only train on the Aggressive style",
+              "id": "aggressive-only",
+              "why": "Accurate gives Attack XP; Controlled and Defensive give Defence XP."
+            }
+          ]
+        },
+        {
+          "name": "Quests",
+          "steps": [
+            {
+              "quest": "Witch's House",
+              "why": "Hitpoints XP."
+            },
+            {
+              "quest": "Haunted Mine",
+              "why": "22,000 Strength XP."
+            },
+            {
+              "quest": "Druidic Ritual",
+              "why": "Herblore for your own Strength potions."
+            }
+          ]
+        },
+        {
+          "name": "Levels",
+          "steps": [
+            {
+              "skill": "PRAYER",
+              "level": 13,
+              "unlock": "Activate Superhuman Strength",
+              "why": "Keep Prayer low; many obby maulers stop at 13 or 31."
+            },
+            {
+              "skill": "STRENGTH",
+              "level": 60,
+              "why": "The Tzhaar-ket-om."
+            },
+            {
+              "skill": "STRENGTH",
+              "level": 99,
+              "why": "The goal: the highest max hit."
+            }
+          ]
+        },
+        {
+          "name": "Gear",
+          "steps": [
+            {
+              "item": "Amulet of strength",
+              "why": "Strength bonus with no requirements."
+            },
+            {
+              "item": "Tzhaar-ket-om",
+              "why": "The obsidian maul. Bought with Tokkul in Mor Ul Rek."
+            },
+            {
+              "item": "Berserker necklace",
+              "why": "More damage with obsidian weapons."
+            },
+            {
+              "text": "Get an obsidian cape",
+              "id": "obsidian-cape",
+              "icon": 6568,
+              "why": "Bought with Tokkul; no requirements."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pure-initiate",
+      "name": "Initiate pure",
+      "category": "Account builds",
+      "look": "PURE",
+      "account": "ANY",
+      "members": true,
+      "about": "Defence stops at 20 for initiate armour. A 20 Defence cap leaves little room for quest Defence XP, so these quests give none.",
+      "caps": {
+        "DEFENCE": 20
+      },
+      "groups": [
+        {
+          "name": "Quests",
+          "steps": [
+            {
+              "quest": "Waterfall Quest",
+              "why": "Attack and Strength to 30."
+            },
+            {
+              "quest": "Tree Gnome Village",
+              "why": "Attack XP."
+            },
+            {
+              "quest": "Fight Arena",
+              "why": "Attack XP."
+            },
+            {
+              "quest": "The Grand Tree",
+              "why": "Attack XP."
+            },
+            {
+              "quest": "Death Plateau",
+              "why": "Climbing boots."
+            },
+            {
+              "quest": "Lost City",
+              "why": "The dragon dagger."
+            },
+            {
+              "quest": "Recruitment Drive",
+              "why": "Initiate armour (with 20 Defence and 10 Prayer)."
+            },
+            {
+              "quest": "Monkey Madness I",
+              "why": "The dragon scimitar. Pick Attack or Strength at the end."
+            },
+            {
+              "quest": "Animal Magnetism",
+              "why": "Ava's accumulator."
+            },
+            {
+              "quest": "Desert Treasure I",
+              "why": "Ancient Magicks."
+            }
+          ]
+        },
+        {
+          "name": "Levels",
+          "steps": [
+            {
+              "skill": "DEFENCE",
+              "level": 20,
+              "why": "Initiate armour. Stop here."
+            },
+            {
+              "skill": "PRAYER",
+              "level": 31,
+              "unlock": "Activate Ultimate Strength",
+              "why": "Many initiates stop at 31 or 43 Prayer."
+            },
+            {
+              "skill": "ATTACK",
+              "level": 60,
+              "why": "The dragon scimitar."
+            }
+          ]
+        },
+        {
+          "name": "Gear",
+          "steps": [
+            {
+              "item": "Initiate sallet",
+              "why": "Initiate helm."
+            },
+            {
+              "item": "Initiate hauberk",
+              "why": "Initiate body."
+            },
+            {
+              "item": "Initiate cuisse",
+              "why": "Initiate legs."
+            },
+            {
+              "item": "Climbing boots",
+              "why": "Strength bonus."
+            },
+            {
+              "item": "Dragon scimitar",
+              "why": "Training weapon."
+            },
+            {
+              "item": "Mystic hat",
+              "why": "Magic bonus at 20 Defence."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vale-totems",
+      "name": "Vale Totems",
+      "category": "Minigames & activities",
+      "look": "SKILLING",
+      "account": "ANY",
+      "members": true,
+      "about": "The Fletching and Construction minigame in Auburn Valley, Varlamore: build totems, carve the nearby spirits, decorate them with fletched items and collect the ents' offerings.",
+      "groups": [
+        {
+          "name": "Get access",
+          "steps": [
+            {
+              "quest": "Children of the Sun",
+              "why": "Opens Varlamore, where Auburn Valley is."
+            },
+            {
+              "skill": "FLETCHING",
+              "level": 20,
+              "unlock": "Make Oak totems",
+              "why": "Needed for the miniquest; oak totems are the first tier."
+            },
+            {
+              "skill": "WOODCUTTING",
+              "level": 15,
+              "unlock": "Chop oak logs",
+              "why": "Each totem takes 5 logs; there are trees beside every totem site."
+            },
+            {
+              "quest": "Vale Totems (miniquest)",
+              "why": "Talk to Ranulph in north-western Auburnvale. A few minutes long; it opens the minigame."
+            }
+          ]
+        },
+        {
+          "name": "Getting there",
+          "steps": [
+            {
+              "quest": "Twilight's Promise",
+              "why": "Quetzal transport to Auburnvale."
+            },
+            {
+              "quest": "Fairytale II - Cure a Queen",
+              "why": "Fairy ring AIS (partway through the quest is enough)."
+            },
+            {
+              "quest": "The Heart of Darkness",
+              "why": "Pendant of Ates teleport to Nemus Retreat."
+            },
+            {
+              "skill": "AGILITY",
+              "level": 45,
+              "unlock": "Log balance (Auburn Valley)",
+              "why": "A shortcut across Auburn Valley."
+            }
+          ]
+        },
+        {
+          "name": "Before you start",
+          "steps": [
+            {
+              "text": "Own a player-owned house",
+              "id": "own-house",
+              "icon": 8013,
+              "why": "Building totems only gives Construction XP if you own a house."
+            },
+            {
+              "text": "Bring a log basket",
+              "id": "log-basket",
+              "icon": 28140,
+              "why": "A full lap of all 8 sites uses 40 logs."
+            }
+          ]
+        },
+        {
+          "name": "Bigger totems",
+          "steps": [
+            {
+              "skill": "FLETCHING",
+              "level": 35,
+              "unlock": "Make Willow totems",
+              "icon": 1519,
+              "why": "30 offerings per totem instead of oak's 20."
+            },
+            {
+              "skill": "FLETCHING",
+              "level": 50,
+              "unlock": "Make Maple totems",
+              "icon": 1517,
+              "why": "40 offerings per totem."
+            },
+            {
+              "skill": "FLETCHING",
+              "level": 65,
+              "unlock": "Make Yew totems",
+              "icon": 1515,
+              "why": "65 offerings per totem."
+            },
+            {
+              "skill": "FLETCHING",
+              "level": 80,
+              "unlock": "Make Magic totems",
+              "icon": 1513,
+              "why": "90 offerings per totem."
+            },
+            {
+              "skill": "FLETCHING",
+              "level": 90,
+              "unlock": "Make Redwood totems",
+              "icon": 19669,
+              "why": "105 offerings per totem, and the longest-lasting totems."
+            }
+          ]
+        },
+        {
+          "name": "Rewards",
+          "steps": [
+            {
+              "text": "Get the fletching knife",
+              "id": "fletching-knife",
+              "icon": 31043,
+              "why": "Speeds up most Fletching by a tick per item after the first. 350 research points from Ranulph, or from offerings."
+            },
+            {
+              "text": "Get the bow string spool",
+              "id": "bow-string-spool",
+              "icon": 31052,
+              "why": "Strings 27 bows per inventory instead of 14. 250 research points, or from offerings."
+            },
+            {
+              "text": "Get the greenman mask",
+              "id": "greenman-mask",
+              "icon": 31034,
+              "why": "A cosmetic mask, and a collection log slot."
+            },
+            {
+              "text": "Get an ent branch",
+              "id": "ent-branch",
+              "icon": 31032,
+              "why": "The last of the 4 collection log items."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

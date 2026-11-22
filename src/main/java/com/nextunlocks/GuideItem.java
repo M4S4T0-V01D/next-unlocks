@@ -19,7 +19,7 @@ class GuideItem
 	private static final Set<Skill> COMBAT = EnumSet.of(Skill.ATTACK, Skill.STRENGTH, Skill.DEFENCE, Skill.RANGED,
 		Skill.MAGIC, Skill.PRAYER, Skill.HITPOINTS);
 	/** Guide sections of things to equip or use, like Woodcutting's axes. */
-	private static final Pattern EQUIPMENT = Pattern.compile("(?i)weapon|armou?r|equipment|tool|axe|harpoon|outfit|cape|staff|staves|ammunition|shield|helm|boots|gloves");
+	static final Pattern EQUIPMENT = Pattern.compile("(?i)weapon|armou?r|equipment|tool|axe|harpoon|outfit|cape|staff|staves|ammunition|shield|helm|boots|gloves");
 
 	private final String name;
 	private final Map<Skill, Integer> wield = new LinkedHashMap<>();
