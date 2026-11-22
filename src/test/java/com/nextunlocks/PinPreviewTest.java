@@ -114,6 +114,7 @@ public class PinPreviewTest
 			});
 
 		String art = System.getenv("PIN_ART");
+		showcase(new File(folder, "card-themes.png"), art);
 		trims(new File(folder, "card-trims.png").getPath(), null, art);
 		trims(new File(folder, "card-trims-large.png").getPath(), "LARGE", art);
 	}
@@ -154,6 +155,127 @@ public class PinPreviewTest
 		}
 		g.dispose();
 		ImageIO.write(canvas.getSubimage(0, 0, Math.min(canvas.getWidth(), right + 10), Math.min(canvas.getHeight(), top)), "png", file);
+	}
+
+	/**
+	 * Skills' own cards as pinned in game, two rows of five with real levels and the next unlock's icons from the art
+	 * folder (wiki names); each row is skill, level, next unlock level and two icons.
+	 */
+	private static void showcase(File file, String art) throws java.io.IOException
+	{
+		String[][] rows = {
+			{"MAGIC", "46", "51", "Ardougne_teleport_(tablet)", "Law_rune"},
+			{"SLAYER", "83", "85", "Abyssal_whip", "Abyssal_head"},
+			{"FISHING", "18", "20", "Raw_trout", "Fly_fishing_rod"},
+			{"COOKING", "37", "40", "Lobster", "Raw_lobster"},
+			{"SMITHING", "64", "68", "Mithril_platebody", "Mithril_bar"},
+			{"PRAYER", "41", "43", "Big_bones", "Holy_symbol"},
+			{"FIREMAKING", "42", "45", "Maple_logs", "Tinderbox"},
+			{"RUNECRAFT", "40", "44", "Nature_rune", "Pure_essence"},
+			{"HERBLORE", "43", "45", "Super_attack(4)", "Irit_leaf"},
+			{"WOODCUTTING", "58", "60", "Yew_logs", "Rune_axe"},
+		};
+		java.util.function.Function<String, BufferedImage> icon = name ->
+		{
+			try
+			{
+				BufferedImage read = ImageIO.read(new File(art, name + ".png"));
+				BufferedImage argb = new BufferedImage(read.getWidth(), read.getHeight(), BufferedImage.TYPE_INT_ARGB);
+				argb.createGraphics().drawImage(read, 0, 0, null);
+				return argb;
+			}
+			catch (Exception e)
+			{
+				return blob(Color.GRAY);
+			}
+		};
+		CardArt.items = id -> icon.apply(id == net.runelite.api.gameval.ItemID.ABYSSAL_WHIP ? "Abyssal_whip"
+			: id == net.runelite.api.gameval.ItemID.DRAGON_CLAWS ? "Dragon_claws"
+			: id == net.runelite.api.gameval.ItemID.DRAGON_SCIMITAR ? "Dragon_scimitar" : "Dragon_longsword");
+		try
+		{
+			BufferedImage canvas = new BufferedImage(1400, 2 * 200 + 30, BufferedImage.TYPE_INT_RGB);
+			Graphics2D g = canvas.createGraphics();
+			g.setPaint(new java.awt.GradientPaint(0, 0, new Color(52, 48, 36), 0, canvas.getHeight(), new Color(34, 38, 24)));
+			g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+			g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			int top = 0;
+			int right = 0;
+			for (int start = 0; start < rows.length; start += 5)
+			{
+				List<TooltipBox> cards = new ArrayList<>();
+				for (int i = start; i < start + 5; i++)
+				{
+					String[] row = rows[i];
+					Skill skill = Skill.valueOf(row[0]);
+					int level = Integer.parseInt(row[1]);
+					int next = Integer.parseInt(row[2]);
+					int xp = net.runelite.api.Experience.getXpForLevel(level)
+						+ (net.runelite.api.Experience.getXpForLevel(level + 1) - net.runelite.api.Experience.getXpForLevel(level)) * (i % 3 + 2) / 6;
+					cards.add(pinnedCard(skill, theme(skill), level, xp, next, icon.apply(row[3]), icon.apply(row[4])));
+				}
+				// room above each row for trim pieces that stick up
+				int bottom = top + 30 + measure(cards, cards.size());
+				layOut(g, cards, cards.size(), 16, bottom);
+				for (TooltipBox card : cards)
+				{
+					right = Math.max(right, card.getBounds().x + card.getBounds().width);
+				}
+				top = bottom + 6;
+			}
+			g.dispose();
+			ImageIO.write(canvas.getSubimage(0, 0, Math.min(canvas.getWidth(), right + 16), Math.min(canvas.getHeight(), top + 16)), "png", file);
+		}
+		finally
+		{
+			CardArt.items = null;
+		}
+	}
+
+	/** A pinned skill card as the plugin draws it by default: level, xp lines, bar to the next unlock and its icons. */
+	private static TooltipBox pinnedCard(Skill skill, CardTheme theme, int level, int xp, int next, BufferedImage... unlocks)
+	{
+		java.text.NumberFormat number = java.text.NumberFormat.getIntegerInstance(java.util.Locale.US);
+		int textSize = CONFIG.tooltipTextSize();
+		Font font = theme.font(textSize);
+		int nextXp = net.runelite.api.Experience.getXpForLevel(level + 1);
+		List<LayoutableRenderableEntity> lines = new ArrayList<>();
+		BufferedImage skillIcon = net.runelite.client.util.ImageUtil.loadImageResource(net.runelite.client.game.SkillIconManager.class,
+			"/skill_icons_small/" + skill.getName().toLowerCase() + ".png");
+		lines.add(new CardLine(theme, font, true).icon(theme.isSkillIcon() ? skillIcon : null).left(skill.getName(), theme.getSkillName())
+			.right("Level ", theme.getLevelLabel()).right(String.valueOf(level), theme.getLevelValue()));
+		lines.add(new CardLine(theme, font).left("XP:", theme.getXpLabel()).right(number.format(xp), theme.getXpValue()));
+		lines.add(new CardLine(theme, font).left("Next level:", theme.getNextLevelLabel()).right(number.format(nextXp), theme.getNextLevelValue()));
+		lines.add(new CardLine(theme, font).left("Remaining XP:", theme.getRemainingLabel()).right(number.format(nextXp - xp), theme.getRemainingValue()));
+		lines.add(new PinBar(theme, net.runelite.api.Experience.getXpForLevel(level - 2), net.runelite.api.Experience.getXpForLevel(next), xp,
+			theme.getBarFill(), theme.getBarFill2(), theme.getBarBackground(), null));
+
+		PanelComponent icons = new PanelComponent();
+		icons.setOrientation(ComponentOrientation.HORIZONTAL);
+		icons.setWrap(true);
+		icons.setBackgroundColor(null);
+		icons.setGap(new Point(2, 2));
+		for (BufferedImage unlock : unlocks)
+		{
+			icons.getChildren().add(NextUnlocksPlugin.slot(new UnlockTileComponent(unlock, "Unlock", next, Palette.DEFAULT.getLevel(), false, 1), theme));
+		}
+		lines.add(icons);
+
+		PanelComponent card = new PanelComponent();
+		card.getChildren().addAll(lines);
+		int width = (int) (ComponentConstants.STANDARD_WIDTH * theme.widthScale(textSize)) + 2 * (theme.getPadding() - NextUnlocksPlugin.PANEL_PADDING);
+		for (LayoutableRenderableEntity line : lines)
+		{
+			if (line instanceof CardLine)
+			{
+				width = Math.max(width, ((CardLine) line).minWidth() + 2 * theme.getPadding());
+			}
+		}
+		card.setPreferredSize(new Dimension(width, 0));
+		int inside = width - 2 * theme.getPadding();
+		int tile = UnlockTileComponent.width(1, true);
+		icons.setBorder(new Rectangle(Math.max(0, (inside - unlocks.length * (tile + 2) + 2) / 2), 3, 0, 0));
+		return new TooltipBox(card, theme, new ArrayList<>());
 	}
 
 	/** Every trim but the defaults, labeled; size is a TrimSize name or null for normal, art the folder of game icons. */

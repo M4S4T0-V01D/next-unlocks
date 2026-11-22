@@ -36,7 +36,7 @@ Every card wears its skill's own trim by default (**Skill's own**): swords for A
 As you gain XP, the card can throw off an effect from the end of its bar (sparks, embers, bubbles, leaves, stars, pixels, runes, hearts, coins, smoke or lightning, or Auto to match the skill), float the XP gained up off the bar, and flash the bar.
 
 <p align="center">
-  <img src="screenshots/card-themes.png" alt="Pinned cards in their skills' own looks: Magic, Slayer, Fishing, Cooking, Smithing, Prayer, Firemaking, Runecraft and Herblore, with XP effects on some, and Attack in Classic RuneLite">
+  <img src="screenshots/card-themes.png" alt="Pinned cards in their skills' own looks and trims, with the next unlock's icons in slots: Magic, Slayer, Fishing, Cooking, Smithing, Prayer, Firemaking, Runecraft, Herblore and Woodcutting">
 </p>
 <p align="center">
   <img src="screenshots/skill-cards.png" alt="All 24 skills' own cards, labeled, each in its own colours, frame and trim">
@@ -63,7 +63,7 @@ Quests and achievement diaries can be pinned too: right-click a quest in the que
 The card lists the hard requirements (skill levels, quest points, combat level and the quests needed first), unmet in red first, then met in green. Diary cards list skill levels only.
 A pinned quest unpins itself with a chat message once you finish it.
 
-**Item goals**: pin an item you're working towards, like the Ironwood blowpipe or a Void Knight top. Right-click the item in your inventory, bank, equipment or a shop, or any item row in the in-game skill guide (the game's tabs and the Next Unlocks tab), and choose **Pin**, or search for it in the side panel and click it. The card lists the levels and quests needed to wield or wear it and, for ironmen, the levels needed to make it from scratch, with the material a level is for, like Ironwood logs under Woodcutting, on a small line of its own with a tiny icon of it. Turn off **Item goals: making levels** under Goals to see only the wield and wear requirements. The card says **Ready** once you meet them all.
+**Item goals**: pin an item you're working towards, like the Ironwood blowpipe or a Void Knight top. Right-click the item in your inventory, bank, equipment or a shop, or any item row in the in-game skill guide (the game's tabs and the Next Unlocks tab), and choose **Pin**, or search for it in the side panel and click it. The card lists the levels and quests needed to wield or wear it and, for ironmen, the levels needed to make it from scratch, with the material a level is for, like Ironwood logs under Woodcutting, on a small line of its own with a tiny icon of it. Turn off **Item goals: making levels** under Goals to see only the wield and wear requirements. The card says **Ready** once you meet them all. Tools the skill guide shows for many different things, like a hammer, aren't goals and can't be pinned.
 
 <p align="center">
   <img src="screenshots/skillguide-item-goal.png" alt="Right-clicking Magic shortbow in the skill guide to pin it as an item goal">
