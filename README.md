@@ -30,16 +30,30 @@ It can take over the game's XP tooltip so the two don't overlap, and its icon si
 Right-click a skill and choose **Pin** to keep its tooltip on screen above the chatbox. Right-click it again to unpin. With split private chat on, pinned cards move up above your private messages so they never cover them.
 Pinned cards sit side by side at the same height and show the skill and your level, and their XP and progress update as you train.
 By default every skill gets its own card, tuned to the skill's colour and feel: a parchment scroll for Cooking, a dark blood-red scroll for Slayer, frosted glass for Fishing, a gilded frame for Prayer, a dusky rose window for Magic, and so on for all 24 skills including Sailing. Many have their own frame and something alive on them: riveted plates for Strength, Smithing and Mining, cut corners for Attack and Woodcutting, corner brackets for Ranged and Agility, ornate trim for Prayer and Crafting, a pixel-stepped edge for Runecraft, a dashed edge for Thieving; embers drifting up in Firemaking and Smithing, bubbles in Fishing and Herblore, fireflies in Farming, runes in Runecraft; and a border that pulses, flickers like a forge, marches or has a light running around it. The skill's icon sits before its name, as tall as the text.
-Cards also come in shared styles (Classic RuneLite, 90s arcade, Neon synthwave, CRT terminal, Handheld, Windows 95, Modern, Minimal, Parchment scroll, RuneScape stone, Gilded, Frosted glass), with a choice of font, progress bar, level-up effect, glow and text shadow, background and bar gradients, a shimmer, border width, rounded corners, padding and a title band, a frame shape (classic, flat, double, raised, rounded, cut corners, riveted, corner brackets, ornate, pixel or dashed), border motion (pulse, running light, rainbow, marching or flicker), ambient particles inside the card (embers, bubbles, snow, fireflies, sparkles, leaves, runes or dust), and every color can be set by hand.
+Cards also come in shared styles (Classic RuneLite, 90s arcade, Neon synthwave, CRT terminal, Handheld, Windows 95, Modern, Minimal, Parchment scroll, RuneScape stone, Gilded, Frosted glass), with a choice of font, progress bar, level-up effect, glow and text shadow, background and bar gradients, a shimmer, border width, rounded corners, padding and a title band, a frame shape (classic, flat, double, raised, rounded, cut corners, riveted, corner brackets, ornate, pixel, dashed, scalloped or ticket), border motion (pulse, running light, rainbow, marching or flicker), ambient particles inside the card (embers, bubbles, snow, fireflies, sparkles, leaves, runes or dust), and every color can be set by hand.
 Each skill's card can have its own look on top of the shared one, and any look can be saved as a named preset to load, rename or delete later. Own colours can be set per skill too, and are saved with the look and its presets.
+Every card wears its skill's own trim by default (**Skill's own**): swords for Attack, dragon weapons for Strength, chains for Defence, a fishing net with fish for Fishing, logs and a hatchet for Woodcutting, flames for Cooking and Firemaking, herbs and a vial for Herblore, glowing runes and essence for Runecraft, bones for Prayer, arrows and a bow for Ranged and Fletching, and so on. Any card can wear a different trim over its frame, in its own colours or the border's and in three sizes: gold filigree, princess (pearls, roses and a crown), ivy vines, rose vines, a thorny briar, anvils with a hammer, crossed swords, gems, twinkling stars, hearts, skulls, snowflakes, chains, an anchor on chains, dragon weapons (the real claws, scimitar and longsword icons), an abyssal whip wrapped round the card from its grip, the two stone dragons from the fixed mode minimap, a fishing net, logs, flames, herbs, runes, bones or arrows. Many of them move: flames flicker, runes pulse, a glint runs along the chains, the anchor rocks and the whip's lash cracks. Frames also come scalloped like a doily or bitten at the corners like a ticket stub.
 As you gain XP, the card can throw off an effect from the end of its bar (sparks, embers, bubbles, leaves, stars, pixels, runes, hearts, coins, smoke or lightning, or Auto to match the skill), float the XP gained up off the bar, and flash the bar.
 
 <p align="center">
   <img src="screenshots/card-themes.png" alt="Pinned cards in their skills' own looks: Magic, Slayer, Fishing, Cooking, Smithing, Prayer, Firemaking, Runecraft and Herblore, with XP effects on some, and Attack in Classic RuneLite">
 </p>
 <p align="center">
-  <img src="screenshots/skill-cards.png" alt="All 24 skills' own cards, with their frames: cut corners, rivets, corner brackets, ornate trim, pixel and dashed edges, and bubbles and embers inside">
+  <img src="screenshots/skill-cards.png" alt="All 24 skills' own cards, labeled, each in its own colours, frame and trim">
 </p>
+
+Every style, every frame and every trim, each on a pinned card:
+
+<p align="center">
+  <img src="screenshots/card-styles.png" alt="The card styles, labeled: each skill's own, Classic RuneLite, 90s arcade, Neon synthwave, CRT terminal, Handheld, Windows 95, Modern, Minimal, Parchment scroll, RuneScape stone, Gilded and Frosted glass">
+</p>
+<p align="center">
+  <img src="screenshots/card-frames.png" alt="The frames, labeled: classic, flat, double, raised, rounded, cut corners, riveted, corner brackets, ornate, pixel, dashed, scalloped and ticket">
+</p>
+<p align="center">
+  <img src="screenshots/card-trims.png" alt="The trims, labeled: gold filigree, princess, ivy vines, rose vines, thorny briar, anvils, crossed swords, gems, twinkling stars, hearts, skulls, snowflakes, chains, anchor and chain, fishing net, logs and hatchet, flames, herbs, runes, bones, arrows and bow, dragon weapons, abyssal whip and minimap dragons">
+</p>
+
 **Set goal** on the same menu picks one of the next few unlocks, the next level or 99, or **Choose level...** to type any level; the nearest goal shows as a bar in the skill's color on its card, running from your XP when you set the goal to the goal's XP. The next unlock's icons sit centered in sunken slots in the card's own colors, like inventory slots.
 
 **Combat level**: right-click any combat skill (Attack, Strength, Defence, Hitpoints, Ranged, Magic or Prayer) and choose **Pin** on *Combat level*. The card shows your combat level and its exact value, a bar to the next level, and how many levels of each combat skill on its own would get you there. **Set goal** on *Combat level* picks the next level, 126 or any level you type; the card then lists the levels each skill needs for the goal too, with a bar that runs from where you were when you set it to the goal. Right-click the card to change the goal or unpin it. It has its own look by default, dark stone with notched corners and drifting embers, and you can change it apart from the skill cards by picking **Combat level** under Cards to change in the Looks tab.
@@ -61,7 +75,7 @@ A pinned quest unpins itself with a chat message once you finish it.
 
 **Check off**: right-click a pinned card and open **Check off** to tick a requirement off by hand, like a quest the plugin can't see as done. Ticked requirements count as met and say Done. Untick them the same way. Unpinning the card forgets them.
 
-**Amount goals**: right-click an item row in the skill guide, or an item unlock in the side panel, and choose **Set amount goal**, then type a number like 500 or 2k. You get a card like "Catch 500 Raw lobster" with a bar in the skill's color. Items count when they arrive in your inventory while the skill gains XP. For Firemaking, Prayer and Construction, items count when they're used up. The wording follows the skill: catch, chop, mine, cook, burn, bury and so on. Right-click the card to change the amount, reset the count or unpin it. Items that go straight into a fish barrel, log basket or similar aren't counted.
+**Amount goals**: right-click an item in your inventory, bank or worn equipment, an item row in the skill guide, or an item unlock in the side panel, and choose **Set amount goal**, then type a number like 500 or 2k. An item more than one skill works with, like Logs, asks which one (Chop or Burn). You get a card like "Catch 500 Raw lobster" with a bar in the skill's color. Items count when they arrive in your inventory while the skill gains XP. For Firemaking, Prayer and Construction, items count when they're used up. The wording follows the skill: catch, chop, mine, cook, burn, bury and so on. After a minute of steady progress the card shows your rate and the time left, like "420/h, 1h 5m left". The rate starts over after a 10-minute break. Below that the card says when you'll be done at this pace, how many inventories are left for items that don't stack, and how many you have banked (seen the last time the bank was open; turn off **Banked on amount goals** under Goals to hide it), like "Done about 9:40 PM, ~14 invs, 312 banked". Several amount goals in one skill share a single card, with a line and count for each. Reaching a goal flashes the bar and leaves it full in the done colour. Right-click the card to change the amount, reset the count or unpin it. Amount goals are also listed under Goals in the side panel, where right-clicking lets you change the amount or remove the goal. Nothing counts while the bank or a deposit box is open. Items that go straight into a fish barrel, log basket or similar aren't counted.
 
 <br clear="right">
 
@@ -82,7 +96,21 @@ A pinned quest unpins itself with a chat message once you finish it.
 - Search any unlock across all skills, and see whether you have it yet. Matching item goals come first; click one to pin it.
 - Hide whole skill guide sections per skill.
 - **Goals**: right-click any unlock and pick **Set as goal**. Goals sit at the top of the panel with the XP left, and show as infoboxes; right-click the infobox to remove one. Reaching a goal posts a chat message and a notification, then clears it.
+- **Recently unlocked**: your latest level-ups and what they unlocked, with how long ago (hover for the date). Each skill's page has a **Timeline** of every level-up that unlocked something. Kept per account, from the first level-up with this version.
 - **Almost there**: quests and achievement diaries where every skill requirement but one is met, closest first, and quests that are the only thing between you and unlocks you already have the level for. Click one to open it on the wiki. Diary completion isn't checked, so finished diaries can still show up.
+
+### Guides
+<p align="center">
+  <img src="screenshots/guide-cards.png" alt="Guide cards in game, each in its own look: Getting started on parchment, Ironman getting started in riveted steel, Important quests in navy, 1 Defence pure in blood red with a broken Defence cap, and Vale Totems in forest green">
+</p>
+
+Pick **Guides** in the side panel's skill list for step-by-step guides: getting started (free-to-play, members and ironman), account security (authenticator, bank PIN and the Stronghold of Security), important quests, travel unlocks, pure builds (1 Defence, Strength, Zerker, Obby mauler and Initiate) and activities like Vale Totems.
+
+- Each guide is a list of steps in groups: quests, diaries, levels, skill guide unlocks, items and anything else. Quests, diaries and levels tick themselves off from the game; click the rest to tick them off. Click a quest or diary to open it on the wiki, or a level to see that skill's unlocks.
+- Steps come in the order you can do them, so Vale Totems starts with Children of the Sun before the Fletching and Woodcutting levels.
+- **Follow** up to three guides at once. Each followed guide gets a card in game, in its own look, with how far along you are and the next three steps. Scroll the mouse wheel over a card to page through the rest of its steps. Right-click a card to stop following it or open it in the side panel.
+- **Pure caps**: pure guides know their caps. Quests that give XP in a capped skill are marked, along with quests whose reward lets you pick a skill, so you don't pick the wrong one. Gaining XP in a capped skill posts a red chat line with how much more breaks the cap, and a broken cap shows on the card.
+- Reaching a step can post a chat message. Guide cards, step messages and cap warnings can each be turned off in the General settings, or on the in-game menu's **Guides** tab.
 
 ### Also
 - **Level-up message**: a chat message listing what the level you just reached unlocks, with the skill and level in grey and the unlocks in yellow by default, both changeable under Colors, with an optional text shadow.
@@ -92,10 +120,11 @@ A pinned quest unpins itself with a chat message once you finish it.
 - **Boosts**: unlocks your boosted level reaches count as reached for things the game lets you do boosted (skilling methods, spells, shortcuts, quests, diaries), but not equipment or prayers.
 - **Quest-locked unlocks**: unlocks that need a quest you haven't finished are greyed out.
 - **Filters**: members content (always, never, or match the world), quest and diary requirements, how many levels to list.
-- **In-game menu**: a small button on the minimap's rim opens a menu in the game's own window style, so everything can be done without the side panel. It has four tabs:
-  - **Looks**: pick which cards to change (all skills, or one skill for its own look), then five sub-tabs: **Style** (style, font, bar, glow, text shadow, scanlines, skill icon, text and icon size), **Frame** (gradients, title band, shimmer, frame shape, border, border motion, corners, padding, opacity), **Effects** (XP effect, ambient particles, XP popup, bar pulse, level-up flash), **Colours** (own colours for each part of the card, from swatches or red, green, blue and opacity sliders, optionally starting from the style's colours) and **Presets** (save, load, rename and delete looks). A reset for all skills needs a second click; a skill's own look can be dropped to match the rest.
+- **In-game menu**: a small button on the minimap's rim opens a menu in the game's own window style, so everything can be done without the side panel. It has five tabs:
+  - **Looks**: pick which cards to change (all skills, or one skill for its own look), then five sub-tabs: **Style** (style, font, bar, glow, text shadow, scanlines, skill icon, text and icon size), **Frame** (gradients, title band, shimmer, frame shape (including scalloped and ticket-stub edges), border, border motion, trim, trim size and trim tint, corners, padding, opacity), **Effects** (XP effect, ambient particles, XP popup, bar pulse, level-up flash), **Colours** (own colours for each part of the card, from swatches or red, green, blue and opacity sliders, optionally starting from the style's colours) and **Presets** (save, load, rename and delete looks). A reset for all skills needs a second click; a skill's own look can be dropped to match the rest.
   - **Goals**: your goals with the XP left to each one. Pick a skill to add its next unlocks, the next level, 99 or a level you type.
   - **Pins**: pin skills from a grid, and remove pinned quests, diaries and items. You can also pin one by typing its name.
+  - **Guides**: the guides you follow, with how far along each is and a button to stop following it, every guide to follow with one click, and the guide switches.
   - **Options**: the remaining switches.
 
   Drag the title bar to move the menu, double-click it to centre it again, and press Escape to close it. The button's place on the rim can be changed if it sits on top of another plugin's button.
@@ -106,8 +135,8 @@ A pinned quest unpins itself with a chat message once you finish it.
 
 - **General**: members unlocks, quest and diary requirements, levels to show, level-up message, boosts, greying out quest-locked unlocks.
 - **Skills tab tooltip**: on/off, icons only (on by default), including the game's XP tooltip, progress bar, icon and text size, background opacity, outline, the level and goal bar on pinned cards.
-- **Pinned card style** and **Pinned card colors**: the card style, font, bar, level-up effect, XP effect, XP popup and bar pulse, glow, text shadow, scanlines, skill icon, gradients, shimmer, frame shape, border, border motion, ambient particles, corners, padding, title band and each color.
-- **Goals**: goal infoboxes, the goal-reached notification, the Almost there list, whether item goals count making levels.
+- **Pinned card style** and **Pinned card colors**: the card style, font, bar, level-up effect, XP effect, XP popup and bar pulse, glow, text shadow, scanlines, skill icon, gradients, shimmer, frame shape, border, border motion, trim, ambient particles, corners, padding, title band and each color.
+- **Goals**: goal infoboxes, the goal-reached notification, the Almost there and Recently unlocked lists, whether item goals count making levels.
 - **Skill guide**: the Next Unlocks tab, highlighting, fading, markings, progress bar, scrolling, dimming hidden sections.
 - **In-game menu**: the minimap button on/off and its place on the rim.
 - **Colors**: next unlock, outline, progress bar and its background, level numbers, boost-reached and quest-locked, used by the tooltip, the side panel and the skill guide; plus the level-up message's skill/level and unlocks colors and its text shadow.
